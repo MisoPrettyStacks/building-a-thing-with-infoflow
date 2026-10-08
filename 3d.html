@@ -84,10 +84,17 @@
 // everywhere else it goes to the main forecast page.
 (function () {
   var q = new URLSearchParams(location.search);
+  var link = document.getElementById('enterLink');
   if (q.has('intro') && window.parent !== window) {
-    document.getElementById('enterLink').addEventListener('click', function (e) {
+    link.addEventListener('click', function (e) {
       e.preventDefault();
       window.parent.postMessage('lmEnterForecast', '*');
+    });
+  } else {
+    // standalone / embedded: mark the intro as seen BEFORE navigating, so the
+    // forecast page doesn't pop the 3D overlay right back up (no loop)
+    link.addEventListener('click', function () {
+      try { sessionStorage.setItem('intro3dSeen', '1'); } catch (err) {}
     });
   }
 })();
