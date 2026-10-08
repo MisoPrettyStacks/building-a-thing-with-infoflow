@@ -493,6 +493,7 @@ import { sageAnswer, sageIsIpProbe, sageRepeatRefusal } from '../lib/sagechat.js
 import { sashaAnswer, sashaIsIpProbe, sashaRepeatRefusal } from '../lib/sashachat.js';
 import { niaAnswer, niaIsIpProbe, niaRepeatRefusal } from '../lib/niachat.js';
 import { opheliaAnswer, opheliaIsIpProbe, opheliaRepeatRefusal } from '../lib/opheliachat.js';
+import { camilleAnswer, camilleIsIpProbe, camilleRepeatRefusal } from '../lib/camillechat.js';
 import { computeEvidence as opalEvidence, decideVerdict as opalDecide } from '../scripts/opal-supervisor.js';
 import { computeEvidence as violetEvidence, decideVerdict as violetDecide } from '../scripts/violet-supervisor.js';
 import { computeEvidence as daisyEvidence, decideVerdict as daisyDecide } from '../scripts/daisy-supervisor.js';
@@ -504,11 +505,12 @@ import { computeEvidence as sageEvidence, decideVerdict as sageDecide } from '..
 import { computeEvidence as sashaEvidence, decideVerdict as sashaDecide } from '../scripts/sasha-supervisor.js';
 import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../scripts/nia-supervisor.js';
 import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } from '../scripts/ophelia-supervisor.js';
+import { computeEvidence as camilleEvidence, decideVerdict as camilleDecide } from '../scripts/camille-supervisor.js';
 
 { // registry + engine + gate contracts
-  ok(AGENT_DEFS.length === 11, 'eleven lab agents registered');
+  ok(AGENT_DEFS.length === 12, 'twelve lab agents registered');
   const names = AGENT_DEFS.map((d) => d.name);
-  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia']) {
+  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia', 'camille']) {
     ok(names.includes(n), `registry includes ${n}`);
   }
   for (const def of AGENT_DEFS) {
@@ -542,6 +544,7 @@ import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } fr
     sasha: { z: 2.0, rawScore: 0.3, postsScanned: 50 },
     nia: { activeCatalysts: [{ headline: 'XRP ETF approved', dir: 1, weight: 1 }], catalysts24h: 1 },
     ophelia: { flowVelocity: 0.05, breadth: 0.85, totalNetFlow: -2e6, wallets: 8 },
+    camille: { tilt: 0.006, daysSince: 2, relock: 0.75 },
   };
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };
   // Violet is a dampener, not a directional member: her positive verdict is 'dampening'.
@@ -574,6 +577,7 @@ import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } fr
     { name: 'sasha', answer: sashaAnswer, isProbe: sashaIsIpProbe, refuse: sashaRepeatRefusal },
     { name: 'nia', answer: niaAnswer, isProbe: niaIsIpProbe, refuse: niaRepeatRefusal },
     { name: 'ophelia', answer: opheliaAnswer, isProbe: opheliaIsIpProbe, refuse: opheliaRepeatRefusal },
+    { name: 'camille', answer: camilleAnswer, isProbe: camilleIsIpProbe, refuse: camilleRepeatRefusal },
   ];
   for (const c of CHATS) {
     const id = c.answer('who are you');
@@ -599,12 +603,21 @@ import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } fr
     { name: 'sasha', evidence: sashaEvidence, decide: sashaDecide },
     { name: 'nia', evidence: niaEvidence, decide: niaDecide },
     { name: 'ophelia', evidence: opheliaEvidence, decide: opheliaDecide },
+    { name: 'camille', evidence: camilleEvidence, decide: camilleDecide },
   ];
   const strong = Array.from({ length: 120 }, () => ({ computed: { bias: 0.006, warming_up: false, degraded: false, decisive: true } }));
+  // Camille counts schedule expression from note tilt, not the generic decisive flag
+  const STRONG_NOTES = {
+    camille: Array.from({ length: 120 }, () => ({ computed: { bias: 0.006, tilt: 0.006, days_since: 2, relock: 0.75, warming_up: false, degraded: false, decisive: true } })),
+  };
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };
+  // Camille/Molly judge the windowed edge in the raw production shape
+  const BOARDS = {
+    camille: { n: 250, brierEscrow: 0.24, brierBase: 0.25, tiltWindow: { n: 250, brierEscrow: 0.24, brierBase: 0.25 } },
+  };
   const thin = Array.from({ length: 5 }, () => ({ computed: { bias: 0, warming_up: false, degraded: false, decisive: false } }));
   for (const s of SUPS) {
-    const ev = s.evidence(strong, board);
+    const ev = s.evidence(STRONG_NOTES[s.name] || strong, BOARDS[s.name] || board);
     ok(ev.n === 120, `${s.name}: evidence counts notes`);
     ok(ev.oos_edge === true, `${s.name}: oos edge detected`);
     const v = s.decide(ev);

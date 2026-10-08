@@ -278,7 +278,17 @@
 
 </div>
 
-<div class="exp-wrap exp-wrap-yellow">
+<div class="camille-lab-wrap">
+<h2 class="camille-lab-title"><img src="camille-headshot.webp" alt="Camille" class="camille-lab-headshot"> CAMILLE'S LAB - CALENDAR EFFECT</h2>
+<div class="camille-agent-intro">
+  <h3>Meet Camille — an agentic agent, not a mascot</h3>
+  <p>Camille doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: tracking Ripple's monthly escrow cycle against the calendar, researching the science of calendar effects, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Calendar Effect Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> calendar econometrics · market microstructure · statistics · risk management · data engineering · behavioral finance — with real market-trading experience and knowledge. She is the expert in her area of study: how Ripple's predictable monthly escrow release relates to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the escrow calendar, verify the tilt fires on schedule, guard data quality, and keep the lab notebook. Analyze how the effect behaves: whether the 1st–7th tilt points the right way, how the re-lock ratio modulates it, whether it earns its keep. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the calendar state and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the escrow tilt earns a place in the live forecast model. Her APPLY verdicts send the tilt to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p><strong>What she never does:</strong> invent calendar effects. No moon phases, no day-of-week fishing — a new calendar hypothesis enters her ledger only with a declared test, and lives or dies by the tilt-window scoreboard. 📅</p>
+</div>
 <section id="calendar" class="card">
   <h2>Calendar effects <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
   <p class="muted" style="margin-top:0">Ripple releases 1B XRP from escrow on the 1st of each month, re-locking most of it days later. The model carries a tiny bearish tilt for the first 7 days — scored out-of-sample, applied only with evidence.</p>
@@ -290,6 +300,64 @@
   </div>
   <p class="muted" style="font-size:12px;margin-bottom:0">The effect is small and fully predictable — that is the point. History shows only mild 7-day swings around releases; this tilt is capped at 0.01 on P(up) and fades by the 7th. If the scoreboard below ever shows it hurting, the agent keeps it at weight zero.</p>
 </section>
+
+<section id="camille3d" class="card">
+  <h2>The month in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Camille's live view of the escrow month. The ring is the 31 days of the month — the first seven pillars glow gold and rise with the real live tilt, decaying through the window, then collapse to stubs. The today-marker shows where we are, and gold particles drift from the day-1 pillar while the tilt is active. <a href="camille3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="camille3d.html?embed=1&v=1" title="Live 3D escrow-calendar rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="camille" class="card">
+  <h2>Camille's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Camille</b> — she spends every 5-minute cycle checking whether the escrow calendar can actually help the forecast. She writes down <i>everything</i>: what the calendar showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="cm-panel" id="cmPanel" hidden>
+    <div class="cm-head">CAMILLE'S STANDING VERDICT <span class="cm-badge" id="cmBadge"></span></div>
+    <p class="cm-plain" id="cmPlain"></p>
+    <div class="cm-ev" id="cmEvidence"></div>
+    <details class="cm-det"><summary>How she reached it — every discipline's read</summary><div id="cmDisciplines"></div></details>
+    <details class="cm-det"><summary>Hypothesis ledger</summary><div id="cmHypotheses"></div></details>
+    <div class="cm-meta muted" id="cmMeta"></div>
+  </div>
+  <div class="cm-scene">
+    <div class="cm-grid">
+      <div class="cm-hero">
+        <img src="camille.webp" alt="Camille working at her chalkboard" id="cmHeroImg">
+        <span class="cm-sparkle" aria-hidden="true"></span>
+        <div class="cm-bubble" id="cmBubble"><span id="cmBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Camille's findings <span class="lm-live" id="cmLiveDot"></span></div>
+        <div class="lm-line" id="cmBoardTilt">warming up…</div>
+        <div class="lm-line" id="cmBoardDay"></div>
+        <div class="lm-line" id="cmBoardRelock"></div>
+        <div class="lm-line lm-verdict" id="cmBoardVerdict"></div>
+        <svg id="cmBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="cmBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="cmBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="cmLogCount" class="muted"></span></div>
+    <div id="cmLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Camille ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="cmchat-title">CHAT WITH CAMILLE</h3>
+  <div class="cmchat" id="cmchat">
+    <div class="cmchat-head">
+      <img src="camille-headshot.webp" alt="Camille">
+      <div class="cmchat-who"><b>Camille</b><span class="cmchat-online"><i></i>online — ask me about the escrow calendar</span></div>
+    </div>
+    <div class="cmchat-log" id="cmChatLog" aria-live="polite"></div>
+    <div class="cmchat-chips" id="cmChatChips"></div>
+    <div class="cmchat-input">
+      <input id="cmChatText" type="text" placeholder="Ask Camille about calendar effects…" maxlength="300" autocomplete="off">
+      <button id="cmChatSend" type="button">Send</button>
+    </div>
+    <div class="cmchat-note muted">Camille answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
 
 <div class="exp-wrap exp-wrap-green">
 </div>

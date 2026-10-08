@@ -16,6 +16,7 @@ import { daisyAnswer, daisyIsIpProbe, daisyRepeatRefusal } from './lib/daisychat
 import { violetAnswer, violetIsIpProbe, violetRepeatRefusal } from './lib/violetchat.js';
 import { opalAnswer, opalIsIpProbe, opalRepeatRefusal } from './lib/opalchat.js';
 import { opheliaAnswer, opheliaIsIpProbe, opheliaRepeatRefusal } from './lib/opheliachat.js';
+import { camilleAnswer, camilleIsIpProbe, camilleRepeatRefusal } from './lib/camillechat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -55,7 +56,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderCamillePanel(summary); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -1603,11 +1604,14 @@ function initOpalAnim() {
 function initOpal() {
   initOpalAnim();
   initOpheliaAnim();
+  initCamilleAnim();
   if (typeof summary !== 'undefined' && summary) renderOpalPanel(summary);
   loadOpalVerdict();
   initOpalChat();
   loadOpheliaVerdict();
   initOpheliaChat();
+  loadCamilleVerdict();
+  initCamilleChat();
 }
 
 // ================= Violet app glue (fragment) =================
@@ -4432,8 +4436,270 @@ function initOpheliaAnim() {
 
 function initOphelia() {
   initOpheliaAnim();
+  initCamilleAnim();
   loadOpheliaVerdict();
   initOpheliaChat();
+  loadCamilleVerdict();
+  initCamilleChat();
+}
+
+
+/* ---------------- Camille's lab ---------------- */
+function cmDrawSpark(canvasId, vals) {
+  const c = $(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  if (!ctx) return;
+  const W = c.width, H = c.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!vals || vals.length < 2) return;
+  const mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
+  ctx.strokeStyle = '#4a7ab5'; ctx.lineWidth = 1.5; ctx.beginPath();
+  vals.forEach((v, i) => {
+    const x = (W * i) / (vals.length - 1);
+    const y = H - 3 - ((v - mn) / rg) * (H - 6);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+function renderCamillePanel(summary) {
+  if (!$('cmBoardTilt')) return;
+  const cal = summary && summary.calendar;
+  const sb = summary && summary.windows && summary.windows.all && summary.windows.all.escrow;
+  // live tilt state from her signal
+  if (cal) {
+    const tilt = cal.tilt || 0, ds = cal.days_since_escrow;
+    setT('cmBoardTilt', tilt > 0 ? `tilt  −${tilt.toFixed(4)}  (bearish)` : 'tilt  none  (outside 1st–7th window)');
+    setT('cmBoardDay', ds != null ? `day ${ds} of the escrow month` : '');
+    setT('cmBoardRelock', cal.relock != null ? `re-lock ${(cal.relock * 100).toFixed(0)}%` : '');
+  }
+  if (sb && sb.tiltWindow && sb.tiltWindow.n >= 10) {
+    setT('cmBoardTilt', ($('cmBoardTilt') ? $('cmBoardTilt').textContent + ' ' : '') + '');
+  }
+  // chalkboard + notebook
+  const L = summary && summary.camille;
+  const rowsEl = $('cmLogRows');
+  const bubble = $('cmBubbleText');
+  if (!L || !L.latest) {
+    if (bubble) bubble.textContent = 'setting up my lab…';
+    if (!cal) { setT('cmBoardTilt', 'warming up…'); }
+    setT('cmBoardDay', ''); setT('cmBoardRelock', ''); setT('cmBoardVerdict', '');
+    const sp = $('cmBoardSpark'); if (sp) sp.setAttribute('points', '');
+    setT('cmBoardSparkLabel', '');
+    if (rowsEl) rowsEl.innerHTML = '<div class="lm-empty">Camille is setting up her lab — notebook entries appear after the next runner cycle.</div>';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c && !c.degraded) {
+    const t = c.tilt || 0;
+    setT('cmBoardTilt', t > 0 ? `tilt  −${t.toFixed(4)}  (bearish, day ${c.days_since})` : 'tilt  none  (outside 1st–7th window)');
+    setT('cmBoardDay', c.days_since != null ? `day ${c.days_since} of the escrow month` : '');
+    setT('cmBoardRelock', c.relock != null ? `re-lock ${(c.relock * 100).toFixed(0)}%` : '');
+  }
+  const vEl = $('cmBoardVerdict');
+  if (vEl) {
+    vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`;
+    vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879';
+  }
+  const pts = (L.log || []).filter((e) => e.computed && !e.computed.degraded).slice(-24).map((e) => e.computed.tilt || 0);
+  // sparkline on a dedicated canvas is omitted for Camille; board polyline:
+  const sp = $('cmBoardSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      sp.setAttribute('points', pts.map((v, i) =>
+        (300 * i / (pts.length - 1)).toFixed(1) + ',' +
+        (60 - ((v - mn) / rg) * 52).toFixed(1)).join(' '));
+      setT('cmBoardSparkLabel', `tilt · last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('cmBoardSparkLabel', ''); }
+  }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    if (bubble.textContent !== short) {
+      bubble.textContent = short;
+      const b = $('cmBubble');
+      if (b) { b.classList.remove('cm-talk'); void b.offsetWidth; b.classList.add('cm-talk'); }
+    }
+  }
+  if (rowsEl) {
+    $('cmLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+    rowsEl.innerHTML = '';
+    const notes = (L.log || []).slice().reverse().slice(0, 40);
+    if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+    for (const e of notes) {
+      const row = document.createElement('div');
+      row.className = 'lm-row';
+      const head = document.createElement('button');
+      head.className = 'lm-rowhead';
+      const t = document.createElement('span'); t.className = 'lm-t';
+      const dt = new Date(e.t);
+      t.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+        dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const v = document.createElement('span');
+      v.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+      v.textContent = e.verdict;
+      const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+      head.append(t, v, f);
+      const det = document.createElement('div');
+      det.className = 'lm-detail'; det.hidden = true;
+      const col = e.collected || {};
+      det.innerHTML =
+        '<div class="lm-sec"><span class="lm-k">COLLECTED</span><br>' +
+        opEsc(col.source || 'escrow calendar') + ' · ' + opEsc(col.window || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' +
+        (e.checks || []).map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' +
+          (k.pass ? '✓' : '✗') + '</span> ' + opEsc(k.name) + ' — ' + opEsc(k.detail)).join('<br>') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + opEsc(e.verdict_why || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + opEsc((e.math_effect || {}).detail || '') + '</div>';
+      head.addEventListener('click', () => { det.hidden = !det.hidden; });
+      row.append(head, det);
+      rowsEl.appendChild(row);
+    }
+  }
+}
+
+/* ---------------- Camille's standing verdict ---------------- */
+async function loadCamilleVerdict() {
+  const panel = $('cmPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'camille_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('cmBadge');
+  const label = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.textContent = label;
+  badge.className = 'cm-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('cmPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  const pct = (x) => (x != null ? (x * 100).toFixed(1) + '%' : 'n/a');
+  $('cmEvidence').innerHTML =
+    'Evidence she used: <b>' + (ev.n || 0) + '</b> lab notes · tilt-window decisive <b>' + pct(ev.decisive_frac) + '</b> · ' +
+    (ev.member_n >= 200
+      ? 'out-of-sample tilt-window Brier <b>' + ev.member_brier.toFixed(5) + '</b> vs baseline <b>' + ev.base_brier.toFixed(5) + '</b> (n=' + ev.member_n + ')'
+      : 'scoreboard warming up (n=' + (ev.member_n || 0) + '/200)');
+  $('cmDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) =>
+    '<div class="cm-line"><span class="cm-d">' + opEsc(d.discipline) + ':</span> ' + opEsc(d.assessment) + '</div>').join('');
+  $('cmHypotheses').innerHTML = (doc.hypotheses || []).map((h) =>
+    '<div class="cm-hyp"><b>' + opEsc(h.id) + '</b> — ' + opEsc(h.claim) + '<br>' +
+    'status: <span class="st ' + opEsc(h.status) + '">' + opEsc(h.status) + '</span>' +
+    (h.status_why ? ' <span class="muted">(' + opEsc(h.status_why) + ')</span>' : '') + '</div>').join('') ||
+    '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('cmMeta').innerHTML = 'Charter v' + opEsc(doc.charter_version) + ' · updated ' +
+    opEsc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((p) =>
+      '<a href="' + opEsc(p.id) + '" target="_blank" rel="noopener">' + opEsc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
+/* ---------------- Camille DM chat ---------------- */
+function initCamilleChat() {
+  const log = $('cmChatLog'), input = $('cmChatText'), send = $('cmChatSend'), chips = $('cmChatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'cmchat-row ' + who;
+    if (who === 'camille') {
+      const av = document.createElement('img');
+      av.src = 'camille-headshot.webp'; av.alt = 'Camille';
+      row.appendChild(av);
+    }
+    const b = document.createElement('div');
+    b.className = 'cmchat-bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    log.appendChild(row);
+    scroll();
+  };
+  const CHIP_QS = ['What is the escrow tilt?', 'When does the tilt apply?', "What's your verdict?", 'Do you invent calendar effects?'];
+  if (chips) {
+    chips.innerHTML = '';
+    for (const q of CHIP_QS) {
+      const c = document.createElement('button');
+      c.type = 'button'; c.className = 'cmchat-chip'; c.textContent = q;
+      c.addEventListener('click', () => { input.value = q; doSend(); });
+      chips.appendChild(c);
+    }
+  }
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('camilleChatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'cmchat-row camille';
+    typing.innerHTML = '<img src="camille-headshot.webp" alt="Camille"><div class="cmchat-bubble"><span class="cmchat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (camilleIsIpProbe(text)) {
+      ipCount++;
+      try { localStorage.setItem('camilleChatIpCount', String(ipCount)); } catch { /* private mode */ }
+      reply = ipCount >= 3 ? camilleRepeatRefusal() : camilleAnswer(text);
+    } else {
+      reply = camilleAnswer(text);
+    }
+    setTimeout(() => { typing.remove(); bubble('camille', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('camille', "Hi! I'm Camille 📅 I run the calendar-effect lab — the monthly escrow cycle, the 1st–7th tilt, and whether it earns its place in the forecast. Ask me anything!"), 800);
+}
+
+/* ---------------- Camille flipbook animation ---------------- */
+function initCamilleAnim() {
+  const img = $('cmHeroImg');
+  if (!img) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const BASE = 'camille.webp', WRITE = 'camille-write.webp', BLINK = 'camille-blink.webp';
+  let ready = 0;
+  const go = () => { if (++ready >= 2) start(); };
+  const fallback = setTimeout(() => start(), 4000);
+  [WRITE, BLINK].forEach((src) => {
+    const im = new Image();
+    im.onload = go; im.onerror = go;
+    im.src = src;
+  });
+  function start() {
+    if (start.done) return; start.done = true;
+    clearTimeout(fallback);
+    let onScreen = true, pageVisible = !document.hidden;
+    let writeTimer = null, blinkTimer = null;
+    const show = (src) => { if (img.getAttribute('src') !== src) img.setAttribute('src', src); };
+    const kick = () => {
+      const active = onScreen && pageVisible;
+      if (active && !writeTimer) {
+        writeTimer = setInterval(() => {
+          show(WRITE);
+          setTimeout(() => show(BASE), 1600);
+        }, 9000);
+        blinkTimer = setInterval(() => {
+          show(BLINK);
+          setTimeout(() => show(BASE), 180);
+        }, 4500);
+      } else if (!active && writeTimer) {
+        clearInterval(writeTimer); clearInterval(blinkTimer);
+        writeTimer = blinkTimer = null;
+        show(BASE);
+      }
+    };
+    new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; kick(); }, { threshold: 0.1 }).observe(img);
+    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; kick(); });
+    kick();
+  }
+}
+
+function initCamille() {
+  initCamilleAnim();
+  loadCamilleVerdict();
+  initCamilleChat();
 }
 
 (async function boot() {
@@ -4442,6 +4708,7 @@ function initOphelia() {
   initWendyAnim();
   initOpalAnim();
   initOpheliaAnim();
+  initCamilleAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
@@ -4472,6 +4739,8 @@ function initOphelia() {
   initOpalChat();
   loadOpheliaVerdict();
   initOpheliaChat();
+  loadCamilleVerdict();
+  initCamilleChat();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);

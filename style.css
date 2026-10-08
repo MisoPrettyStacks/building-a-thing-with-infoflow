@@ -1548,3 +1548,120 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .ohchat-note { font-size: 11px; padding: 8px 14px 10px; }
 @media (max-width: 640px) { .ophelia-lab-title { font-size: 17px; letter-spacing: 1px; } .ophelia-lab-headshot { width: 48px; height: 48px; } }
 
+.camille-lab-wrap {
+  border: 3px solid #4a7ab5; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.camille-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #4a7ab5; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.camille-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #4a7ab5; flex: 0 0 auto;
+}
+.camille-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(74,122,181,0.06);
+}
+.camille-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #4a7ab5; letter-spacing: 1px; }
+.camille-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Camille's standing verdict panel */
+.cm-panel {
+  border: 1px solid #4a7ab5; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(74,122,181,0.05);
+}
+.cm-head { font-size: 13px; letter-spacing: 2px; color: #4a7ab5; font-weight: 700; margin-bottom: 8px; }
+.cm-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.cm-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.cm-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.cm-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.cm-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.cm-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.cm-ev b { color: #4a7ab5; }
+.cm-det { margin: 8px 0; font-size: 13px; }
+.cm-det summary { cursor: pointer; color: #4a7ab5; }
+.cm-det .cm-line { margin: 6px 0; line-height: 1.5; }
+.cm-det .cm-d { color: #4a7ab5; font-weight: 600; text-transform: capitalize; }
+.cm-hyp { margin: 6px 0; line-height: 1.5; }
+.cm-hyp .st { font-weight: 700; }
+.cm-hyp .st.open { color: #f2c879; } .cm-hyp .st.supported { color: #b5e6a2; } .cm-hyp .st.refuted { color: #f09797; } .cm-hyp .st.proposed { color: #9ecfff; }
+.cm-meta { font-size: 12px; margin-top: 10px; }
+/* Camille scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.cm-scene { margin: 6px 0 14px; position: relative; }
+.cm-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .cm-grid { grid-template-columns: 1fr; } }
+.cm-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.cm-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cm-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #bcd2ee; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #bcd2ee); opacity: 0; animation: cmTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cmTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.cm-bubble.cm-talk { animation: cmTalk 1.2s ease-in-out; }
+@keyframes cmTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.cm-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fffaf3; border: 1px solid #e0cdb4; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.cm-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffaf3; border-bottom: 0;
+}
+/* Camille DM chat — orange tints */
+.cmchat-title {
+  color: #4a7ab5; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.cmchat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.cmchat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(74,122,181,0.10); border-bottom: 1px solid var(--line);
+}
+.cmchat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #4a7ab5; }
+.cmchat-who b { display: block; font-size: 15px; }
+.cmchat-online { font-size: 12px; color: #4a7ab5; display: flex; align-items: center; gap: 5px; }
+.cmchat-online i { width: 8px; height: 8px; border-radius: 50%; background: #4a7ab5; display: inline-block; }
+.cmchat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cmchat-row { display: flex; gap: 8px; align-items: flex-end; }
+.cmchat-row.me { justify-content: flex-end; }
+.cmchat-row.camille img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #4a7ab5; flex: 0 0 auto; }
+.cmchat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.cmchat-row.camille .cmchat-bubble { background: #1a2333; border-bottom-left-radius: 4px; color: #4a7ab5; }
+.cmchat-row.me .cmchat-bubble { background: #4a7ab5; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.cmchat-typing { display: inline-block; }
+.cmchat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #4a7ab5; animation: cmtick 1s infinite; }
+.cmchat-typing span:nth-child(2) { animation-delay: 0.15s; } .cmchat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes cmtick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.cmchat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.cmchat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #4a7ab5; color: #4a7ab5; background: transparent;
+}
+.cmchat-chip:hover { background: rgba(74,122,181,0.12); }
+.cmchat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.cmchat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1e22; color: inherit; font-size: 14px; outline: none;
+}
+.cmchat-input input:focus { border-color: #4a7ab5; }
+.cmchat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #4a7ab5; color: #1a1a1a; font-weight: 700; font-size: 14px;
+}
+.cmchat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .camille-lab-title { font-size: 17px; letter-spacing: 1px; } .camille-lab-headshot { width: 48px; height: 48px; } }
