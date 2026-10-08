@@ -92,6 +92,7 @@
   <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every 5 minutes the runner pulls recent XRP-USD trades from Coinbase, Kraken, Bitstamp and Gemini — four of the six official CF constituent venues (LMAX Digital and itBit have no free public feed and are excluded) — buckets the trailing 60 minutes into twelve 5-minute partitions, takes the volume-weighted median trade price per partition pooled across venues, and averages the twelve medians, exactly the calculation in CF's methodology. Your browser re-runs the current partial partition every 10 seconds from live Coinbase + Bitstamp trades, so the number above is seconds old. The official fixing publishes once daily at 16:00 London time; this page's live value is our implementation of the same calculation, not the official fixing.</p>
 </section>
 
+<h2 class="masha-lab-title">MASHA'S LAB - BTC &#8646; XRP - INFORMATION FLOW</h2>
 <section id="infoflow" class="card">
   <h2>Information flow — transfer entropy <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
   <p class="muted" style="margin-top:0">Directed information flow between BTC and XRP, measured live with transfer entropy over trailing 5-minute returns. A fifth ensemble member votes from this signal — currently at weight zero, so it is scored but never affects the forecast until the agent finds out-of-sample evidence.</p>

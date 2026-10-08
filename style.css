@@ -135,6 +135,12 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .lm-check-pass { color: #8fe3a8; }
 .lm-check-fail { color: #f08a8a; }
 
+.masha-lab-title {
+  text-align: center; color: #f4a6c1; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+@media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } }
+
 /* ---------------- embedded 3D flow field ---------------- */
 .flow3d-embed { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
 .flow3d-embed iframe { display: block; width: 100%; height: 460px; border: 0; background: #05070d; }
