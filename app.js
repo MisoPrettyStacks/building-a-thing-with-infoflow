@@ -166,9 +166,9 @@ function renderOnchain() {
   const fmtXrp = (x) => x == null ? '—' : (x >= 0 ? '+' : '') + (x / 1e6).toFixed(2) + 'M';
   $('ocFlow24').textContent = fmtXrp(o.netFlow24h);
   $('ocFlow7').textContent = fmtXrp(o.netFlow7d);
-  $('ocBias').textContent = (o.bias >= 0 ? '+' : '') + o.bias.toFixed(4);
-  $('ocBiasNote').textContent = o.enabled ? 'ACTIVE — agent found OOS evidence' : (o.warmingUp ? 'warming up (<24h history)' : 'weight 0 (scored only)');
-  $('ocWhale').textContent = Math.abs(o.whalePulse) > 1e-6 ? ((o.whalePulse >= 0 ? '+' : '') + o.whalePulse.toFixed(4)) : 'none';
+  $('ocBias').textContent = (o.bias == null || !isFinite(o.bias)) ? '—' : ((o.bias >= 0 ? '+' : '') + o.bias.toFixed(4));
+  $('ocBiasNote').textContent = o.degraded ? 'feed degraded — abstaining (bias 0)' : (o.enabled ? 'ACTIVE — agent found OOS evidence' : (o.warmingUp ? 'warming up (<24h history)' : 'weight 0 (scored only)'));
+  $('ocWhale').textContent = (o.whalePulse == null || Math.abs(o.whalePulse) <= 1e-6) ? 'none' : ((o.whalePulse >= 0 ? '+' : '') + o.whalePulse.toFixed(4));
   $('ocWhaleNote').textContent = o.activePulses ? o.activePulses + ' active pulse(s) · decays over 48h' : 'no whale transfers ≥10M XRP recently';
   const oc = summary.windows && summary.windows.all && summary.windows.all.onchain;
   if (oc) {
