@@ -76,6 +76,36 @@ function renderInfoflow() {
   $('ifWeightNote').textContent = d.enabled ? 'ACTIVE — agent found OOS evidence' : '0 = scored only, not used';
   const ageS = Math.max(0, Math.round((Date.now() - Date.parse(d.computed_at)) / 1000));
   $('ifAge').textContent = 'recomputed ' + (ageS < 90 ? ageS + 's ago' : Math.round(ageS / 60) + 'm ago');
+  renderTopology();
+}
+
+/* ---------------- topological features (experimental) ---------------- */
+function renderTopology() {
+  if (!$('topoPE')) return;
+  const t = summary && summary.extras && summary.extras.topology;
+  if (!t) {
+    ['topoPE','topoMaxL','topoDist','topoState'].forEach((id) => { $(id).textContent = '—'; });
+    $('topoThr').textContent = 'waiting for runner…'; $('topoBrierN').textContent = '—';
+    return;
+  }
+  $('topoPE').textContent = t.pe != null ? t.pe.toFixed(3) : '—';
+  $('topoMaxL').textContent = t.max_lifetime != null ? t.max_lifetime.toFixed(4) : '—';
+  $('topoDist').textContent = t.diagram_distance != null ? t.diagram_distance.toFixed(4) : 'warming up';
+  $('topoThr').textContent = t.threshold != null
+    ? 'threshold ' + t.threshold.toFixed(4) + ' · n=' + (t.history_n || 0)
+    : 'collecting baseline (n=' + (t.history_n || 0) + '/50)';
+  $('topoState').textContent = t.dampen
+    ? 'reorganizing — dampening' + ((t.weight || 0) > 0 ? ' ACTIVE' : ' (scored only)')
+    : 'stable';
+  const tw = summary.windows && summary.windows.all && summary.windows.all.topology;
+  if (tw && tw.regimeWindow) {
+    const rw = tw.regimeWindow;
+    const helps = rw.brierTopo < rw.brierBase;
+    $('topoBrierN').textContent = (helps ? 'helps ✓ ' : 'no edge yet ') +
+      'regime-window Brier ' + rw.brierTopo.toFixed(5) + ' vs base ' + rw.brierBase.toFixed(5) + ' · n=' + rw.n;
+  } else {
+    $('topoBrierN').textContent = tw && tw.n ? 'n=' + tw.n + ' scored · regime window needs ≥10' : 'no scored forecasts yet';
+  }
 }
 
 /* ---------------- calendar effects (experimental) ---------------- */

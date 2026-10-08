@@ -11,6 +11,7 @@ import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/ca
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
 import { computeOnchainSignal, detectWhaleTransfers } from '../lib/onchain.js';
+import { computeTopologyWindow, diagramDistance, median, stdev, TAKENS_DIM, TAKENS_TAU, RIPS_N, TOPO_MIN_HISTORY, TOPO_HISTORY_CAP } from '../lib/topology.js';
 import { appendRecord, readLedger, readJson, writeJson, verifyChain, canonical, sha256, ledgerFiles } from '../lib/io.js';
 import { buildSummary, joinLedger } from '../lib/summary.js';
 import { runAgent, INITIAL_CONFIG } from '../lib/agent.js';
@@ -47,6 +48,13 @@ const saveOcState = () => {
   ocState.seen = [...ocSeen].slice(-800);
   writeJson(OC_STATE_PATH, ocState);
 };
+
+// --- topology monitor state (persisted on the data branch) ---
+// prevLifetimes: H1 lifetimes of the previous window's diagram (for change detection).
+// distances: rolling history of diagram distances (for the median + 2sd threshold).
+const TOPO_STATE_PATH = path.join(DIR, 'topo-state.json');
+let topoState = readJson(TOPO_STATE_PATH, null) || { prevLifetimes: null, distances: [] };
+if (!Array.isArray(topoState.distances)) topoState.distances = [];
 function publish(force = false) {
   if (!PUSH) return;
   if (!force && Date.now() - lastPush < 4.5 * 60 * 1000) return;
@@ -73,7 +81,7 @@ let raw = [];
 let bars = [];
 let btcRaw = [];
 let btcBars = [];
-const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false };
+const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false, lastTopology: null };
 
 /**
  * On-chain monitor update: fetch watchlist balances + recent payments from the XRPL,
@@ -208,6 +216,42 @@ async function cycle() {
         oc = await updateOnchain(t);
         stats.lastOnchain = oc.diag;
       } catch (e) { log('onchain hiccup:', String(e.message || e).slice(0, 120)); }
+      // topology experiment: Takens embedding + Rips persistent homology (best-effort;
+      // never breaks the run). One Rips computation per cycle (~3s); the previous
+      // window's diagram comes from the persisted state file.
+      let topoOpts = null;
+      try {
+        const need = RIPS_N + (TAKENS_DIM - 1) * TAKENS_TAU; // 148 returns
+        if (bars.length > need + 12) {
+          const rets = [];
+          for (let k = bars.length - need; k < bars.length; k++) rets.push(Math.log(bars[k].c / bars[k - 1].c));
+          const tw = computeTopologyWindow(rets);
+          if (tw) {
+            let dist = null, threshold = null, dampen = false;
+            if (Array.isArray(topoState.prevLifetimes) && topoState.prevLifetimes.length) {
+              dist = diagramDistance(tw.lifetimes, topoState.prevLifetimes);
+              const hist = topoState.distances.filter((x) => Number.isFinite(x));
+              if (hist.length >= TOPO_MIN_HISTORY) {
+                threshold = median(hist) + 2 * stdev(hist);
+                dampen = dist > threshold;
+              }
+            }
+            const distances = topoState.distances.filter((x) => Number.isFinite(x)).slice(-(TOPO_HISTORY_CAP - 1));
+            if (dist != null && Number.isFinite(dist)) distances.push(dist);
+            topoState = { prevLifetimes: tw.lifetimes, distances };
+            try { writeJson(TOPO_STATE_PATH, topoState); } catch {}
+            topoOpts = { dampen, available: true };
+            stats.lastTopology = {
+              pe: +tw.pe.toFixed(4), max_lifetime: +tw.maxL.toFixed(6), n_bars: tw.nBars,
+              diagram_distance: dist == null ? null : +dist.toFixed(6),
+              threshold: threshold == null ? null : +threshold.toFixed(6),
+              dampen, history_n: distances.length,
+              computed_at: new Date().toISOString(),
+            };
+            if (dampen) log(`agent: topology regime-change detected (dist=${dist.toFixed(4)} > thr=${threshold.toFixed(4)}); dampening`);
+          }
+        }
+      } catch (e) { log('topology hiccup:', String(e.message || e).slice(0, 120)); }
       // macro proximity for the bar being forecast (drives the page indicator + what-if series)
       const proxNow = macroProximity(lastClosedStart + STEP, macroCal);
       stats.lastMacro = { ...proxNow, computed_at: new Date().toISOString() };
@@ -215,6 +259,7 @@ async function cycle() {
         ...(infoOpts ? { infoflow: infoOpts } : {}),
         macroCal,
         onchain: { bias: oc.bias },
+        ...(topoOpts ? { topology: topoOpts } : {}),
       });
       const rec = append({
         type: 'forecast', id: lastClosedStart, bar_t: lastClosedStart, t_issue: lastClosedStart + STEP,
@@ -228,6 +273,10 @@ async function cycle() {
         p_onchain: step.pOnchain == null ? null : +step.pOnchain.toFixed(6),
         onchain_bias: +step.onchainBias.toFixed(6),
         onchain_net24h: oc.diag && oc.diag.netFlow24h != null ? oc.diag.netFlow24h : null,
+        p_topology: step.pTopology == null ? null : +step.pTopology.toFixed(6),
+        topo_active: step.topoActive ? 1 : 0,
+        topo_pe: stats.lastTopology && stats.lastTopology.pe != null ? stats.lastTopology.pe : null,
+        topo_dist: stats.lastTopology && stats.lastTopology.diagram_distance != null ? stats.lastTopology.diagram_distance : null,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
         cfg_version: config.champion.version, cfg_hash: cfgHash(),
         input_digest: sha256(canonical(bars.slice(-48).map((b) => [b.t, b.c, b.v]))).slice(0, 16),
@@ -331,6 +380,11 @@ function writeSummary() {
         ...stats.lastOnchain,
         weight: config.champion.onchainWeight || 0,
         enabled: (config.champion.onchainWeight || 0) > 0,
+      } : null,
+      topology: stats.lastTopology ? {
+        ...stats.lastTopology,
+        weight: config.champion.topologyWeight || 0,
+        enabled: (config.champion.topologyWeight || 0) > 0,
       } : null,
     },
   });
