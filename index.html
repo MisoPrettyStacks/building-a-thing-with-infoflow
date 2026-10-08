@@ -780,6 +780,93 @@
 
 </div>
 
+<div class="cora-lab-wrap">
+<h2 class="cora-lab-title"><img src="cora-headshot.webp" alt="Cora" class="cora-lab-headshot"> CORA'S LAB - CROSS-ASSET MOMENTUM</h2>
+<div class="cora-agent-intro">
+  <h3>Meet Cora — an agentic agent, not a mascot</h3>
+  <p>Cora doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching ETH and SOL price momentum on public exchange data, researching the science of cross-asset co-movement and spillover, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Cross-Asset Momentum Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> quantitative finance · statistics · market microstructure · data engineering · risk management — with real market-trading experience and knowledge. She is the expert in her area of study: whether ETH and SOL price drift spills over into where XRP goes next.</p>
+  <p><strong>Family motto:</strong> Masha measures <em>information</em> flow; Cora measures <em>price</em> flow. Masha asks whether BTC's pattern of surprises carries information about XRP; Cora asks whether ETH's and SOL's actual price movement spills over into XRP.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live cross-asset momentum measurements, guard candle-feed and alignment quality, and keep the lab notebook. Analyze how momentum behaves: when ETH and SOL agree or diverge, when broad-market drift is strong or absent, which regimes the signal favors. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the momentum measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether cross-asset momentum earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+</div>
+<section id="xasset" class="card">
+  <h2>Cross-asset momentum — ETH/SOL spillover <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Cora watches the two biggest altcoins as bellwethers of broad crypto risk appetite. For each she compares its recent drift against its own recent volatility — so a wild coin and a calm coin speak the same language — and blends the two into a small bounded tilt: positive when broad momentum is up (a tailwind for XRP), negative when it's down (a headwind). Currently at weight zero, so it is scored but never affects the forecast until Cora finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Cross-asset tilt</div><div class="v" id="coTilt" style="font-size:15px">—</div><div class="s" id="coTiltSub">—</div></div>
+    <div class="stat"><div class="k">ETH momentum</div><div class="v" id="coETH" style="font-size:15px">—</div><div class="s" id="coETHSub">—</div></div>
+    <div class="stat"><div class="k">SOL momentum</div><div class="v" id="coSOL" style="font-size:15px">—</div><div class="s" id="coSOLSub">—</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="coStatus" style="font-size:15px">—</div><div class="s" id="coStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="coBrier">—</div><div class="s" id="coBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="coSkill">—</div><div class="s" id="coSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="coWeight" style="font-size:15px">—</div><div class="s" id="coWeightNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Momentum history</div><div class="v" style="font-size:12px"><canvas id="coSparkCanvas" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">trailing tilt reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner reads recent 5-minute ETH-USD and SOL-USD candles from the public Coinbase exchange API (no keys), measures each asset's trailing drift relative to its own trailing volatility, and blends them into one tilt. The tilt is deliberately slow and bounded — it hangs in there across many windows until the cross-asset regime genuinely changes. Honest caveat: momentum is the most crowded anomaly in finance — by the time a move is obvious on the majors, the spillover into XRP has often already happened. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="cora3d" class="card">
+  <h2>Watching the momentum in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Cora's live view of the crypto family. The glowing golden node at the center is XRP; the sky-blue node is ETH and the teal node is SOL. Sky-blue streams carry each asset's price drift toward XRP — brighter, faster streams mean stronger momentum; streams flowing <em>away</em> mean the momentum is negative (a headwind). The whole scene breathes with her live measurements: when her cross-asset tilt is decisive, XRP's glow burns brighter. So you're literally watching what the majors are doing right now. <a href="cora3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="cora3d.html?embed=1&v=1" title="Live 3D cross-asset momentum rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="cora" class="card">
+  <h2>Cora's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Cora</b> — she spends every 5-minute cycle watching whether ETH and SOL momentum can actually help the forecast. She writes down <i>everything</i>: what the candles showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="cv-panel" id="coVPanel" hidden>
+    <div class="cv-head">CORA'S STANDING VERDICT <span class="cv-badge" id="coVBadge"></span></div>
+    <p class="cv-plain" id="coVPlain"></p>
+    <div class="cv-ev" id="coVEvidence"></div>
+    <details class="cv-det"><summary>How she reached it — every discipline's read</summary><div id="coDisciplines"></div></details>
+    <details class="cv-det"><summary>Hypothesis ledger</summary><div id="coHypotheses"></div></details>
+    <div class="cv-meta muted" id="coVMeta"></div>
+  </div>
+  <div class="co-scene">
+    <div class="co-grid">
+      <div class="co-hero">
+        <img src="cora.webp" alt="Cora working at her chalkboard" id="coHeroImg">
+        <span class="co-sparkle" aria-hidden="true"></span>
+        <div class="co-bubble" id="coBubble"><span id="coBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Cora's findings <span class="lm-live" id="coLiveDot"></span></div>
+        <div class="lm-line" id="coBias">warming up…</div>
+        <div class="lm-line" id="coMomETH"></div>
+        <div class="lm-line" id="coMomSOL"></div>
+        <div class="lm-line lm-verdict" id="coVerdict"></div>
+        <svg id="coSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="coSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="coSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="coLogCount" class="muted"></span></div>
+    <div id="coLog"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Cora ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="cchat-title">CHAT WITH CORA</h3>
+  <div class="cchat" id="cchat">
+    <div class="cchat-head">
+      <img src="cora-headshot.webp" alt="Cora">
+      <div class="cchat-who"><b>Cora</b><span class="cchat-online"><i></i>online — ask me about cross-asset momentum</span></div>
+    </div>
+    <div class="cchat-log" id="coChatLog" aria-live="polite"></div>
+    <div class="cchat-chips" id="coChatChips"></div>
+    <div class="cchat-input">
+      <input id="coChatText" type="text" placeholder="Ask Cora about cross-asset momentum…" maxlength="300" autocomplete="off">
+      <button id="coChatSend" type="button">Send</button>
+    </div>
+    <div class="cchat-note muted">Cora answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 
 <section id="score" class="card">
