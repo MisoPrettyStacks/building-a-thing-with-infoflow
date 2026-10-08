@@ -5,7 +5,6 @@
 //   3. Call renderNiaPanel(summary) in loadSummary() next to renderWendy();
 //
 // Uses the module-level $, DATA_BASE, and summary from app.js.
-import { niaAnswer, niaIsIpProbe, niaRepeatRefusal } from './lib/niachat.js';
 
 /* ---------------- Nia's lab ---------------- */
 function renderNiaPanel(summary) {
