@@ -219,7 +219,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
   max-width: 78%; padding: 9px 13px; border-radius: 16px;
   font-size: 14px; line-height: 1.45;
 }
-.mchat-row.masha .mchat-bubble { background: #2a2a2e; border-bottom-left-radius: 4px; }
+.mchat-row.masha .mchat-bubble { background: #2a2a2e; border-bottom-left-radius: 4px; color: #b5e6a2; }
 .mchat-row.me .mchat-bubble { background: #f4a6c1; color: #1a1a1a; border-bottom-right-radius: 4px; }
 .mchat-typing { display: inline-block; }
 .mchat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #f4a6c1; animation: mtick 1s infinite; }
