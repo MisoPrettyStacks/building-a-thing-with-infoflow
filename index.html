@@ -11,14 +11,6 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 </head>
 <body>
-<!-- 3D intro: the flow field pops up first thing on a visit -->
-<div id="intro3d" hidden>
-  <iframe id="intro3dFrame" src="3d.html?intro=1&v=3" title="Live 3D market rendering" allow="autoplay"></iframe>
-  <button id="intro3dClose" type="button" aria-label="Close">✕</button>
-  <div class="intro3d-ui">
-    <button id="intro3dEnter" type="button">ENTER</button>
-  </div>
-</div>
 <div class="wrap">
 
 <header class="top">
@@ -129,7 +121,7 @@
 
 <section id="flow3d" class="card">
   <h2>What we are doing here:</h2>
-  <p class="muted" style="margin-top:0">What the 3D section is showing you: it's a live picture of the actual measurements. The two glowing nodes are BTC and XRP. The particle streams flowing between them are the information flow — the transfer entropy numbers Little Marlowe computes each cycle. When the flow is statistically significant (z-score above 2), that stream burns brighter, denser, and faster in proportion to how strong it is. When it's not significant, it fades to a faint trickle. So you're literally watching whether BTC is "talking" to XRP right now, and how loudly. Around that: the translucent cone is the forecast's uncertainty (the 50% and 90% bands around the predicted path), the ring tracks the monthly XRP escrow release, and the side panel shows the live numbers — TE both directions, P(up), regime, data age.</p>
+  <p class="muted" style="margin-top:0">The 3D section visualizes live information flow between BTC and XRP. This flow is quantified via transfer entropy — a measure from Shannon's information theory — capturing how much knowledge of BTC's past reduces uncertainty about XRP's subsequent price movements. The two glowing nodes are BTC and XRP. The particle streams flowing between them are the information flow — the transfer entropy numbers Little Marlowe computes each cycle. When the flow is statistically significant (z-score above 2), that stream burns brighter, denser, and faster in proportion to how strong it is. When it's not significant, it fades to a faint trickle. So you're literally watching whether BTC is "talking" to XRP right now, and how loudly. Around that: the translucent cone is the forecast's uncertainty (the 50% and 90% bands around the predicted path), the ring tracks the monthly XRP escrow release, and the side panel shows the live numbers — TE both directions, P(up), regime, data age.</p>
   <p class="muted" style="margin-top:8px">What the experiment is: we're testing one question — does measuring information flow between BTC and XRP actually help predict where XRP goes in the next 15 minutes, or not? Every 5 minutes, real Coinbase data goes in, the math runs (transfer entropy, significance tests, noise checks), and Little Marlowe writes down the result plus his honest verdict. So far the answer has been "not yet" — the flow he's measured is real but too weak to be statistically significant, so the forecast correctly ignores it. The experiment stays open, and the full study will be published either way — whether the signal proves significant or not. <a href="3d.html">Open full-screen →</a></p>
   <div class="flow3d-embed"><iframe src="3d.html?embed=1&v=3" title="Live 3D information-flow rendering" loading="lazy"></iframe></div>
 </section>

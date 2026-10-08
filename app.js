@@ -207,34 +207,6 @@ function initLittleMarloweAnim() {
   }
 }
 
-/* ---------------- 3D intro popup ---------------- */
-function initIntro3d() {
-  const ov = $('intro3d');
-  if (!ov) return;
-  const frame = $('intro3dFrame');
-  const dismiss = () => {
-    ov.hidden = true;
-    try { frame.src = 'about:blank'; } catch {}
-    try { sessionStorage.setItem('intro3dSeen', '1'); } catch {}
-    document.removeEventListener('keydown', onKey);
-  };
-  const onKey = (e) => { if (e.key === 'Escape') dismiss(); };
-  let seen = false;
-  try { seen = sessionStorage.getItem('intro3dSeen') === '1'; } catch {}
-  if (!seen) {
-    ov.hidden = false;
-    document.addEventListener('keydown', onKey);
-  } else {
-    try { frame.src = 'about:blank'; } catch {}
-  }
-  $('intro3dEnter').addEventListener('click', dismiss);
-  $('intro3dClose').addEventListener('click', dismiss);
-  // ENTER inside the intro 3D view dismisses the overlay (same as the Enter button)
-  window.addEventListener('message', (e) => {
-    if (e && e.data === 'lmEnterForecast') dismiss();
-  });
-}
-
 /* ---------------- topological features (experimental) ---------------- */
 function renderTopology() {
   if (!$('topoPE')) return;
@@ -944,7 +916,6 @@ window.addEventListener('load', () => {
 });
 (async function boot() {
   await resolveBases();
-  initIntro3d();
   initLittleMarloweAnim();
   loadCandles(); connectWS();
   await loadSummary();
