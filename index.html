@@ -28,7 +28,7 @@
 </header>
 
 <nav class="toc">
-  <a href="#live">Live</a><a href="#cfref">CF reference</a><a href="#score">Live accuracy</a><a href="#backtest">Backtest</a><a href="#agent">Agent</a><a href="#agents">Agents</a>
+  <a href="#live">Live</a><a href="#cfref">CF reference</a><a href="#score">Live accuracy</a><a href="#backtest">Backtest</a><a href="#agent">Agent</a><a href="#agents">Agents</a><a href="3d.html">3D Flow Field</a>
   <a href="#method">Methodology</a><a href="#integrity">Integrity &amp; source</a><a href="#refs">References</a>
 </nav>
 
@@ -102,6 +102,18 @@
     <div class="stat"><div class="k">Window</div><div class="v" style="font-size:15px">288 bars · 24h</div><div class="s" id="ifAge">—</div></div>
   </div>
   <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner pulls BTC-USD 5-minute bars alongside XRP, discretizes trailing 24h returns into 3 quantile bins, and estimates transfer entropy in both directions with a 50-shuffle surrogate significance test. The member votes only when net BTC→XRP flow is positive <em>and</em> significant (z &gt; 2), following the recent BTC move; otherwise it abstains. Honest caveat: the literature measures information half-life in <em>milliseconds</em> — at 15-minute horizons this edge may be near zero. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="calendar" class="card">
+  <h2>Calendar effects <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Ripple releases 1B XRP from escrow on the 1st of each month, re-locking most of it days later. The model carries a tiny bearish tilt for the first 7 days — scored out-of-sample, applied only with evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Days since escrow</div><div class="v" id="calDays">—</div><div class="s">0 = the 1st</div></div>
+    <div class="stat"><div class="k">Current tilt</div><div class="v" id="calTilt">—</div><div class="s" id="calTiltNote">—</div></div>
+    <div class="stat"><div class="k">Re-lock ratio</div><div class="v" id="calRelock">—</div><div class="s">manual input · avg 0.75</div></div>
+    <div class="stat"><div class="k">OOS verdict (tilt window)</div><div class="v" id="calVerdict" style="font-size:15px">—</div><div class="s" id="calN">—</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">The effect is small and fully predictable — that is the point. History shows only mild 7-day swings around releases; this tilt is capped at 0.01 on P(up) and fades by the 7th. If the scoreboard below ever shows it hurting, the agent keeps it at weight zero.</p>
 </section>
 
 <section id="score" class="card">

@@ -41,7 +41,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderCalendar(); schedDraw();
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -76,6 +76,31 @@ function renderInfoflow() {
   $('ifWeightNote').textContent = d.enabled ? 'ACTIVE — agent found OOS evidence' : '0 = scored only, not used';
   const ageS = Math.max(0, Math.round((Date.now() - Date.parse(d.computed_at)) / 1000));
   $('ifAge').textContent = 'recomputed ' + (ageS < 90 ? ageS + 's ago' : Math.round(ageS / 60) + 'm ago');
+}
+
+/* ---------------- calendar effects (experimental) ---------------- */
+function renderCalendar() {
+  if (!$('calDays')) return;
+  const c = summary && summary.extras && summary.extras.calendar;
+  if (!c) {
+    ['calDays','calTilt','calRelock','calVerdict'].forEach((id) => { $(id).textContent = '—'; });
+    $('calTiltNote').textContent = 'waiting for runner…'; $('calN').textContent = '—';
+    return;
+  }
+  $('calDays').textContent = c.days_since_escrow;
+  $('calTilt').textContent = c.tilt > 0 ? '−' + c.tilt.toFixed(4) : 'none';
+  $('calTiltNote').textContent = c.enabled ? 'ACTIVE — agent found OOS evidence' : (c.tilt > 0 ? 'would-be tilt · weight 0 (scored only)' : 'outside 1st–7th window');
+  $('calRelock').textContent = (c.relock || 0).toFixed(2);
+  const esc = summary.windows && summary.windows.all && summary.windows.all.escrow;
+  if (esc && esc.tiltWindow) {
+    const tw = esc.tiltWindow;
+    const helps = tw.brierEscrow < tw.brierBase;
+    $('calVerdict').textContent = helps ? 'helps ✓' : 'no edge yet';
+    $('calN').textContent = 'tilt-window Brier ' + tw.brierEscrow.toFixed(5) + ' vs base ' + tw.brierBase.toFixed(5) + ' · n=' + tw.n;
+  } else {
+    $('calVerdict').textContent = 'collecting data';
+    $('calN').textContent = esc && esc.n ? 'n=' + esc.n + ' scored · tilt window needs ≥10' : 'no scored forecasts yet';
+  }
 }
 
 /* ---------------- live price + chart ---------------- */

@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
+import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { appendRecord, readLedger, readJson, writeJson, verifyChain, canonical, sha256, ledgerFiles } from '../lib/io.js';
 import { buildSummary, joinLedger } from '../lib/summary.js';
 import { runAgent, INITIAL_CONFIG } from '../lib/agent.js';
@@ -114,6 +115,8 @@ async function cycle() {
         target_t: lastClosedStart + STEP + h * STEP, issue_lag_sec: lag,
         p: +step.p.toFixed(6), p_raw: +step.praw.toFixed(6), m: step.m.map((x) => +x.toFixed(6)),
         m_infoflow: +step.mInfo.toFixed(6),
+        p_escrow: step.pEscrow == null ? null : +step.pEscrow.toFixed(6),
+        escrow_tilt: +step.escrowTilt.toFixed(6),
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
         cfg_version: config.champion.version, cfg_hash: cfgHash(),
         input_digest: sha256(canonical(bars.slice(-48).map((b) => [b.t, b.c, b.v]))).slice(0, 16),
@@ -180,6 +183,13 @@ function writeSummary() {
         enabled: (config.champion.infoflowWeight || 0) > 0,
         computed_at: new Date().toISOString(),
       } : null,
+      calendar: {
+        days_since_escrow: daysSinceEscrow(lastClosedStart),
+        tilt: +escrowTilt(lastClosedStart, config.champion.escrowRelock ?? ESCROW_HISTORICAL_RELOCK).toFixed(6),
+        relock: config.champion.escrowRelock ?? ESCROW_HISTORICAL_RELOCK,
+        weight: config.champion.escrowWeight || 0,
+        enabled: (config.champion.escrowWeight || 0) > 0,
+      },
     },
   });
   writeJson(path.join(DIR, 'summary.json'), summary);
