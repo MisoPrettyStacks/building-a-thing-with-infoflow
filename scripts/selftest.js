@@ -268,6 +268,17 @@ const macroCal = parseCalendar(JSON.parse(fs.readFileSync(new URL('../data/macro
 // --- Masha supervisor: deterministic verdicts from evidence (fixtures only, never displayed)
 import { computeEvidence, decideVerdict, updateHypotheses, buildDisciplines, CHARTER_VERSION } from '../scripts/masha-supervisor.js';
 import { runAgent, freshAgentState, proposeCandidates } from '../lib/agent.js';
+import { formatLogLine, parseLogLines, LAB_PAGE_WINDOW } from '../lib/labnote.js';
+{ // permanent notebook: append-only JSONL round-trips, skips corrupt lines, never trims
+  const notes = [{ t: 'a', v: 1 }, { t: 'b', v: 2 }, { t: 'c', v: 3 }];
+  const text = notes.map(formatLogLine).join('\n') + '\n';
+  const back = parseLogLines(text);
+  ok(back.length === 3 && back[2].t === 'c', 'jsonl round-trip preserves every note');
+  const messy = text + 'not json{{{\n' + formatLogLine({ t: 'd' }) + '\n\n';
+  const back2 = parseLogLines(messy);
+  ok(back2.length === 4 && back2[3].t === 'd', 'corrupt lines skipped, rest kept');
+  ok(LAB_PAGE_WINDOW === 120, 'page window is 120 (display only, not a cap)');
+}
 const supNote = (z, net, noisy) => ({ computed: { z_btc_xrp: z, net, noisy } });
 const supBoard = (memB, ensB, n) => ({ brier: ensB, members: { infoflow: memB, infoflow_n: n } });
 { // HOLD on thin history, no matter what
@@ -313,7 +324,7 @@ const supBoard = (memB, ensB, n) => ({ brier: ensB, members: { infoflow: memB, i
   ok(d.length === 11, 'eleven disciplines report');
   ok(d.every((x) => x.discipline && x.assessment && x.assessment.length > 20), 'each discipline has a substantive assessment');
   ok(new Set(d.map((x) => x.discipline)).size === 11, 'disciplines unique');
-  ok(CHARTER_VERSION === '1.0.0', 'charter version stamped');
+  ok(CHARTER_VERSION === '1.0.1', 'charter version stamped');
 }
 { // agent gate: infoflowWeight is never *proposed* without APPLY_CANDIDATE
   const champ = { ...DEFAULT_CONFIG, infoflowWeight: 0, features: DEFAULT_CONFIG.features.slice() };

@@ -106,6 +106,13 @@ demands out-of-sample proof before any APPLY verdict.
 4. **Decide** — issue a standing scientific verdict on whether information
    flow earns a place in the live forecast model, based on evidence alone.
 
+**Standing directive.** These duties are indefinite. Masha does not stop —
+no schedule expiry, no note quota, no sunset clause. Her notebook is
+permanent: every lab note is appended to `masha-log.jsonl` on the data
+branch and kept forever (summary.json carries the latest 120 only so the
+page stays fast). She continues supervising, analyzing, researching, and
+deciding **until Angelica explicitly decides otherwise** — and only then.
+
 ## 3. The verdict protocol
 
 Standing verdict, recomputed on every supervisor cycle:
@@ -190,4 +197,4 @@ by every supervisor cycle and never edited by hand.
 
 ---
 
-*Charter version: 1.0.0 — 2026-10-08. Ratified by Angelica.*
+*Charter version: 1.0.1 — 2026-10-08. Ratified by Angelica.*

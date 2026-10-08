@@ -3,11 +3,11 @@
 // Each closed 5-minute bar: resolve due forecasts -> issue the next forecast -> run the agent -> publish scoreboard.
 import { execSync } from 'node:child_process';
 import path from 'node:path';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, appendFileSync, writeFileSync } from 'node:fs';
 import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
-import { buildLabNote, LAB_LOG_CAP } from '../lib/labnote.js';
+import { buildLabNote, LAB_PAGE_WINDOW, parseLogLines, formatLogLine } from '../lib/labnote.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
@@ -90,16 +90,29 @@ let btcRaw = [];
 let btcBars = [];
 let lastClosedStart = 0; // set each cycle(); writeSummary() reads it for the calendar extras
 
-// --- Masha's lab log (persisted on the data branch via summary.json) ---
+// --- Masha's permanent lab notebook ---
+// Every note is appended to masha-log.jsonl on the data branch and kept
+// forever — no cap, no trimming. summary.json embeds only the latest
+// LAB_PAGE_WINDOW notes so the page stays fast. Masha keeps working until
+// Angelica explicitly decides otherwise.
+const LABLOG_PATH = path.join(DIR, 'masha-log.jsonl');
 let labLog = [];
 function loadLabLog() {
   try {
+    if (existsSync(LABLOG_PATH)) {
+      labLog = parseLogLines(readFileSync(LABLOG_PATH, 'utf8'));
+      log(`lab log restored: ${labLog.length} notes (permanent notebook)`);
+      return;
+    }
     const prev = readJson(path.join(DIR, 'summary.json'), null);
     const prevLog = (prev && prev.masha && Array.isArray(prev.masha.log)) ? prev.masha.log
       : (prev && prev.littleMarlowe && Array.isArray(prev.littleMarlowe.log)) ? prev.littleMarlowe.log : null;
     if (prevLog) {
-      labLog = prevLog.slice(-LAB_LOG_CAP);
-      log(`lab log restored: ${labLog.length} notes`);
+      // one-time migration: move the existing embedded notebook into the
+      // permanent file so nothing she already wrote is ever lost
+      labLog = prevLog.slice();
+      writeFileSync(LABLOG_PATH, labLog.map(formatLogLine).join('\n') + '\n');
+      log(`lab log migrated: ${labLog.length} notes -> permanent notebook`);
     }
   } catch { /* first run: start a fresh notebook */ }
 }
@@ -488,8 +501,9 @@ function writeLabNote(summary) {
       btcBars: btcBars.length,
     });
     labLog.push(note);
-    while (labLog.length > LAB_LOG_CAP) labLog.shift();
-    summary.masha = { latest: note, log: labLog.slice(), updated_at: new Date().toISOString() };
+    try { appendFileSync(LABLOG_PATH, formatLogLine(note) + '\n'); }
+    catch (e) { log('lab log append hiccup:', String(e.message || e).slice(0, 120)); }
+    summary.masha = { latest: note, log: labLog.slice(-LAB_PAGE_WINDOW), updated_at: new Date().toISOString(), total_notes: labLog.length };
   } catch (e) { log('lab note hiccup:', String(e.message || e).slice(0, 120)); }
 }
 

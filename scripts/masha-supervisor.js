@@ -17,8 +17,9 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import { parseLogLines } from '../lib/labnote.js';
 
-export const CHARTER_VERSION = '1.0.0';
+export const CHARTER_VERSION = '1.0.1';
 export const Z_BAR = 2;            // significance bar (matches LAB_Z_THRESHOLD)
 export const NOISE_PE = 0.85;      // noise-regime bar (matches LAB_NOISE_PE)
 export const HISTORY_CAP = 200;    // notes examined per cycle
@@ -189,7 +190,14 @@ async function main() {
   let summary = null;
   try { summary = JSON.parse(readFileSync(path.join(dataDir, 'summary.json'), 'utf8')); }
   catch { summary = null; }
-  const notes = (summary && summary.masha && Array.isArray(summary.masha.log)) ? summary.masha.log : [];
+  // Evidence comes from her permanent notebook (unbounded); the embedded
+  // summary.json log is only a recent page-view window.
+  let notes = [];
+  try {
+    const lp = path.join(dataDir, 'masha-log.jsonl');
+    if (existsSync(lp)) notes = parseLogLines(readFileSync(lp, 'utf8'));
+  } catch { notes = []; }
+  if (!notes.length) notes = (summary && summary.masha && Array.isArray(summary.masha.log)) ? summary.masha.log : [];
   const scoreboard = summary && summary.windows && summary.windows.all ? summary.windows.all : null;
 
   let prev = null;
