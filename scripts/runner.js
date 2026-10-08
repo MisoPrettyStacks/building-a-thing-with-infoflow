@@ -3,10 +3,14 @@
 // Each closed 5-minute bar: resolve due forecasts -> issue the next forecast -> run the agent -> publish scoreboard.
 import { execSync } from 'node:child_process';
 import path from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
 import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
+import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
+import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
+import { computeOnchainSignal, detectWhaleTransfers } from '../lib/onchain.js';
 import { appendRecord, readLedger, readJson, writeJson, verifyChain, canonical, sha256, ledgerFiles } from '../lib/io.js';
 import { buildSummary, joinLedger } from '../lib/summary.js';
 import { runAgent, INITIAL_CONFIG } from '../lib/agent.js';
@@ -25,6 +29,24 @@ const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 const sh = (c) => execSync(c, { cwd: DIR, stdio: ['ignore', 'pipe', 'pipe'] }).toString();
 let lastPush = 0;
+
+// --- macro calendar (static schedule, parsed once) ---
+const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const macroCal = parseCalendar(JSON.parse(readFileSync(path.join(REPO_ROOT, 'data', 'macro-calendar.json'), 'utf8')));
+
+// --- on-chain watchlist (verified XRPL addresses) ---
+const watchlist = JSON.parse(readFileSync(path.join(REPO_ROOT, 'data', 'onchain-watchlist.json'), 'utf8')).wallets;
+const EX_ADDRS = watchlist.filter((w) => w.kind === 'exchange').map((w) => w.address);
+
+// --- on-chain monitor state (persisted on the data branch) ---
+const OC_STATE_PATH = path.join(DIR, 'onchain-state.json');
+let ocState = readJson(OC_STATE_PATH, null) || { snapshots: [], ema: 0, pulses: [], seen: [], failures: 0, netSeries: [], recentTx: [] };
+if (!Array.isArray(ocState.snapshots)) ocState = { snapshots: [], ema: 0, pulses: [], seen: [], failures: 0, netSeries: [], recentTx: [] };
+const ocSeen = new Set(ocState.seen || []);
+const saveOcState = () => {
+  ocState.seen = [...ocSeen].slice(-800);
+  writeJson(OC_STATE_PATH, ocState);
+};
 function publish(force = false) {
   if (!PUSH) return;
   if (!force && Date.now() - lastPush < 4.5 * 60 * 1000) return;
@@ -51,7 +73,78 @@ let raw = [];
 let bars = [];
 let btcRaw = [];
 let btcBars = [];
-const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false };
+const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false };
+
+/**
+ * On-chain monitor update: fetch watchlist balances + recent payments from the XRPL,
+ * update balance snapshots, detect whale transfers, and compute the slow regime bias.
+ * Best-effort: on repeated failure the member abstains (bias 0); never throws.
+ */
+async function updateOnchain(t) {
+  const balances = {};
+  const balResults = await Promise.all(watchlist.map((w) => accountBalanceXrp(w.address)));
+  let okCount = 0;
+  watchlist.forEach((w, i) => { if (balResults[i] != null) { balances[w.address] = +balResults[i].toFixed(2); okCount++; } });
+  if (okCount === 0) {
+    ocState.failures = (ocState.failures || 0) + 1;
+    saveOcState();
+    const degraded = ocState.failures >= 3;
+    if (degraded && !stats.ocDegraded) {
+      append({ type: 'agent', agent: 'onchain', decision: 'feed degraded', detail: `XRPL unreachable ${ocState.failures}x in a row; bias forced to 0 (abstain)` });
+      log('agent: onchain feed degraded, bias=0');
+    }
+    stats.ocDegraded = degraded;
+    return { bias: 0, degraded, diag: { degraded, failures: ocState.failures } };
+  }
+  ocState.failures = 0; stats.ocDegraded = false;
+  // snapshot (one per cycle; cap ~8 days at 5-min cadence)
+  ocState.snapshots.push({ t, balances });
+  if (ocState.snapshots.length > 2500) ocState.snapshots.splice(0, ocState.snapshots.length - 2500);
+  // whale-alert scan: recent payments per watchlist wallet
+  const payLists = await Promise.all(watchlist.map((w) => recentPayments(w.address, 15)));
+  const alerts = detectWhaleTransfers(payLists.flat().filter(Boolean), watchlist, ocSeen);
+  for (const a of alerts) {
+    if (a.tilt !== 0) ocState.pulses.push({ t: a.t || t, tilt: a.tilt });
+    append({
+      type: 'agent', agent: 'onchain', decision: 'whale alert',
+      detail: `${(a.xrp / 1e6).toFixed(1)}M XRP ${a.fromLabel || a.from.slice(0, 8)} -> ${a.toLabel || a.to.slice(0, 8)}: ${a.note}; pulse ${a.tilt >= 0 ? '+' : ''}${a.tilt.toFixed(3)} decaying over 48h`,
+    });
+    log(`agent: onchain whale alert ${(a.xrp / 1e6).toFixed(1)}M XRP (${a.note})`);
+  }
+  // network activity proxies from our own scans (labeled honestly on the page)
+  for (const p of payLists.flat().filter(Boolean)) {
+    if (p.t && t - p.t < 86400) ocState.recentTx.push({ t: p.t, from: p.from, to: p.to, xrp: +p.xrp.toFixed(2) });
+  }
+  ocState.recentTx = ocState.recentTx.filter((p) => t - p.t < 86400).slice(-3000);
+  const ledgerTx = await latestLedgerTxCount();
+  if (ledgerTx != null) {
+    ocState.netSeries.push({ t, ledgerTx });
+    ocState.netSeries = ocState.netSeries.slice(-2500);
+  }
+  const sig = computeOnchainSignal({ snapshots: ocState.snapshots, exchangeAddrs: EX_ADDRS, prev: { ema: ocState.ema }, pulses: ocState.pulses, nowSec: t });
+  ocState.ema = sig.ema;
+  ocState.pulses = ocState.pulses.filter((p) => t - p.t < 48 * 3600);
+  ocState.biasHist = (ocState.biasHist || []).concat([{ t, bias: +sig.bias.toFixed(5) }]).slice(-1500);
+  saveOcState();
+  const cps = new Set();
+  let vol24 = 0;
+  for (const p of ocState.recentTx) {
+    vol24 += p.xrp;
+    for (const a of [p.from, p.to]) if (!EX_ADDRS.includes(a) && !watchlist.some((w) => w.address === a)) cps.add(a);
+  }
+  const diag = {
+    bias: +sig.bias.toFixed(5), ema: +sig.ema.toFixed(5), rawBias: sig.rawBias != null ? +sig.rawBias.toFixed(5) : null,
+    netFlow24h: sig.netFlow24h != null ? +sig.netFlow24h.toFixed(1) : null,
+    netFlow7d: sig.netFlow7d != null ? +sig.netFlow7d.toFixed(1) : null,
+    whalePulse: +sig.whalePulse.toFixed(5), activePulses: sig.activePulses || 0,
+    warmingUp: sig.warmingUp, degraded: false, failures: 0,
+    totalTracked: sig.totalTracked != null ? +sig.totalTracked.toFixed(1) : null,
+    network: { tx24h: ocState.recentTx.length, vol24hXrp: +vol24.toFixed(1), counterparties24h: cps.size, ledgerTxSample: ledgerTx },
+    biasSeries: (ocState.biasHist || []).slice(-288).map((p) => [p.t, p.bias]),
+    computed_at: new Date().toISOString(),
+  };
+  return { bias: sig.bias, degraded: false, diag };
+}
 
 function append(payload) {
   const rec = appendRecord(DIR, payload);
@@ -109,7 +202,20 @@ async function cycle() {
           stats.lastInfoflow = diag[bars.length - 1];
         }
       } catch (e) { log('infoflow hiccup:', String(e.message || e).slice(0, 120)); }
-      const { step, state } = forecastLatest(bars, config.champion, infoOpts ? { infoflow: infoOpts } : {});
+      // on-chain monitor: slow regime bias from XRPL watchlist flows (best-effort; never breaks the run)
+      let oc = { bias: 0, degraded: false, diag: null };
+      try {
+        oc = await updateOnchain(t);
+        stats.lastOnchain = oc.diag;
+      } catch (e) { log('onchain hiccup:', String(e.message || e).slice(0, 120)); }
+      // macro proximity for the bar being forecast (drives the page indicator + what-if series)
+      const proxNow = macroProximity(lastClosedStart + STEP, macroCal);
+      stats.lastMacro = { ...proxNow, computed_at: new Date().toISOString() };
+      const { step, state } = forecastLatest(bars, config.champion, {
+        ...(infoOpts ? { infoflow: infoOpts } : {}),
+        macroCal,
+        onchain: { bias: oc.bias },
+      });
       const rec = append({
         type: 'forecast', id: lastClosedStart, bar_t: lastClosedStart, t_issue: lastClosedStart + STEP,
         target_t: lastClosedStart + STEP + h * STEP, issue_lag_sec: lag,
@@ -117,6 +223,11 @@ async function cycle() {
         m_infoflow: +step.mInfo.toFixed(6),
         p_escrow: step.pEscrow == null ? null : +step.pEscrow.toFixed(6),
         escrow_tilt: +step.escrowTilt.toFixed(6),
+        p_macro: step.pMacro == null ? null : +step.pMacro.toFixed(6),
+        macro_active: step.macroActive ? 1 : 0, macro_tier: step.macroTier,
+        p_onchain: step.pOnchain == null ? null : +step.pOnchain.toFixed(6),
+        onchain_bias: +step.onchainBias.toFixed(6),
+        onchain_net24h: oc.diag && oc.diag.netFlow24h != null ? oc.diag.netFlow24h : null,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
         cfg_version: config.champion.version, cfg_hash: cfgHash(),
         input_digest: sha256(canonical(bars.slice(-48).map((b) => [b.t, b.c, b.v]))).slice(0, 16),
@@ -136,13 +247,25 @@ async function cycle() {
         log('agent: infoflow regime filter released');
       }
       stats.regimeWasNoisy = noisyNow;
+      // macro-event transparency: log when an event window engages/disengages while dampening is armed
+      const macroArmed = (config.champion.macroDamp || 0) > 0;
+      const macroNow = !!(stats.lastMacro && stats.lastMacro.active && macroArmed);
+      if (macroNow && !stats.macroWasActive) {
+        append({ type: 'agent', agent: 'macro', decision: 'event window engaged',
+          detail: `${stats.lastMacro.event} (${stats.lastMacro.date} ${stats.lastMacro.time_et} ET, tier ${stats.lastMacro.tier}); P(up) deviation x${stats.lastMacro.shrink}, cone widened` });
+        log('agent: macro event window engaged:', stats.lastMacro.event);
+      } else if (!macroNow && stats.macroWasActive) {
+        append({ type: 'agent', agent: 'macro', decision: 'event window released', detail: 'full model confidence restored' });
+        log('agent: macro event window released');
+      }
+      stats.macroWasActive = macroNow;
     }
   }
 
   // 3) agent review
   const resolved = joinLedger(records).resolved;
   const before = canonical(config);
-  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config });
+  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal });
   config = out.config;
   for (const ev of out.events) { append({ type: 'agent', ...ev }); log('agent:', ev.type, ev.decision || ev.action || ''); }
   if (canonical(config) !== before) saveConfig();
@@ -190,6 +313,25 @@ function writeSummary() {
         weight: config.champion.escrowWeight || 0,
         enabled: (config.champion.escrowWeight || 0) > 0,
       },
+      macro: stats.lastMacro ? {
+        active: stats.lastMacro.active,
+        tier: stats.lastMacro.tier,
+        event: stats.lastMacro.event,
+        date: stats.lastMacro.date,
+        time_et: stats.lastMacro.time_et,
+        minutes_to_event: stats.lastMacro.minutesToEvent == null || !isFinite(stats.lastMacro.minutesToEvent) ? null : +stats.lastMacro.minutesToEvent.toFixed(1),
+        shrink: stats.lastMacro.shrink,
+        weight: config.champion.macroDamp || 0,
+        enabled: (config.champion.macroDamp || 0) > 0,
+        dampening_applied: stats.lastMacro.active && (config.champion.macroDamp || 0) > 0,
+        next: nextEvents(now(), macroCal, 3),
+        computed_at: stats.lastMacro.computed_at,
+      } : null,
+      onchain: stats.lastOnchain ? {
+        ...stats.lastOnchain,
+        weight: config.champion.onchainWeight || 0,
+        enabled: (config.champion.onchainWeight || 0) > 0,
+      } : null,
     },
   });
   writeJson(path.join(DIR, 'summary.json'), summary);

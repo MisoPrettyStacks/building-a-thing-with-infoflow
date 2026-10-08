@@ -41,7 +41,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderCalendar(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -101,6 +101,113 @@ function renderCalendar() {
     $('calVerdict').textContent = 'collecting data';
     $('calN').textContent = esc && esc.n ? 'n=' + esc.n + ' scored · tilt window needs ≥10' : 'no scored forecasts yet';
   }
+}
+
+/* ---------------- macro events (experimental) ---------------- */
+function fmtCountdown(min) {
+  if (min == null || !isFinite(min)) return '—';
+  if (min < 0) return Math.abs(min) < 2 ? 'just released' : Math.round(-min) + 'm ago';
+  if (min < 60) return 'in ' + Math.round(min) + 'm';
+  if (min < 1440) return 'in ' + Math.floor(min / 60) + 'h ' + Math.round(min % 60) + 'm';
+  return 'in ' + Math.floor(min / 1440) + 'd ' + Math.floor((min % 1440) / 60) + 'h';
+}
+function renderMacro() {
+  if (!$('macNext')) return;
+  const m = summary && summary.extras && summary.extras.macro;
+  const banner = $('macBanner');
+  if (!m) {
+    ['macNext', 'macCount', 'macDamp', 'macVerdict'].forEach((id) => { $(id).textContent = '—'; });
+    $('macNextTier').textContent = 'waiting for runner…'; $('macDampNote').textContent = '—';
+    $('macN').textContent = '—'; $('macList').innerHTML = ''; banner.textContent = 'checking schedule…';
+    return;
+  }
+  if (m.active) {
+    banner.textContent = m.dampening_applied
+      ? '● EVENT WINDOW ACTIVE — ' + m.event + ' · forecasts dampened'
+      : '● EVENT WINDOW ACTIVE — ' + m.event + ' · measured only (weight 0)';
+    banner.style.color = '#ffb020';
+  } else {
+    banner.textContent = '○ No event window — full confidence';
+    banner.style.color = '';
+  }
+  const nx = (m.next && m.next[0]) || null;
+  $('macNext').textContent = nx ? nx.event : '—';
+  $('macNextTier').textContent = nx ? ('tier ' + nx.tier + ' · ' + nx.date + ' ' + nx.time_et + ' ET') : '—';
+  $('macCount').textContent = nx ? fmtCountdown(nx.minutes_until) : '—';
+  $('macDamp').textContent = m.active ? ('×' + m.shrink.toFixed(2) + ' (tier ' + m.tier + ')') : 'none';
+  $('macDampNote').textContent = m.enabled ? (m.active ? 'ACTIVE — dampening applied' : 'armed · no window') : 'weight 0 (scored only)';
+  const mc = summary.windows && summary.windows.all && summary.windows.all.macro;
+  if (mc && mc.eventWindow) {
+    const ew = mc.eventWindow;
+    const helps = ew.brierMacro < ew.brierBase;
+    $('macVerdict').textContent = helps ? 'helps ✓' : 'no edge yet';
+    $('macN').textContent = 'window Brier ' + ew.brierMacro.toFixed(5) + ' vs base ' + ew.brierBase.toFixed(5) + ' · n=' + ew.n;
+  } else {
+    $('macVerdict').textContent = 'collecting data';
+    $('macN').textContent = mc && mc.n ? 'n=' + mc.n + ' scored · window needs ≥10' : 'no scored forecasts yet';
+  }
+  $('macList').innerHTML = (m.next || []).map((e) =>
+    '<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid var(--line)">' +
+    '<span>' + esc(e.event) + ' <span class="muted">· tier ' + e.tier + ' · ' + e.date + ' ' + e.time_et + ' ET</span></span>' +
+    '<span class="muted">' + fmtCountdown(e.minutes_until) + '</span></div>').join('');
+}
+
+/* ---------------- on-chain flows (experimental) ---------------- */
+function renderOnchain() {
+  if (!$('ocFlow24')) return;
+  const o = summary && summary.extras && summary.extras.onchain;
+  if (!o) {
+    ['ocFlow24', 'ocFlow7', 'ocBias', 'ocWhale', 'ocBrier', 'ocSkill', 'ocStatus'].forEach((id) => { $(id).textContent = '—'; });
+    $('ocBiasNote').textContent = 'waiting for runner…'; $('ocWhaleNote').textContent = '—';
+    $('ocBrierN').textContent = '—'; $('ocSkillN').textContent = 'the meaningful read for a slow signal';
+    $('ocTracked').textContent = '—';
+    return;
+  }
+  const fmtXrp = (x) => x == null ? '—' : (x >= 0 ? '+' : '') + (x / 1e6).toFixed(2) + 'M';
+  $('ocFlow24').textContent = fmtXrp(o.netFlow24h);
+  $('ocFlow7').textContent = fmtXrp(o.netFlow7d);
+  $('ocBias').textContent = (o.bias >= 0 ? '+' : '') + o.bias.toFixed(4);
+  $('ocBiasNote').textContent = o.enabled ? 'ACTIVE — agent found OOS evidence' : (o.warmingUp ? 'warming up (<24h history)' : 'weight 0 (scored only)');
+  $('ocWhale').textContent = Math.abs(o.whalePulse) > 1e-6 ? ((o.whalePulse >= 0 ? '+' : '') + o.whalePulse.toFixed(4)) : 'none';
+  $('ocWhaleNote').textContent = o.activePulses ? o.activePulses + ' active pulse(s) · decays over 48h' : 'no whale transfers ≥10M XRP recently';
+  const oc = summary.windows && summary.windows.all && summary.windows.all.onchain;
+  if (oc) {
+    const helps = oc.brierOnchain < oc.brierBase;
+    $('ocBrier').textContent = helps ? 'helps ✓' : 'no edge yet';
+    $('ocBrierN').textContent = '15-min Brier ' + oc.brierOnchain.toFixed(5) + ' vs base ' + oc.brierBase.toFixed(5) + ' · n=' + oc.n;
+    const s = oc.skill24h;
+    if (s && s.hitRate != null) {
+      $('ocSkill').textContent = (s.hitRate > 0.5 ? 'edge ✓ ' : '') + (100 * s.hitRate).toFixed(1) + '%';
+      $('ocSkillN').textContent = 'sign(bias) vs 24h return · n=' + s.n + ' · baseline 50%';
+    } else {
+      $('ocSkill').textContent = 'collecting data';
+      $('ocSkillN').textContent = 'n=' + (s ? s.n : 0) + ' · needs ≥30 for a read';
+    }
+  } else {
+    $('ocBrier').textContent = 'collecting data'; $('ocBrierN').textContent = 'no scored forecasts yet';
+    $('ocSkill').textContent = 'collecting data';
+  }
+  $('ocStatus').textContent = o.degraded ? 'degraded' : (o.warmingUp ? 'warming up' : 'live');
+  $('ocTracked').textContent = o.totalTracked != null ? (o.totalTracked / 1e6).toFixed(2) + 'M XRP tracked' : '—';
+  // sparkline of the slow bias history
+  try {
+    const cv = $('ocSpark'), ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    const series = (o.biasSeries || []).map((p) => p[1]);
+    if (series.length > 1) {
+      const lo = -0.03, hi = 0.03;
+      const yOf = (v) => H - 3 - ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * (H - 6);
+      ctx.strokeStyle = 'rgba(140,160,190,.35)'; ctx.beginPath();
+      ctx.moveTo(0, yOf(0)); ctx.lineTo(W, yOf(0)); ctx.stroke();
+      ctx.strokeStyle = '#7fd4a8'; ctx.lineWidth = 1.5; ctx.beginPath();
+      series.forEach((v, i) => {
+        const x = (i / (series.length - 1)) * W;
+        i ? ctx.lineTo(x, yOf(v)) : ctx.moveTo(x, yOf(v));
+      });
+      ctx.stroke();
+    }
+  } catch { /* canvas optional */ }
 }
 
 /* ---------------- live price + chart ---------------- */

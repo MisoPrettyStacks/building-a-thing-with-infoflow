@@ -60,6 +60,8 @@
   <div><span class="k">P(up) 15-min</span> <span class="v" id="sP">—</span></div>
   <div><span class="k">Regime</span> <span class="v" id="sReg">—</span></div>
   <div><span class="k">Escrow</span> <span class="v" id="sEsc">—</span></div>
+  <div><span class="k">Macro</span> <span class="v" id="sMacro">—</span></div>
+  <div><span class="k">On-chain</span> <span class="v" id="sOc">—</span></div>
   <div><span class="k">Data age</span> <span class="v" id="sAge">—</span></div>
 </div>
 
@@ -74,7 +76,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
 const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
 const CB = 'https://api.exchange.coinbase.com';
-let live = null; // { teBx, teXb, zBx, zXb, pe, pUp, escDays, escTilt, computedAt }
+let live = null; // { teBx, teXb, zBx, zXb, pe, pUp, escDays, escTilt, macroActive, macroEvent, ocBias, computedAt }
 
 async function fetchSummary() {
   try {
@@ -83,6 +85,8 @@ async function fetchSummary() {
     const s = await r.json();
     const inf = (s.extras || {}).infoflow || {};
     const cal = (s.extras || {}).calendar || {};
+    const mac = (s.extras || {}).macro || {};
+    const oc = (s.extras || {}).onchain || {};
     live = {
       teBx: inf.te_btc_xrp ?? 0, teXb: inf.te_xrp_btc ?? 0,
       zBx: inf.z_btc_xrp ?? 0, zXb: inf.z_xrp_btc ?? 0,
@@ -92,6 +96,9 @@ async function fetchSummary() {
       q: s.latest ? s.latest.q : null,
       escDays: cal.days_since_escrow ?? null,
       escTilt: cal.tilt ?? 0,
+      macroActive: !!mac.active,
+      macroEvent: mac.event || null,
+      ocBias: oc.bias ?? null,
       computedAt: s.generated_at,
     };
     document.getElementById('waiting').classList.add('hidden');
@@ -367,6 +374,8 @@ function refreshHud() {
   set('sP', (live.pUp * 100).toFixed(1) + '%');
   set('sReg', live.pe > 0.85 ? 'noisy (' + live.pe.toFixed(2) + ')' : 'ordered (' + live.pe.toFixed(2) + ')');
   set('sEsc', live.escDays == null ? '—' : 'day +' + live.escDays + (live.escTilt > 0 ? ' · tilt −' + live.escTilt.toFixed(4) : ''));
+  set('sMacro', live.macroActive ? '◉ ' + (live.macroEvent || 'event window') : '○ quiet', live.macroActive ? 'sig' : '');
+  set('sOc', live.ocBias == null ? '—' : (live.ocBias >= 0 ? '+' : '') + live.ocBias.toFixed(4));
   const ageS = live.computedAt ? Math.max(0, Math.round((Date.now() - Date.parse(live.computedAt)) / 1000)) : null;
   set('sAge', ageS == null ? '—' : ageS < 90 ? ageS + 's' : Math.round(ageS / 60) + 'm');
   setLabel(flowLabelA,

@@ -149,4 +149,121 @@ function fixture(n, { phi = 0, seed = 11, sigma = 0.0012 } = {}) {
   ok(!verifyChain(dir).ok, 'tampering is detected');
 }
 
+// --- macro calendar: ET conversion, windows, engine behavior
+import { parseCalendar, macroProximity, nextEvents, etOffsetMinutes, eventUtcSec } from '../lib/macro.js';
+import { computeOnchainSignal, detectWhaleTransfers } from '../lib/onchain.js';
+import { buildSummary } from '../lib/summary.js';
+const macroCal = parseCalendar(JSON.parse(fs.readFileSync(new URL('../data/macro-calendar.json', import.meta.url), 'utf8')));
+{
+  near(etOffsetMinutes('2026-01-28'), -300, 1e-9, 'EST offset');
+  near(etOffsetMinutes('2026-07-29'), -240, 1e-9, 'EDT offset');
+  near(eventUtcSec({ date: '2026-01-28', time_et: '14:00' }), Date.UTC(2026, 0, 28, 19, 0) / 1000, 1e-9, 'FOMC Jan28 -> 19:00Z');
+  near(eventUtcSec({ date: '2026-10-14', time_et: '08:30' }), Date.UTC(2026, 9, 14, 12, 30) / 1000, 1e-9, 'CPI Oct14 -> 12:30Z');
+  const t1 = macroCal.filter((e) => e.tier === 1);
+  const t1_2026 = t1.filter((e) => e.date.startsWith('2026'));
+  ok(t1_2026.length === 32, `32 tier-1 events in 2026 (8 FOMC + 12 CPI + 12 NFP), got ${t1_2026.length}`);
+  ok(t1.length === 33, `33 tier-1 total incl. the 2027 FOMC stub, got ${t1.length}`);
+  const fomc = Date.UTC(2026, 0, 28, 19, 0) / 1000;
+  const at = macroProximity(fomc, macroCal);
+  ok(at.active && at.tier === 1 && Math.abs(at.shrink - 0.85) < 1e-12, 'tier-1 window active at release');
+  const before = macroProximity(fomc - 2 * 3600, macroCal);
+  ok(!before.active, 'no window 2h before release');
+  const nx = nextEvents(Date.UTC(2026, 9, 7, 12, 0) / 1000, macroCal, 3);
+  ok(nx[0].event === 'CPI' && nx[0].date === '2026-10-14', `next event after Oct 7 is Oct-14 CPI, got ${nx[0].event} ${nx[0].date}`);
+}
+// engine: macro is a no-op at weight 0, shrinks + widens at weight 1
+{
+  const a = fixture(1500);
+  const r0 = walkForward(a, DEFAULT_CONFIG).steps;
+  const r1 = walkForward(a, DEFAULT_CONFIG, { macroCal }).steps;
+  ok(r0.every((s, k) => s.p === r1[k].p), 'macroCal at weight 0 is byte-identical');
+  ok(r1.every((s) => s.pMacro !== null), 'pMacro what-if recorded when idle');
+  // bars straddling the Oct-14 CPI release (12:30 UTC): first forecast 9h before, last bar inside the window
+  const tEv = Date.UTC(2026, 9, 14, 12, 30) / 1000;
+  const bars = [];
+  let lp = Math.log(1.4);
+  const rng = mulberry32(21);
+  for (let i = 0; i < 420; i++) {
+    const r = 0.001 * Math.sin(i / 9) + 0.0008 * (rng() - 0.5);
+    lp += r; const c = Math.exp(lp);
+    bars.push({ t: tEv - 123900 + i * 300, o: c, h: c, l: c, c, v: 1000 });
+  }
+  const sOff = walkForward(bars, DEFAULT_CONFIG, { macroCal }).steps;
+  const sOn = walkForward(bars, { ...DEFAULT_CONFIG, macroDamp: 1 }, { macroCal }).steps;
+  const inWin = sOff.map((s, k) => ({ s, k })).filter(({ s }) => s.macroActive);
+  ok(inWin.length > 10, `many bars inside the CPI window (${inWin.length})`);
+  ok(inWin.every(({ s }) => s.macroTier === 1), 'window tier is 1');
+  ok(inWin.every(({ s, k }) => Math.abs(sOn[k].praw - 0.5) <= Math.abs(s.praw - 0.5) + 1e-15), 'dampening shrinks |praw-0.5|');
+  ok(inWin.every(({ k }) => sOn[k].pMacro === null), 'pMacro null when dampening applied');
+  const fOff = forecastLatest(bars, DEFAULT_CONFIG, { macroCal });
+  const fOn = forecastLatest(bars, { ...DEFAULT_CONFIG, macroDamp: 1 }, { macroCal });
+  ok(fOn.step.macroActive, 'latest bar inside window');
+  const spread = (q) => q[6] - q[0];
+  ok(spread(fOn.step.q) > spread(fOff.step.q) * 1.1, 'cone widened in event window');
+}
+
+// --- on-chain slow signal: math properties
+{
+  const EX = ['rEx1', 'rEx2'];
+  const T = 1.75e9;
+  const snaps = [];
+  for (let h = 0; h <= 30; h++) snaps.push({ t: T + h * 3600, balances: { rEx1: 600000, rEx2: 400000 } });
+  const flat = computeOnchainSignal({ snapshots: snaps, exchangeAddrs: EX, nowSec: T + 30 * 3600 });
+  ok(!flat.warmingUp && Math.abs(flat.bias) < 1e-12, 'flat balances -> zero bias');
+  // 6% inflow over 24h -> bearish (negative) bias, bounded
+  const inflow = snaps.map((s, i) => (i >= 18 ? { t: s.t, balances: { rEx1: 636000, rEx2: 424000 } } : s));
+  const neg = computeOnchainSignal({ snapshots: inflow, exchangeAddrs: EX, nowSec: T + 30 * 3600 });
+  ok(neg.bias < -1e-4 && neg.bias >= -0.02, `inflow -> bearish bias ${neg.bias.toFixed(5)}`);
+  ok(neg.netFlow24h > 59000 && neg.netFlow24h < 61000, 'netFlow24h measured');
+  const outflow = snaps.map((s, i) => (i >= 18 ? { t: s.t, balances: { rEx1: 564000, rEx2: 376000 } } : s));
+  const pos = computeOnchainSignal({ snapshots: outflow, exchangeAddrs: EX, nowSec: T + 30 * 3600 });
+  ok(pos.bias > 1e-4, 'outflow -> bullish bias');
+  // warming up with <24h history
+  const short = computeOnchainSignal({ snapshots: snaps.slice(0, 5), exchangeAddrs: EX, nowSec: T + 5 * 3600 });
+  ok(short.warmingUp && short.bias === 0, 'abstains while warming up');
+  // EMA smoothing: a spike does not instantly saturate
+  const spike = computeOnchainSignal({ snapshots: inflow, exchangeAddrs: EX, prev: { ema: 0 }, nowSec: T + 30 * 3600 });
+  ok(Math.abs(spike.ema) < Math.abs(spike.rawBias) * 0.5, 'EMA smooths the raw signal');
+  // whale alerts
+  const seen = new Set();
+  const pays = [
+    { hash: 'h1', t: T, from: 'rSomeone', to: 'rEx1', xrp: 15e6 },
+    { hash: 'h2', t: T, from: 'rEx2', to: 'rElse', xrp: 25e6 },
+    { hash: 'h3', t: T, from: 'rA', to: 'rB', xrp: 50e6 }, // not watchlist -> ignored
+    { hash: 'h4', t: T, from: 'rEx1', to: 'rEx2', xrp: 12e6 }, // internal reshuffle
+  ];
+  const watch = [{ address: 'rEx1', label: 'Ex1', kind: 'exchange' }, { address: 'rEx2', label: 'Ex2', kind: 'exchange' }];
+  const alerts = detectWhaleTransfers(pays, watch, seen);
+  ok(alerts.length === 3, `3 watchlist whale payments detected, got ${alerts.length}`);
+  ok(alerts[0].tilt === -0.01 && alerts[1].tilt === 0.01 && alerts[2].tilt === 0, 'whale pulse directions');
+  ok(detectWhaleTransfers(pays, watch, seen).length === 0, 'seen hashes deduped');
+}
+// engine: on-chain bias is a no-op at weight 0, shifts p at weight 1
+{
+  const a = fixture(1500);
+  const r0 = walkForward(a, DEFAULT_CONFIG).steps;
+  const r1 = walkForward(a, DEFAULT_CONFIG, { onchain: { bias: 0.01 } }).steps;
+  ok(r0.every((s, k) => s.p === r1[k].p), 'onchain at weight 0 is byte-identical');
+  ok(r1.every((s) => s.pOnchain !== null && Math.abs(s.onchainBias - 0.01) < 1e-12), 'pOnchain what-if recorded');
+  const r2 = walkForward(a, { ...DEFAULT_CONFIG, onchainWeight: 1 }, { onchain: { bias: 0.01 } }).steps;
+  ok(r2.every((s, k) => s.pOnchain === null), 'pOnchain null when bias applied');
+  const k = r2.length - 1;
+  near(r2[k].p - r0[k].p, 0.01, 1e-9, 'onchain bias shifts p additively');
+}
+// scorer: on-chain dual scoring (15-min Brier + 24h directional skill)
+{
+  const T = 1.76e9, N = 700;
+  const records = [];
+  for (let i = 0; i < N; i++) {
+    const id = 'f' + i, ti = T + i * 300;
+    records.push({ type: 'forecast', id, t_issue: ti, p: 0.5, m: [0.5, 0.5, 0.5, 0.5], c0: 1 + i * 0.0002, p_onchain: 0.52, onchain_bias: 0.01 });
+    records.push({ type: 'resolution', id, y: 1 });
+  }
+  const sum = buildSummary({ records, config: { champion: { ...DEFAULT_CONFIG }, agent: {}, history: [], previous: null } });
+  const oc = sum.windows.all.onchain;
+  ok(oc && oc.n === N, 'onchain scored');
+  ok(oc.brierOnchain < oc.brierBase, 'helpful bias improves 15-min Brier');
+  ok(oc.skill24h.n === 415 && Math.abs(oc.skill24h.hitRate - 1) < 1e-12, `24h skill read perfect on uptrend (n=${oc.skill24h.n})`);
+}
+
 console.log(`selftest: ${passed} checks passed`);

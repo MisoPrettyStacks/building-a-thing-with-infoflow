@@ -116,6 +116,38 @@
   <p class="muted" style="font-size:12px;margin-bottom:0">The effect is small and fully predictable — that is the point. History shows only mild 7-day swings around releases; this tilt is capped at 0.01 on P(up) and fades by the 7th. If the scoreboard below ever shows it hurting, the agent keeps it at weight zero.</p>
 </section>
 
+<section id="macro" class="card">
+  <h2>Macro events <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Scheduled US macro releases (FOMC, CPI, payrolls…) reliably spike volatility. The surprise direction is a coin flip, so inside an event window the model does the humble thing: it shrinks its confidence toward 0.5 and widens the forecast cone instead of guessing.</p>
+  <div id="macBanner" class="badge" style="font-size:13px;margin-bottom:12px">checking schedule…</div>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Next release</div><div class="v" id="macNext" style="font-size:15px">—</div><div class="s" id="macNextTier">—</div></div>
+    <div class="stat"><div class="k">Countdown</div><div class="v" id="macCount">—</div><div class="s">to release time (ET)</div></div>
+    <div class="stat"><div class="k">Dampening</div><div class="v" id="macDamp" style="font-size:15px">—</div><div class="s" id="macDampNote">—</div></div>
+    <div class="stat"><div class="k">OOS verdict (event windows)</div><div class="v" id="macVerdict" style="font-size:15px">—</div><div class="s" id="macN">—</div></div>
+  </div>
+  <div id="macList" style="margin-top:12px;font-size:13px"></div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">Windows: ±60 min around tier-1 releases (FOMC decisions, CPI, nonfarm payrolls), ±30 min around tier-2 (PPI, retail sales, ISM). Inside a window the P(up) deviation is multiplied by 0.85 (tier-1) or 0.92 (tier-2) and the cone bands widen by the inverse. The schedule is hardcoded in <code>data/macro-calendar.json</code> from the official Fed/BLS/Census/ISM calendars — no data feed to break. Scored out-of-sample like everything else; the agent only arms it with evidence.</p>
+</section>
+
+<section id="onchain" class="card">
+  <h2>On-chain flows <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">A slow regime read from the XRP Ledger: net flows into/out of tracked exchange wallets, smoothed so it hangs in there for hours-to-days rather than jittering on 15-minute noise. Whale-sized transfers (&ge;10M XRP) add a temporary pulse that decays over 48h.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Exchange net flow · 24h</div><div class="v" id="ocFlow24">—</div><div class="s">XRP · + = inflow (bearish)</div></div>
+    <div class="stat"><div class="k">Exchange net flow · 7d</div><div class="v" id="ocFlow7">—</div><div class="s">XRP · needs 7d of history</div></div>
+    <div class="stat"><div class="k">Regime bias</div><div class="v" id="ocBias">—</div><div class="s" id="ocBiasNote">added to P(up) when armed</div></div>
+    <div class="stat"><div class="k">Whale pulse</div><div class="v" id="ocWhale">—</div><div class="s" id="ocWhaleNote">decays over 48h</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">15-min Brier verdict</div><div class="v" id="ocBrier" style="font-size:15px">—</div><div class="s" id="ocBrierN">—</div></div>
+    <div class="stat"><div class="k">24h directional skill</div><div class="v" id="ocSkill" style="font-size:15px">—</div><div class="s" id="ocSkillN">the meaningful read for a slow signal</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="ocStatus" style="font-size:15px">—</div><div class="s" id="ocTracked">—</div></div>
+    <div class="stat"><div class="k">Bias history</div><div class="v" style="font-size:12px"><canvas id="ocSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">slow EMA of the flow signal</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">Honest footnote: on-chain flow is a regime signal, not a 15-minute predictor — its edge, if any, plays out over hours to days, which is why the page scores it both ways and treats the 24h read as the verdict. Balances come from the public XRP Ledger cluster (no keys); the watchlist is a handful of verified exchange wallets in <code>data/onchain-watchlist.json</code> — every address confirmed via explorer labels, never guessed. If the ledger API is unreachable the member abstains (bias 0) and the forecast never breaks.</p>
+</section>
+
 <section id="score" class="card">
   <h2>Live out-of-sample accuracy</h2>
   <p class="muted" style="margin-top:0">Every number below is computed from the public, hash-chained ledger of forecasts that were issued <em>before</em> their outcome existed. Nothing is back-filled.</p>
@@ -226,6 +258,55 @@
 
   <p><b>Threshold-contract (strike ladder) score.</b> The same predictive distribution prices any “above strike $K$ at the target time” question: $\Pr(S>x)=T_\nu(\mu'-x/s)$. Six fixed strikes at $x\in\{-40,-25,-10,+10,+25,+40\}$ bps around the price at issue are scored with the Brier score and compared with per-strike climatology. Because strikes far from spot are easy to call, this number is much lower than the direction Brier and depends entirely on how the strikes are spaced; it is reported separately and never mixed with the direction score. A directional Brier near 0.08 is not achievable on a near-martingale; a ladder Brier in that region only reflects easy strikes.</p>
 
+  <h3>9. Experimental: transfer entropy (information flow)</h3>
+  <p>Directed information flow from BTC to XRP is measured with <b>transfer entropy</b> (Schreiber 2000). With one-step histories ($k=l=1$) and $y_{t+1}$ the next target symbol:</p>
+  $$\mathrm{TE}(X\to Y)=\sum_{y_{t+1},y_t,x_t} p(y_{t+1},y_t,x_t)\;\log\frac{p(y_{t+1}\mid y_t,x_t)}{p(y_{t+1}\mid y_t)}\quad\text{(nats, floored at 0)}.$$
+  <p>In plain English: how much knowing BTC's current state reduces uncertainty about XRP's <i>next</i> move, beyond what XRP's own current state already tells you. Implementation, exactly as coded in <code>lib/infoflow.js</code>:</p>
+  <ul>
+    <li><b>Data:</b> 5-minute log returns of BTC-USD and XRP-USD (Coinbase), timestamps aligned, over a rolling 24-hour window (288 bars), recomputed for every bar; at least 100 valid bars required, otherwise the member abstains.</li>
+    <li><b>Discretization:</b> within each window, returns are cut into 3 quantile bins (down / flat / up) — the bin edges are that window's own tertiles, so the symbols always adapt to current volatility.</li>
+    <li><b>Significance:</b> 50 shuffle surrogates of the source series (shuffling destroys coupling while preserving marginals); $z=(\mathrm{TE}-\mathrm{mean}_{\text{null}})/\mathrm{sd}_{\text{null}}$. Flow counts as real only if $z&gt;2$.</li>
+    <li><b>Vote:</b> with $\mathrm{net}=\mathrm{TE}(\mathrm{BTC}\to\mathrm{XRP})-\mathrm{TE}(\mathrm{XRP}\to\mathrm{BTC})$ and the last three 5-minute BTC log returns (a 15-minute move),
+    $$v=\tfrac12+\min(0.15,\max(0,5\cdot\mathrm{net}))\cdot\operatorname{sign}(r^{\mathrm{BTC}}_t+r^{\mathrm{BTC}}_{t-1}+r^{\mathrm{BTC}}_{t-2})$$
+    <i>only</i> when $\mathrm{net}&gt;0$ and $z_{\mathrm{BTC}\to\mathrm{XRP}}&gt;2$; otherwise the member abstains ($v=\tfrac12$). The 0.15 cap keeps any single vote small.</li>
+    <li><b>How it feeds the forecast:</b> blended as a fifth member, $\tilde p\leftarrow(1-w)\tilde p+w\cdot v$ with $w=\,$<code>infoflowWeight</code> (default 0).</li>
+    <li><b>Validation:</b> the member's out-of-sample Brier is scored on every forecast and shown against the ensemble Brier on the page. Honest caveat: the literature measures information half-life in <i>milliseconds</i> — at 15-minute horizons this edge may be near zero, and the live scoreboard, not the theory, is the verdict.</li>
+  </ul>
+
+  <h3>10. Experimental: permutation-entropy regime filter</h3>
+  <p><b>Permutation entropy</b> (Bandt &amp; Pompe 2002) measures how ordered a series is. With ordinal patterns $\pi$ of order 3 (6 possible patterns) over the same 24h return window:</p>
+  $$\mathrm{PE}=-\frac{\sum_\pi p(\pi)\log p(\pi)}{\log 6}\in[0,1],$$
+  <p>where 0 means perfectly ordered (trending) and 1 means pure noise. When $\mathrm{PE}&gt;0.85$ the market is in a noise regime and the model distrusts itself: the pooled probability is pulled 10% toward 0.5, i.e. $\tilde p\leftarrow\tfrac12+0.9\,(\tilde p-\tfrac12)$, before the infoflow vote is blended in. This guard only engages when <code>infoflowWeight</code> &gt; 0; every engagement and release is written to the agent log.</p>
+
+  <h3>11. Experimental: escrow calendar</h3>
+  <p>Ripple releases 1B XRP from escrow on the 1st of each month and re-locks 60–90% of it within days — fully predictable, so the price impact is small (historical 7-day swings roughly −3.1% to +1.7%). The model carries a tiny bearish tilt. With $d$ = whole days since the 1st (UTC) and $\rho$ the re-lock ratio (manual input, default 0.75 = historical average):</p>
+  $$\mathrm{tilt}(d)=0.01\left(1-\frac{d}{6}\right)\cdot\frac{1-\rho}{1-0.75},\qquad d=0,\dots,6,$$
+  <p>and 0 afterwards: at most 0.01 off $P(\text{up})$ on the 1st, decaying linearly to 0 by the 7th, stronger when the re-lock is lower (more XRP stays out). Applied as $\tilde p\leftarrow\tilde p-\mathrm{tilt}\cdot$<code>escrowWeight</code> (default 0). <code>escrowRelock</code> is a factual manual input the agent is never allowed to tune. Validated out-of-sample by comparing the what-if tilted series against the issued forecast <i>inside the 1st–7th window</i> on the scoreboard.</p>
+
+  <h3>12. Experimental: macro event calendar</h3>
+  <p>Monthly/quarterly macro <i>levels</i> are step functions — useless at 15-minute horizons — but the <i>release events</i> are scheduled, public, and reliably spike volatility. The surprise direction is a coin flip, so the model responds with humility, not a bet. The schedule lives in <code>data/macro-calendar.json</code> (2026 dates taken from the official Federal Reserve, BLS, Census and ISM calendars; trivially extendable into 2027):</p>
+  <ul>
+    <li><b>Tier 1</b> (±60 min window): FOMC decisions (2:00pm ET), CPI and nonfarm payrolls (8:30am ET).</li>
+    <li><b>Tier 2</b> (±30 min window): PPI, advance retail sales (8:30am ET), ISM manufacturing (10:00am ET).</li>
+  </ul>
+  <p>Inside a window, with $w=\,$<code>macroDamp</code> $\in\{0,0.5,1\}$ (default 0), the $P(\text{up})$ deviation is multiplied by $1-w\,(1-\sigma)$ where $\sigma=0.85$ (tier 1) or $0.92$ (tier 2): at full dampening the deviation shrinks to 85% / 92%. The forecast cone widens by the inverse ($1/0.85\approx1.18$ tier-1): the Student-t scale $s_t$ is multiplied, so every quantile band and the strike ladder widen coherently. Validated by event-window out-of-sample Brier on the page; a visible “event window active” indicator shows when dampening applies.</p>
+
+  <h3>13. Experimental: on-chain exchange flows (slow regime signal)</h3>
+  <p>A deliberately <i>slow</i> signal from the XRP Ledger. It does not vote on 15-minute windows; it emits a persistent regime bias that hangs in there until the flow regime changes.</p>
+  <ul>
+    <li><b>Watchlist</b> (<code>data/onchain-watchlist.json</code>): a handful of exchange wallets whose labels were verified via explorer APIs before inclusion — never guessed. Balances are read from the public XRPL cluster each cycle; no keys, no chain scanning.</li>
+    <li><b>Net flow:</b> $F_{24}=\sum(\text{balance}_{\text{now}}-\text{balance}_{24\text{h ago}})$ over exchange wallets from our <i>own</i> balance snapshots (history starts empty and warms up over 24h). Inflow ($F&gt;0$) = distribution/sell pressure building (bearish); outflow = accumulation (bullish).</li>
+    <li><b>Bias:</b> with $f_{24}=F_{24}/\text{tracked}$, $f_{7d}$ likewise,
+    $$b_{\text{raw}}=-\big(0.012\cdot\mathrm{clip}(f_{24}/0.05,-1,1)+0.008\cdot\mathrm{clip}(f_{7d}/0.10,-1,1)\big),$$
+    $$b_t=\mathrm{clip}\big((1-\alpha)b_{t-1}+\alpha\,b_{\text{raw}},\,-0.02,\,0.02\big),\qquad\alpha=0.15,$$
+    i.e. a 5% daily inflow (or 10% weekly) saturates its component; the EMA ($\alpha=0.15$) keeps it slow. Applied as $\tilde p\leftarrow\tilde p+b_t\cdot$<code>onchainWeight</code> (default 0).</li>
+    <li><b>Whale alerts:</b> any single Payment $\ge$ 10M XRP touching a watchlist wallet adds a temporary pulse — $-0.01$ for large inflows to exchanges (distribution-like), $+0.01$ for large outflows (accumulation-like), $\pm0.005$ for tracked-whale moves — decaying linearly to zero over 48h, logged to the agent log.</li>
+    <li><b>Validation, two ways:</b> (1) the standard 15-minute Brier contribution of the what-if series; (2) the 24h directional skill — does $\operatorname{sign}(b_t)$ match the sign of the 24h forward return (taken from the ledger's own later forecasts, so no lookahead)? The 24h read is the meaningful one: on-chain edge plays out over hours to days. If the XRPL API is unreachable the member abstains (bias 0) and the forecast never breaks.</li>
+  </ul>
+
+  <h3>14. How experimental members earn weight</h3>
+  <p>Every experimental member — transfer entropy, escrow calendar, macro dampening, on-chain bias — starts at weight <b>0</b>: it is computed and scored on every forecast but cannot move the published probability. Promotion happens only through the accuracy agent's challenger gate: a candidate weight is replayed walk-forward over a held-out block of recent bars, and it is adopted only if the Brier improvement clears a minimum effect size, a Diebold–Mariano test with Bonferroni correction over all candidates, and stability across both halves of the block — otherwise the champion is kept and the attempt is logged with the reason. Manual factual inputs (the escrow re-lock ratio) are never tuned by the agent. In short: <i>no theory gets weight without out-of-sample evidence; the scoreboard is the verdict.</i></p>
+
   <h3>8. The accuracy agent: how it improves without deviating</h3>
   <ol>
     <li><b>Confidence guard (shrinkage).</b> From live data the agent computes the ridge-regularised optimal shrinkage, the minimiser of $\sum_i(\tfrac12+\lambda(\tilde p_i-\tfrac12)-y_i)^2+\kappa\lambda^2$:
@@ -287,6 +368,8 @@
     <li>Guo, C., Pleiss, G., Sun, Y. &amp; Weinberger, K. Q. (2017). On calibration of modern neural networks. <i>ICML</i>.</li>
     <li>J.P. Morgan/Reuters (1996). <i>RiskMetrics — Technical Document</i>, 4th ed.</li>
     <li>Fama, E. F. (1970). Efficient capital markets: a review of theory and empirical work. <i>Journal of Finance</i> 25(2), 383–417.</li>
+    <li>Schreiber, T. (2000). Measuring information transfer. <i>Physical Review Letters</i> 85(2), 461–464.</li>
+    <li>Bandt, C. &amp; Pompe, B. (2002). Permutation entropy: a natural complexity measure for time series. <i>Physical Review Letters</i> 88(17), 174102.</li>
   </ol>
   <p class="muted" style="font-size:13px">Data: Coinbase Exchange public market-data API (candles, ticker, WebSocket feed); cross-checks from the Kraken and Bitstamp public ticker endpoints.</p>
 </section>
