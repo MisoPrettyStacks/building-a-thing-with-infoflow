@@ -18,6 +18,7 @@ import { opalAnswer, opalIsIpProbe, opalRepeatRefusal } from './lib/opalchat.js'
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
 const f = (x, d = 4) => (x === null || x === undefined || !isFinite(x) ? '—' : Number(x).toFixed(d));
 const pct = (x, d = 2) => (x === null || x === undefined || !isFinite(x) ? '—' : (100 * x).toFixed(d) + '%');
 const usd = (x, d = 4) => (isFinite(x) ? '$' + Number(x).toFixed(d) : '—');

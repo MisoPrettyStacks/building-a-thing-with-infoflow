@@ -34,12 +34,15 @@ const summary = buildSummary({ records, config: out.config, agent: { events: ag,
 const els = {};
 const noopCtx = new Proxy(function () {}, { get: (_, k) => (k === 'measureText' ? () => ({ width: 10 }) : noopCtx), set: () => true, apply: () => noopCtx });
 const mk = (id) => ({ id, style: {}, className: '', textContent: '', innerHTML: '', checked: true, clientWidth: 800, clientHeight: 300, width: 0, height: 0,
-  classList: { toggle() {}, add() {}, remove() {} }, addEventListener() {}, getContext: () => noopCtx, appendChild() {}, click() {}, remove() {} });
-globalThis.document = { getElementById: (id) => (els[id] ||= mk(id)), querySelectorAll: () => [], createElement: () => mk('x'), body: mk('body'), documentElement: {} };
+  classList: { toggle() {}, add() {}, remove() {} }, addEventListener() {}, getContext: () => noopCtx, appendChild() {}, click() {}, remove() {},
+  setAttribute() {}, getAttribute: () => null, removeAttribute() {} });
+globalThis.document = { getElementById: (id) => (els[id] ||= mk(id)), querySelectorAll: () => [], createElement: () => mk('x'), body: mk('body'), documentElement: {}, addEventListener() {}, hidden: false };
 globalThis.window = { devicePixelRatio: 1, addEventListener() {}, renderMathInElement: null };
 globalThis.location = { hostname: 'example.com', pathname: '/', search: '' };
 globalThis.getComputedStyle = () => ({ getPropertyValue: () => '#888888' });
 globalThis.requestAnimationFrame = (fn) => fn();
+globalThis.IntersectionObserver = class { constructor() {} observe() {} unobserve() {} disconnect() {} };
+globalThis.Image = class { constructor() { this.src = ''; } };
 globalThis.URL.createObjectURL = () => 'blob:x';
 const errors = [];
 process.on('unhandledRejection', (e) => errors.push(e));
