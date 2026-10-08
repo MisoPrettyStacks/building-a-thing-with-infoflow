@@ -79,6 +79,18 @@
 
 <div class="hud" id="hint">drag to orbit · scroll to zoom · auto-rotates when idle</div>
 <div class="hud" id="enterWrap"><a href="index.html" target="_top" id="enterLink">ENTER</a></div>
+<script>
+// ENTER behavior: inside the intro overlay it just closes the overlay;
+// everywhere else it goes to the main forecast page.
+(function () {
+  var q = new URLSearchParams(location.search);
+  if (q.has('intro') && window.parent !== window) {
+    document.getElementById('enterLink').addEventListener('click', function (e) {
+      e.preventDefault();
+      window.parent.postMessage('lmEnterForecast', '*');
+    });
+  }
+})();
 <div id="waiting"><span class="pulse">awaiting live data…</span></div>
 
 <script type="module">

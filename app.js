@@ -189,6 +189,10 @@ function initIntro3d() {
   }
   $('intro3dEnter').addEventListener('click', dismiss);
   $('intro3dClose').addEventListener('click', dismiss);
+  // ENTER inside the intro 3D view dismisses the overlay (same as the Enter button)
+  window.addEventListener('message', (e) => {
+    if (e && e.data === 'lmEnterForecast') dismiss();
+  });
 }
 
 /* ---------------- topological features (experimental) ---------------- */
