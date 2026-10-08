@@ -11,7 +11,7 @@ import { buildLabNote, LAB_LOG_CAP } from '../lib/labnote.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
-import { computeOnchainSignal, detectWhaleTransfers } from '../lib/onchain.js';
+import { computeOnchainSignal, detectWhaleTransfers, WHALE_DECAY_SEC } from '../lib/onchain.js';
 import { computeTopologyWindow, diagramDistance, median, stdev, TAKENS_DIM, TAKENS_TAU, RIPS_N, TOPO_MIN_HISTORY, TOPO_HISTORY_CAP } from '../lib/topology.js';
 import { appendRecord, readLedger, readJson, writeJson, verifyChain, canonical, sha256, ledgerFiles } from '../lib/io.js';
 import { buildSummary, joinLedger } from '../lib/summary.js';
@@ -117,6 +117,9 @@ async function updateOnchain(t) {
   watchlist.forEach((w, i) => { if (balResults[i] != null) { balances[w.address] = +balResults[i].toFixed(2); okCount++; } });
   if (okCount === 0) {
     ocState.failures = (ocState.failures || 0) + 1;
+    ocState.pollLog = Array.isArray(ocState.pollLog) ? ocState.pollLog : [];
+    ocState.pollLog.push({ t, ok: 0, total: watchlist.length, snapshots: ocState.snapshots.length, whales: 0, bias: 0, degraded: true });
+    ocState.pollLog = ocState.pollLog.slice(-30);
     saveOcState();
     const degraded = ocState.failures >= 3;
     if (degraded && !stats.ocDegraded) {
@@ -124,7 +127,7 @@ async function updateOnchain(t) {
       log('agent: onchain feed degraded, bias=0');
     }
     stats.ocDegraded = degraded;
-    return { bias: 0, degraded, diag: { degraded, failures: ocState.failures } };
+    return { bias: 0, degraded, diag: { degraded, failures: ocState.failures, pollLog: ocState.pollLog.slice(-30), signals: (ocState.signals || []).slice(-25), snapshotCount: ocState.snapshots.length, warmingUp: true } };
   }
   ocState.failures = 0; stats.ocDegraded = false;
   // snapshot (one per cycle; cap ~8 days at 5-min cadence)
@@ -133,8 +136,21 @@ async function updateOnchain(t) {
   // whale-alert scan: recent payments per watchlist wallet
   const payLists = await Promise.all(watchlist.map((w) => recentPayments(w.address, 15)));
   const alerts = detectWhaleTransfers(payLists.flat().filter(Boolean), watchlist, ocSeen);
+  // --- signal ledger: plain-English running account of every signal given,
+  // its projected effect, and the date the effect runs through (persisted) ---
+  ocState.signals = Array.isArray(ocState.signals) ? ocState.signals : [];
+  const fmtT = (sec) => new Date(sec * 1000).toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+  const fmtFx = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(3);
   for (const a of alerts) {
     if (a.tilt !== 0) ocState.pulses.push({ t: a.t || t, tilt: a.tilt });
+    if (a.tilt !== 0) {
+      const until = (a.t || t) + WHALE_DECAY_SEC;
+      ocState.signals.push({
+        t: a.t || t, kind: 'whale pulse', status: 'active',
+        text: `Whale pulse: ${(a.xrp / 1e6).toFixed(1)}M XRP ${a.note}. Projected effect ${fmtFx(a.tilt)} ${a.tilt > 0 ? 'bullish' : 'bearish'} tilt, fading to zero by ${fmtT(until)}.`,
+        effect: +a.tilt.toFixed(5), effectUntil: until,
+      });
+    }
     append({
       type: 'agent', agent: 'onchain', decision: 'whale alert',
       detail: `${(a.xrp / 1e6).toFixed(1)}M XRP ${a.fromLabel || a.from.slice(0, 8)} -> ${a.toLabel || a.to.slice(0, 8)}: ${a.note}; pulse ${a.tilt >= 0 ? '+' : ''}${a.tilt.toFixed(3)} decaying over 48h`,
@@ -155,6 +171,39 @@ async function updateOnchain(t) {
   ocState.ema = sig.ema;
   ocState.pulses = ocState.pulses.filter((p) => t - p.t < 48 * 3600);
   ocState.biasHist = (ocState.biasHist || []).concat([{ t, bias: +sig.bias.toFixed(5) }]).slice(-1500);
+  // regime-bias signal: log when the slow bias switches on or flips direction
+  const prevBias = ocState.lastBias || 0;
+  if (sig.bias !== 0 && (prevBias === 0 || Math.sign(sig.bias) !== Math.sign(prevBias))) {
+    const dir = sig.bias > 0 ? 'bullish' : 'bearish';
+    const flowTxt = sig.netFlow24h != null
+      ? `24h net ${sig.netFlow24h >= 0 ? 'inflow' : 'outflow'} of ${Math.abs(sig.netFlow24h).toFixed(1)} XRP across tracked exchange wallets`
+      : 'exchange-wallet flows';
+    ocState.signals.push({
+      t, kind: 'regime', status: 'active',
+      text: `Regime signal ${prevBias === 0 ? 'ON' : 'flipped'}: ${flowTxt} (${dir}). Projected effect ${fmtFx(sig.bias)} ${dir} tilt, persistent until the flow regime changes.`,
+      effect: +sig.bias.toFixed(5), effectUntil: null,
+    });
+  }
+  if (prevBias !== 0 && sig.bias === 0) {
+    ocState.signals.push({
+      t, kind: 'regime', status: 'expired',
+      text: `Regime signal OFF: exchange-wallet flows back inside neutral bounds — tilt withdrawn.`,
+      effect: 0, effectUntil: t,
+    });
+  }
+  ocState.lastBias = sig.bias;
+  // expire whale pulses whose 48h window has passed
+  for (const s of ocState.signals) {
+    if (s.status === 'active' && s.effectUntil && s.effectUntil < t) s.status = 'expired';
+  }
+  ocState.signals = ocState.signals.slice(-60);
+  // poll log: proof the data keeps flowing, newest last (frontend reverses)
+  ocState.pollLog = Array.isArray(ocState.pollLog) ? ocState.pollLog : [];
+  ocState.pollLog.push({
+    t, ok: okCount, total: watchlist.length, snapshots: ocState.snapshots.length,
+    whales: alerts.length, bias: +sig.bias.toFixed(5),
+  });
+  ocState.pollLog = ocState.pollLog.slice(-30);
   saveOcState();
   const cps = new Set();
   let vol24 = 0;
@@ -166,12 +215,16 @@ async function updateOnchain(t) {
     bias: +sig.bias.toFixed(5), ema: +sig.ema.toFixed(5), rawBias: sig.rawBias != null ? +sig.rawBias.toFixed(5) : null,
     netFlow24h: sig.netFlow24h != null ? +sig.netFlow24h.toFixed(1) : null,
     netFlow7d: sig.netFlow7d != null ? +sig.netFlow7d.toFixed(1) : null,
-    whalePulse: +sig.whalePulse.toFixed(5), activePulses: sig.activePulses || 0,
+    whalePulse: sig.whalePulse != null ? +sig.whalePulse.toFixed(5) : 0, activePulses: sig.activePulses || 0,
     warmingUp: sig.warmingUp, degraded: false, failures: 0,
     totalTracked: sig.totalTracked != null ? +sig.totalTracked.toFixed(1) : null,
     network: { tx24h: ocState.recentTx.length, vol24hXrp: +vol24.toFixed(1), counterparties24h: cps.size, ledgerTxSample: ledgerTx },
     biasSeries: (ocState.biasHist || []).slice(-288).map((p) => [p.t, p.bias]),
     computed_at: new Date().toISOString(),
+    wallets: watchlist.map((w) => ({ label: w.label || w.kind, address: w.address, kind: w.kind, balance: balances[w.address] != null ? +balances[w.address].toFixed(2) : null })),
+    snapshotCount: ocState.snapshots.length,
+    pollLog: ocState.pollLog.slice(-30),
+    signals: ocState.signals.slice(-25),
   };
   return { bias: sig.bias, degraded: false, diag };
 }

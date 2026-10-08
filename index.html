@@ -196,6 +196,13 @@
     <div class="stat"><div class="k">Bias history</div><div class="v" style="font-size:12px"><canvas id="ocSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">slow EMA of the flow signal</div></div>
   </div>
   <p class="muted" style="font-size:12px;margin-bottom:0">Honest footnote: on-chain flow is a regime signal, not a 15-minute predictor — its edge, if any, plays out over hours to days, which is why the page scores it both ways and treats the 24h read as the verdict. Balances come from the public XRP Ledger cluster (no keys); the watchlist is a handful of verified exchange wallets in <code>data/onchain-watchlist.json</code> — every address confirmed via explorer labels, never guessed. If the ledger API is unreachable the member abstains (bias 0) and the forecast never breaks.</p>
+  <h3 style="margin:18px 0 6px">Live data flow <span class="badge" style="font-size:11px;vertical-align:middle">the work as it happens</span></h3>
+  <p class="muted" style="margin-top:0;font-size:12px">Every 5 minutes the runner polls the XRP Ledger for each tracked wallet and saves a balance snapshot — this is the raw information flowing in, whether or not it ever becomes a signal.</p>
+  <div class="log" id="ocPollLog"><div class="muted">waiting for runner…</div></div>
+  <h3 style="margin:18px 0 6px">Signal account <span class="badge" style="font-size:11px;vertical-align:middle">plain-English ledger</span></h3>
+  <p class="muted" style="margin-top:0;font-size:12px">Every signal the monitor gives, in plain English: when it was given, its projected effect, and how long that effect runs. Projected effects are what the signal <em>would</em> contribute to the forecast (additive to P(up)) — the on-chain member is experimental and not currently wired into the issued forecast.</p>
+  <div class="stat" style="margin-bottom:10px"><div class="k">Combined signal effect right now</div><div class="v" id="ocSigTotal" style="font-size:15px">—</div><div class="s" id="ocSigTotalN">—</div></div>
+  <div class="log" id="ocSignalLog"><div class="muted">waiting for runner…</div></div>
 </section>
 
 <section id="score" class="card">

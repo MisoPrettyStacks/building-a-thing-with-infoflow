@@ -319,6 +319,9 @@ function renderOnchain() {
     $('ocBiasNote').textContent = 'waiting for runner…'; $('ocWhaleNote').textContent = '—';
     $('ocBrierN').textContent = '—'; $('ocSkillN').textContent = 'the meaningful read for a slow signal';
     $('ocTracked').textContent = '—';
+    $('ocPollLog').innerHTML = '<div class="muted">waiting for runner…</div>';
+    $('ocSignalLog').innerHTML = '<div class="muted">waiting for runner…</div>';
+    $('ocSigTotal').textContent = '—'; $('ocSigTotalN').textContent = '—';
     return;
   }
   const fmtXrp = (x) => x == null ? '—' : (x >= 0 ? '+' : '') + (x / 1e6).toFixed(2) + 'M';
@@ -366,6 +369,33 @@ function renderOnchain() {
       ctx.stroke();
     }
   } catch { /* canvas optional */ }
+  // live data-flow log: the raw information arriving, poll by poll
+  const fmtSigned = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(4);
+  const polls = (o.pollLog || []).slice().reverse();
+  $('ocPollLog').innerHTML = polls.length ? polls.map((p) => {
+    const when = p.t ? new Date(p.t * 1000).toLocaleString() : '';
+    const txt = p.degraded
+      ? `poll failed — XRPL unreachable (${p.ok}/${p.total} wallets answered)`
+      : `polled ${p.ok}/${p.total} wallets · snapshot #${p.snapshots} saved${p.whales ? ` · ${p.whales} whale alert${p.whales > 1 ? 's' : ''}` : ''} · bias ${fmtSigned(p.bias || 0)}`;
+    return `<div><span class="t">${esc(when)}</span>${esc(txt)}</div>`;
+  }).join('') : '<div class="muted">waiting for runner…</div>';
+  // signal account: every signal in plain English + totals
+  const sigs = (o.signals || []).slice().reverse();
+  $('ocSignalLog').innerHTML = sigs.length ? sigs.map((s) => {
+    const when = s.t ? new Date(s.t * 1000).toLocaleString() : '';
+    const badge = s.status === 'active'
+      ? ' <span class="badge">active</span>'
+      : ' <span class="badge" style="opacity:.55">expired</span>';
+    return `<div><span class="t">${esc(when)}</span>${esc(s.text || '')}${badge}</div>`;
+  }).join('') : '<div class="muted">no signals yet — the monitor is still gathering its first 24h of flow history.</div>';
+  const active = sigs.filter((s) => s.status === 'active');
+  const combined = active.reduce((a, s) => a + (s.effect || 0), 0);
+  const bull = sigs.filter((s) => (s.effect || 0) > 0).length;
+  const bear = sigs.filter((s) => (s.effect || 0) < 0).length;
+  $('ocSigTotal').textContent = sigs.length ? fmtSigned(combined) : '—';
+  $('ocSigTotalN').textContent = sigs.length
+    ? `${active.length} active · all time ${sigs.length} (${bull} bullish / ${bear} bearish / ${sigs.length - bull - bear} neutral)`
+    : 'no signals recorded yet';
 }
 
 /* ---------------- live price + chart ---------------- */
