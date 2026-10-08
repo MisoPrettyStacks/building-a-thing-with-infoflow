@@ -72,17 +72,21 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 /* 15-minute window card: P(up) and P(down) side by side at the top */
 .wpair { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
 
-/* ---------------- Little Marlowe's lab ---------------- */
-.lm-scene { margin: 6px 0 14px; }
-.lm-scene svg { width: 100%; height: auto; display: block; border-radius: 10px; }
-/* arm writing on the chalkboard */
-#lmArm { transform-origin: 168px 250px; animation: lmWrite 2.4s ease-in-out infinite; }
-@keyframes lmWrite { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
-/* blinking eyes */
-.lm-eye { transform-box: fill-box; transform-origin: center; animation: lmBlink 4.6s infinite; }
-@keyframes lmBlink { 0%,93%,100% { transform: scaleY(1); } 96% { transform: scaleY(0.12); } }
-/* gentle bob while he works */
-#lmBody { animation: lmBob 3.2s ease-in-out infinite; }
+/* ---------------- Little Marlowe's lab (3D) ---------------- */
+.lm-scene { margin: 6px 0 14px; position: relative; }
+#lmStage { border-radius: 10px; overflow: hidden; background: #2a1d12; }
+#lmStage canvas { display: block; }
+.lm-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 300px;
+  background: #fffdf5; border: 1px solid #d8cfb8; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.lm-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffdf5; border-bottom: 0;
+}
+/* gentle bob (also used by the 3D intro button) */
 @keyframes lmBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 /* the black notebook: deliberately distinct = experimental, not in the forecast */
 .lm-logbox { background: #0b0b0d; color: #f2f2f2; border-radius: 10px; padding: 12px 14px; margin: 0 0 10px; }

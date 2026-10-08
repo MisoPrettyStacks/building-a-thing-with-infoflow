@@ -9,6 +9,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body>
 <!-- 3D intro: the flow field pops up first thing on a visit -->
@@ -137,115 +145,8 @@
   <h2>Little Marlowe's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
   <p class="muted" style="margin-top:0">Meet <b>Little Marlowe</b> — he spends every 5-minute cycle studying whether information flowing from BTC to XRP can actually help the forecast. He writes down <i>everything</i>: what data he collected, what he computed, what he found, and his honest verdict on whether it's useful — including the exact mathematical effect on the model. His notebook is saved to the data feed every cycle, whether or not his signal is ever used. He stays at his chalkboard regardless.</p>
   <div class="lm-scene">
-  <svg id="lmBoard" viewBox="0 0 720 400" role="img" aria-label="Little Marlowe working at his chalkboard">
-    <defs>
-      <linearGradient id="lmWood" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#6b4a2f"/><stop offset="1" stop-color="#4a3220"/>
-      </linearGradient>
-      <linearGradient id="lmFloor" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#3a2a1c"/><stop offset="1" stop-color="#241a10"/>
-      </linearGradient>
-      <radialGradient id="lmLamp" cx="0.5" cy="0.5" r="0.5">
-        <stop offset="0" stop-color="#ffe9b0" stop-opacity="0.9"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-    <!-- office wall + floor -->
-    <rect x="0" y="0" width="720" height="310" fill="url(#lmWood)"/>
-    <g stroke="#3a2818" stroke-width="2" opacity="0.6">
-      <line x1="90" y1="0" x2="90" y2="310"/><line x1="180" y1="0" x2="180" y2="310"/>
-      <line x1="700" y1="0" x2="700" y2="310"/>
-    </g>
-    <rect x="0" y="270" width="720" height="40" fill="#2e2013" opacity="0.85"/>
-    <rect x="0" y="310" width="720" height="90" fill="url(#lmFloor)"/>
-    <!-- bookshelf, far left -->
-    <g>
-      <rect x="14" y="90" width="76" height="220" fill="#4a3220" stroke="#2e2013" stroke-width="3"/>
-      <g fill="#7a4f28"><rect x="14" y="150" width="76" height="6"/><rect x="14" y="212" width="76" height="6"/><rect x="14" y="274" width="76" height="6"/></g>
-      <g>
-        <rect x="20" y="118" width="12" height="32" fill="#a33c3c"/><rect x="34" y="112" width="12" height="38" fill="#3c6ea3"/>
-        <rect x="48" y="120" width="12" height="30" fill="#3c8a5a"/><rect x="62" y="114" width="12" height="36" fill="#b98a2e"/>
-        <rect x="20" y="180" width="12" height="32" fill="#6a4a9e"/><rect x="34" y="174" width="12" height="38" fill="#a33c3c"/>
-        <rect x="48" y="182" width="14" height="30" fill="#3c6ea3"/>
-        <rect x="20" y="242" width="12" height="32" fill="#b98a2e"/><rect x="34" y="236" width="12" height="38" fill="#3c8a5a"/>
-        <rect x="48" y="244" width="12" height="30" fill="#6a4a9e"/><rect x="62" y="238" width="12" height="36" fill="#a33c3c"/>
-      </g>
-    </g>
-    <!-- framed diploma -->
-    <g>
-      <rect x="656" y="60" width="52" height="66" fill="#c9a227" stroke="#7a5c14" stroke-width="2"/>
-      <rect x="661" y="65" width="42" height="56" fill="#f5f0dc"/>
-      <text x="682" y="88" text-anchor="middle" font-size="8" fill="#444" font-family="Georgia,serif">PhD</text>
-      <text x="682" y="100" text-anchor="middle" font-size="6" fill="#666" font-family="Georgia,serif">(ish)</text>
-      <text x="682" y="112" text-anchor="middle" font-size="6" fill="#666" font-family="Georgia,serif">markets</text>
-    </g>
-    <!-- chalkboard -->
-    <rect x="270" y="30" width="380" height="252" rx="6" fill="#7a4f28" stroke="#5a3a1c" stroke-width="3"/>
-    <rect x="282" y="42" width="356" height="228" fill="#232d2a"/>
-    <text x="460" y="70" text-anchor="middle" font-size="17" fill="#f4f1e4" opacity="0.94" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive">Little Marlowe's findings</text>
-    <line x1="300" y1="80" x2="620" y2="80" stroke="#f4f1e4" stroke-width="1" opacity="0.35"/>
-    <text id="lmChalkTe" x="300" y="108" font-size="14" fill="#f4f1e4" opacity="0.92" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive">warming up…</text>
-    <text id="lmChalkZ" x="300" y="134" font-size="14" fill="#f4f1e4" opacity="0.92" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive"></text>
-    <text id="lmChalkVote" x="300" y="160" font-size="14" fill="#f4f1e4" opacity="0.92" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive"></text>
-    <text id="lmChalkVerdict" x="300" y="190" font-size="14" fill="#f2c879" opacity="0.95" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive"></text>
-    <polyline id="lmSpark" fill="none" stroke="#f4f1e4" stroke-width="1.6" opacity="0.75" points=""/>
-    <text id="lmSparkLabel" x="300" y="262" font-size="9" fill="#f4f1e4" opacity="0.55" font-family="'Segoe Print','Bradley Hand','Comic Sans MS',cursive"></text>
-    <!-- chalk tray -->
-    <rect x="282" y="270" width="356" height="8" fill="#7a4f28"/>
-    <rect x="560" y="262" width="26" height="8" rx="2" fill="#e8e4d8" transform="rotate(-8 573 266)"/>
-    <rect x="596" y="260" width="30" height="10" rx="2" fill="#8a4a3a"/>
-    <!-- stack of books he stands on -->
-    <rect x="105" y="342" width="92" height="15" rx="2" fill="#a33c3c"/>
-    <rect x="110" y="328" width="82" height="14" rx="2" fill="#3c6ea3"/>
-    <rect x="115" y="314" width="72" height="14" rx="2" fill="#3c8a5a"/>
-    <!-- Little Marlowe -->
-    <g id="lmBody">
-      <ellipse cx="151" cy="312" rx="26" ry="5" fill="#000" opacity="0.25"/>
-      <rect x="133" y="282" width="11" height="32" rx="4" fill="#2b3a55"/>
-      <rect x="156" y="282" width="11" height="32" rx="4" fill="#2b3a55"/>
-      <ellipse cx="138" cy="316" rx="10" ry="5" fill="#1d2739"/>
-      <ellipse cx="162" cy="316" rx="10" ry="5" fill="#1d2739"/>
-      <rect x="122" y="236" width="58" height="52" rx="20" fill="#2b3a55"/>
-      <polygon points="151,244 139,262 163,262" fill="#f5f5f5"/>
-      <polygon points="144,248 139,244 139,252" fill="#c0392b"/>
-      <polygon points="158,248 163,244 163,252" fill="#c0392b"/>
-      <circle cx="151" cy="248" r="3.4" fill="#c0392b"/>
-      <rect x="122" y="246" width="10" height="26" rx="5" fill="#24334d"/>
-      <circle cx="151" cy="212" r="25" fill="#f0c8a0"/>
-      <circle cx="127" cy="212" r="4" fill="#f0c8a0"/>
-      <circle cx="175" cy="212" r="4" fill="#f0c8a0"/>
-      <path d="M128,200 Q151,182 174,200 Q162,192 151,193 Q140,192 128,200" fill="#5a3a22"/>
-      <g id="lmArm">
-        <rect x="168" y="244" width="66" height="13" rx="6.5" fill="#2b3a55" transform="rotate(-18 168 250)"/>
-        <circle cx="228" cy="228" r="8" fill="#f0c8a0"/>
-        <rect x="230" y="220" width="14" height="5" rx="2" fill="#f4f1e4" transform="rotate(-18 237 222)"/>
-      </g>
-      <g stroke="#222" stroke-width="2.4" fill="rgba(255,255,255,0.16)">
-        <rect x="129" y="202" width="19" height="16" rx="4"/>
-        <rect x="154" y="202" width="19" height="16" rx="4"/>
-        <line x1="148" y1="208" x2="154" y2="208"/>
-        <line x1="129" y1="207" x2="124" y2="206"/>
-        <line x1="173" y1="207" x2="178" y2="206"/>
-      </g>
-      <circle class="lm-eye" cx="138.5" cy="210" r="2.6" fill="#222"/>
-      <circle class="lm-eye" cx="163.5" cy="210" r="2.6" fill="#222"/>
-      <ellipse cx="132" cy="220" rx="4" ry="2.6" fill="#e8a0a0" opacity="0.55"/>
-      <ellipse cx="170" cy="220" rx="4" ry="2.6" fill="#e8a0a0" opacity="0.55"/>
-      <path d="M143,224 Q151,229 159,224" stroke="#7a4a2a" stroke-width="2" fill="none" stroke-linecap="round"/>
-    </g>
-    <!-- speech bubble -->
-    <g>
-      <rect x="18" y="216" width="172" height="66" rx="12" fill="#fffdf5" stroke="#d8cfb8" stroke-width="1.5"/>
-      <polygon points="150,282 168,282 158,296" fill="#fffdf5" stroke="#d8cfb8" stroke-width="1.5"/>
-      <polygon points="152,282 166,282 158,293" fill="#fffdf5"/>
-      <text id="lmBubble1" x="104" y="242" text-anchor="middle" font-size="11.5" fill="#4a4a4a" font-family="Georgia,serif">setting up</text>
-      <text id="lmBubble2" x="104" y="260" text-anchor="middle" font-size="11.5" fill="#4a4a4a" font-family="Georgia,serif">my lab…</text>
-    </g>
-    <!-- floor lamp glow, right -->
-    <circle cx="668" cy="120" r="60" fill="url(#lmLamp)"/>
-    <rect x="664" y="150" width="8" height="160" fill="#3a2c1c"/>
-    <polygon points="668,150 640,118 696,118" fill="#e8d9a8" stroke="#b89a5a" stroke-width="2"/>
-    <ellipse cx="668" cy="312" rx="20" ry="6" fill="#241a10"/>
-  </svg>
+    <div id="lmStage"></div>
+    <div class="lm-bubble" id="lmBubble"><span id="lmBubbleText">setting up my lab…</span></div>
   </div>
   <div class="lm-logbox">
     <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="lmLogCount" class="muted"></span></div>
@@ -540,5 +441,6 @@
 <footer>Research and education only. Not financial advice. Probabilities are forecasts, not guarantees.</footer>
 </div>
 <script type="module" src="app.js"></script>
+<script type="module" src="marlowe3d.js"></script>
 </body>
 </html>

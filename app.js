@@ -80,51 +80,25 @@ function renderInfoflow() {
 }
 
 /* ---------------- Little Marlowe's lab ---------------- */
-function lmSetT(id, txt) { const el = $(id); if (el) el.textContent = txt; }
 function renderLittleMarlowe() {
-  if (!$('lmBoard')) return;
+  if (!$('lmStage')) return;
   const L = summary && summary.littleMarlowe;
   const rowsEl = $('lmLogRows');
+  const bubble = $('lmBubbleText');
   if (!L || !L.latest) {
-    lmSetT('lmBubble1', 'setting up'); lmSetT('lmBubble2', 'my lab…');
-    lmSetT('lmChalkTe', 'warming up…'); lmSetT('lmChalkZ', ''); lmSetT('lmChalkVote', ''); lmSetT('lmChalkVerdict', '');
-    const sp = $('lmSpark'); if (sp) sp.setAttribute('points', '');
+    if (bubble) bubble.textContent = 'setting up my lab…';
     rowsEl.innerHTML = '<div class="lm-empty">Little Marlowe is setting up his lab — notebook entries appear after the next runner cycle.</div>';
     return;
   }
-  const n = L.latest, c = n.computed;
-  if (c) {
-    lmSetT('lmChalkTe', 'TE BTC→XRP   ' + c.te_btc_xrp.toFixed(4) + ' nats');
-    lmSetT('lmChalkZ', 'z = ' + c.z_btc_xrp.toFixed(2) + '   (need > 2)');
-    lmSetT('lmChalkVote', 'vote: ' + (c.vote === 0.5 ? 'abstain (0.50)' : 'P(up) = ' + c.vote.toFixed(3)));
-  } else {
-    lmSetT('lmChalkTe', 'not enough data…');
-    lmSetT('lmChalkZ', 'collecting bars…');
-    lmSetT('lmChalkVote', '');
-  }
-  const vEl = $('lmChalkVerdict');
-  if (vEl) {
-    vEl.textContent = 'verdict: ' + n.verdict + (n.verdict === 'not useful' ? ' — yet' : '');
-    vEl.setAttribute('fill', n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879');
+  const n = L.latest;
+  // 3D chalkboard + character state (the module draws real measurements)
+  if (window.__lm3d && window.__lm3d.setData) {
+    try { window.__lm3d.setData(n, L.log || []); } catch (e) { /* 3D still loading; next poll retries */ }
   }
   // speech bubble: short version of his finding
-  const words = n.finding.split(' ');
-  let l1 = '', l2 = '';
-  for (const w of words) { if ((l1 + ' ' + w).trim().length <= 34) l1 = (l1 + ' ' + w).trim(); else { l2 = (l2 + ' ' + w).trim(); } }
-  if (l2.length > 40) l2 = l2.slice(0, 40) + '…';
-  lmSetT('lmBubble1', l1 || '…'); lmSetT('lmBubble2', l2);
-  // chalk sparkline: TE BTC→XRP over recent notes (real data)
-  const pts = (L.log || []).filter((e) => e.computed).slice(-24).map((e) => e.computed.te_btc_xrp);
-  const sp = $('lmSpark');
-  if (sp) {
-    if (pts.length > 1) {
-      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
-      const X0 = 300, X1 = 600, Y0 = 250, Y1 = 208;
-      sp.setAttribute('points', pts.map((v, i) =>
-        (X0 + (X1 - X0) * i / (pts.length - 1)).toFixed(1) + ',' +
-        (Y0 - (v - mn) / rg * (Y0 - Y1)).toFixed(1)).join(' '));
-      lmSetT('lmSparkLabel', 'TE BTC→XRP · last ' + pts.length + ' notes');
-    } else { sp.setAttribute('points', ''); lmSetT('lmSparkLabel', ''); }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    bubble.textContent = short;
   }
   // the black notebook: newest first, click a row for the full workup
   $('lmLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
