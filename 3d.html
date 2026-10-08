@@ -90,9 +90,16 @@
       e.preventDefault();
       window.parent.postMessage('lmEnterForecast', '*');
     });
+  } else if (!q.has('embed')) {
+    // standalone 3D page: the button reads RETURN
+    link.textContent = 'RETURN';
+    // mark the intro as seen BEFORE navigating, so the forecast page
+    // doesn't pop the 3D overlay right back up (no loop)
+    link.addEventListener('click', function () {
+      try { sessionStorage.setItem('intro3dSeen', '1'); } catch (err) {}
+    });
   } else {
-    // standalone / embedded: mark the intro as seen BEFORE navigating, so the
-    // forecast page doesn't pop the 3D overlay right back up (no loop)
+    // embedded on the forecast page: same no-loop guard
     link.addEventListener('click', function () {
       try { sessionStorage.setItem('intro3dSeen', '1'); } catch (err) {}
     });
