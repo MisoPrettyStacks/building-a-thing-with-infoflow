@@ -44,7 +44,9 @@
   .pulse { animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
   /* embed mode: slim chrome for iframes on the main page */
-  body.embed #title, body.embed #hint, body.embed #enterWrap { display: none; }
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
   body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
 </style>
 <script type="importmap">
