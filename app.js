@@ -478,7 +478,7 @@ function initWendyChat() {
     row.className = 'wchat-row ' + who;
     if (who === 'wendy') {
       const av = document.createElement('img');
-      av.src = 'wendy.webp'; av.alt = 'Wendy';
+      av.src = 'wendy-headshot.webp'; av.alt = 'Wendy';
       row.appendChild(av);
     }
     const b = document.createElement('div');
@@ -508,7 +508,7 @@ function initWendyChat() {
     bubble('me', text);
     const typing = document.createElement('div');
     typing.className = 'wchat-row wendy';
-    typing.innerHTML = '<img src="wendy.webp" alt="Wendy"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
+    typing.innerHTML = '<img src="wendy-headshot.webp" alt="Wendy"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
     log.appendChild(typing); scroll();
     let reply;
     if (wendyIsIpProbe(text)) {
