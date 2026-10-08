@@ -28,6 +28,13 @@
     bottom: 12px; left: 50%; transform: translateX(-50%);
     font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
   }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(127, 212, 255, 0.35); border-radius: 999px;
+    background: rgba(10, 16, 28, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #7fd4ff; color: #fff; }
   #waiting {
     position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
     background: rgba(5, 7, 13, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
@@ -37,7 +44,7 @@
   .pulse { animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
   /* embed mode: slim chrome for iframes on the main page */
-  body.embed #title, body.embed #hint { display: none; }
+  body.embed #title, body.embed #hint, body.embed #enterWrap { display: none; }
   body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
 </style>
 <script type="importmap">
@@ -69,6 +76,7 @@
 </div>
 
 <div class="hud" id="hint">drag to orbit · scroll to zoom · auto-rotates when idle</div>
+<div class="hud" id="enterWrap"><a href="index.html" target="_top" id="enterLink">ENTER</a></div>
 <div id="waiting"><span class="pulse">awaiting live data…</span></div>
 
 <script type="module">
