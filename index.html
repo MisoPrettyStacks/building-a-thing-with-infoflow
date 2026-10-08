@@ -114,10 +114,10 @@
   <div class="grid g4" style="margin-top:12px">
     <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="ifBrier">—</div><div class="s" id="ifBrierN">—</div></div>
     <div class="stat"><div class="k">Ensemble Brier (same window)</div><div class="v" id="ifEnsBrier">—</div><div class="s">lower is better</div></div>
-    <div class="stat"><div class="k">Blend weight</div><div class="v" id="ifWeight">—</div><div class="s" id="ifWeightNote">0 = scored only, not used</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="ifWeight" style="font-size:15px">—</div><div class="s" id="ifWeightNote">scored only, not used</div></div>
     <div class="stat"><div class="k">Window</div><div class="v" style="font-size:15px">288 bars · 24h</div><div class="s" id="ifAge">—</div></div>
   </div>
-  <p class="muted" style="font-size:12px;margin-bottom:8px">How it works: every cycle the runner pulls BTC-USD 5-minute bars alongside XRP, discretizes trailing 24h returns into 3 quantile bins, and estimates transfer entropy in both directions with a 50-shuffle surrogate significance test. The member votes only when net BTC→XRP flow is positive <em>and</em> significant (z &gt; 2), following the recent BTC move; otherwise it abstains. Honest caveat: the literature measures information half-life in <em>milliseconds</em> — at 15-minute horizons this edge may be near zero. The live scoreboard above is the verdict, not the theory.</p>
+  <p class="muted" style="font-size:12px;margin-bottom:8px">How it works: every cycle the runner pulls BTC-USD 5-minute bars alongside XRP, discretizes trailing 24h returns into adaptive bins, and estimates transfer entropy in both directions with a shuffle-surrogate significance test. The member votes only when net BTC→XRP flow is positive <em>and</em> significant, following the recent BTC move; otherwise it abstains. Honest caveat: the literature measures information half-life in <em>milliseconds</em> — at 15-minute horizons this edge may be near zero. The live scoreboard above is the verdict, not the theory.</p>
   <h3 style="margin:18px 0 8px;font-size:14px">Topological features <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h3>
   <p class="muted" style="margin-top:0">Persistent homology of the return cloud (Takens embedding, 144 points / 12h). When the loop structure reorganizes — diagram distance above its rolling threshold — the model dampens confidence. Scored but never applied until the agent finds out-of-sample evidence.</p>
   <div class="grid g4">
@@ -146,6 +146,19 @@
     <details class="mv-det"><summary>How she reached it — every discipline's read</summary><div id="mvDisciplines"></div></details>
     <details class="mv-det"><summary>Hypothesis ledger</summary><div id="mvHypotheses"></div></details>
     <div class="mv-meta muted" id="mvMeta"></div>
+  </div>
+  <div class="mchat" id="mchat">
+    <div class="mchat-head">
+      <img src="masha-headshot.webp" alt="Masha">
+      <div class="mchat-who"><b>Masha</b><span class="mchat-online"><i></i>online — ask me about my research</span></div>
+    </div>
+    <div class="mchat-log" id="mchatLog" aria-live="polite"></div>
+    <div class="mchat-chips" id="mchatChips"></div>
+    <div class="mchat-input">
+      <input id="mchatText" type="text" placeholder="Ask Masha about information flow…" maxlength="300" autocomplete="off">
+      <button id="mchatSend" type="button">Send</button>
+    </div>
+    <div class="mchat-note muted">Masha answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
   </div>
   <div class="lm-scene">
     <div class="lm-grid">
@@ -345,24 +358,19 @@
   <p><b>Threshold-contract (strike ladder) score.</b> The same predictive distribution prices any “above strike $K$ at the target time” question: $\Pr(S>x)=T_\nu(\mu'-x/s)$. Six fixed strikes at $x\in\{-40,-25,-10,+10,+25,+40\}$ bps around the price at issue are scored with the Brier score and compared with per-strike climatology. Because strikes far from spot are easy to call, this number is much lower than the direction Brier and depends entirely on how the strikes are spaced; it is reported separately and never mixed with the direction score. A directional Brier near 0.08 is not achievable on a near-martingale; a ladder Brier in that region only reflects easy strikes.</p>
 
   <h3>9. Experimental: transfer entropy (information flow)</h3>
-  <p>Directed information flow from BTC to XRP is measured with <b>transfer entropy</b> (Schreiber 2000). With one-step histories ($k=l=1$) and $y_{t+1}$ the next target symbol:</p>
-  $$\mathrm{TE}(X\to Y)=\sum_{y_{t+1},y_t,x_t} p(y_{t+1},y_t,x_t)\;\log\frac{p(y_{t+1}\mid y_t,x_t)}{p(y_{t+1}\mid y_t)}\quad\text{(nats, floored at 0)}.$$
-  <p>In plain English: how much knowing BTC's current state reduces uncertainty about XRP's <i>next</i> move, beyond what XRP's own current state already tells you. Implementation, exactly as coded in <code>lib/infoflow.js</code>:</p>
+  <p>Directed information flow from BTC to XRP is measured with <b>transfer entropy</b> (Schreiber 2000) — an information-theoretic measure of how much knowing BTC's past reduces uncertainty about XRP's <i>next</i> move, beyond what XRP's own past already tells you. The exact estimator, binning, and significance procedure are proprietary lab work; what matters for judging it is below.</p>
+  <p>In plain English: does BTC "talk" to XRP in a way that predicts its next move? Implementation, conceptually:</p>
   <ul>
-    <li><b>Data:</b> 5-minute log returns of BTC-USD and XRP-USD (Coinbase), timestamps aligned, over a rolling 24-hour window (288 bars), recomputed for every bar; at least 100 valid bars required, otherwise the member abstains.</li>
-    <li><b>Discretization:</b> within each window, returns are cut into 3 quantile bins (down / flat / up) — the bin edges are that window's own tertiles, so the symbols always adapt to current volatility.</li>
-    <li><b>Significance:</b> 50 shuffle surrogates of the source series (shuffling destroys coupling while preserving marginals); $z=(\mathrm{TE}-\mathrm{mean}_{\text{null}})/\mathrm{sd}_{\text{null}}$. Flow counts as real only if $z&gt;2$.</li>
-    <li><b>Vote:</b> with $\mathrm{net}=\mathrm{TE}(\mathrm{BTC}\to\mathrm{XRP})-\mathrm{TE}(\mathrm{XRP}\to\mathrm{BTC})$ and the last three 5-minute BTC log returns (a 15-minute move),
-    $$v=\tfrac12+\min(0.15,\max(0,5\cdot\mathrm{net}))\cdot\operatorname{sign}(r^{\mathrm{BTC}}_t+r^{\mathrm{BTC}}_{t-1}+r^{\mathrm{BTC}}_{t-2})$$
-    <i>only</i> when $\mathrm{net}&gt;0$ and $z_{\mathrm{BTC}\to\mathrm{XRP}}&gt;2$; otherwise the member abstains ($v=\tfrac12$). The 0.15 cap keeps any single vote small.</li>
-    <li><b>How it feeds the forecast:</b> blended as a fifth member, $\tilde p\leftarrow(1-w)\tilde p+w\cdot v$ with $w=\,$<code>infoflowWeight</code> (default 0).</li>
+    <li><b>Data:</b> 5-minute log returns of BTC-USD and XRP-USD (Coinbase), timestamps aligned, over a rolling 24-hour window, recomputed every cycle; a minimum bar count is required, otherwise the member abstains.</li>
+    <li><b>Discretization:</b> within each window, returns are cut into adaptive bins (down / flat / up) — the bin edges follow that window's own distribution, so the symbols always adapt to current volatility.</li>
+    <li><b>Significance:</b> shuffle-surrogate testing of the source series (shuffling destroys coupling while preserving marginals); flow counts as real only if it clears a fixed significance bar.</li>
+    <li><b>Vote:</b> a small, capped directional vote following the recent BTC move — <i>only</i> when net BTC→XRP flow is positive <i>and</i> significant; otherwise the member abstains. The cap keeps any single vote small.</li>
+    <li><b>How it feeds the forecast:</b> blended as a fifth member at a small gated weight (currently zero — scored but not used).</li>
     <li><b>Validation:</b> the member's out-of-sample Brier is scored on every forecast and shown against the ensemble Brier on the page. Honest caveat: the literature measures information half-life in <i>milliseconds</i> — at 15-minute horizons this edge may be near zero, and the live scoreboard, not the theory, is the verdict.</li>
   </ul>
 
   <h3>10. Experimental: permutation-entropy regime filter</h3>
-  <p><b>Permutation entropy</b> (Bandt &amp; Pompe 2002) measures how ordered a series is. With ordinal patterns $\pi$ of order 3 (6 possible patterns) over the same 24h return window:</p>
-  $$\mathrm{PE}=-\frac{\sum_\pi p(\pi)\log p(\pi)}{\log 6}\in[0,1],$$
-  <p>where 0 means perfectly ordered (trending) and 1 means pure noise. When $\mathrm{PE}&gt;0.85$ the market is in a noise regime and the model distrusts itself: the pooled probability is pulled 10% toward 0.5, i.e. $\tilde p\leftarrow\tfrac12+0.9\,(\tilde p-\tfrac12)$, before the infoflow vote is blended in. This guard only engages when <code>infoflowWeight</code> &gt; 0; every engagement and release is written to the agent log.</p>
+  <p><b>Permutation entropy</b> (Bandt &amp; Pompe 2002) measures how ordered a series is, on a 0–1 scale where 0 means perfectly ordered and 1 means pure noise. When the market crosses into a noise regime, the model distrusts itself: the pooled probability is pulled partway toward 0.5 before the infoflow vote is blended in. The exact threshold and pull strength are proprietary; every engagement and release is written to the agent log.</p>
 
   <h3>11. Experimental: escrow calendar</h3>
   <p>Ripple releases 1B XRP from escrow on the 1st of each month and re-locks 60–90% of it within days — fully predictable, so the price impact is small (historical 7-day swings roughly −3.1% to +1.7%). The model carries a tiny bearish tilt. With $d$ = whole days since the 1st (UTC) and $\rho$ the re-lock ratio (manual input, default 0.75 = historical average):</p>
@@ -382,11 +390,8 @@
   <ul>
     <li><b>Watchlist</b> (<code>data/onchain-watchlist.json</code>): a handful of exchange wallets whose labels were verified via explorer APIs before inclusion — never guessed. Balances are read from the public XRPL cluster each cycle; no keys, no chain scanning.</li>
     <li><b>Net flow:</b> $F_{24}=\sum(\text{balance}_{\text{now}}-\text{balance}_{24\text{h ago}})$ over exchange wallets from our <i>own</i> balance snapshots (history starts empty and warms up over 24h). Inflow ($F&gt;0$) = distribution/sell pressure building (bearish); outflow = accumulation (bullish).</li>
-    <li><b>Bias:</b> with $f_{24}=F_{24}/\text{tracked}$, $f_{7d}$ likewise,
-    $$b_{\text{raw}}=-\big(0.012\cdot\mathrm{clip}(f_{24}/0.05,-1,1)+0.008\cdot\mathrm{clip}(f_{7d}/0.10,-1,1)\big),$$
-    $$b_t=\mathrm{clip}\big((1-\alpha)b_{t-1}+\alpha\,b_{\text{raw}},\,-0.02,\,0.02\big),\qquad\alpha=0.15,$$
-    i.e. a 5% daily inflow (or 10% weekly) saturates its component; the EMA ($\alpha=0.15$) keeps it slow. Applied as $\tilde p\leftarrow\tilde p+b_t\cdot$<code>onchainWeight</code> (default 0).</li>
-    <li><b>Whale alerts:</b> any single Payment $\ge$ 10M XRP touching a watchlist wallet adds a temporary pulse — $-0.01$ for large inflows to exchanges (distribution-like), $+0.01$ for large outflows (accumulation-like), $\pm0.005$ for tracked-whale moves — decaying linearly to zero over 48h, logged to the agent log.</li>
+    <li><b>Bias:</b> 24-hour and 7-day net exchange flows are normalized, saturated (large flows can't push the bias past a fixed cap), and smoothed slowly — a deliberately sluggish signal. Inflow (coins moving <i>to</i> exchanges) reads as distribution-like pressure; outflow reads as accumulation. The exact coefficients, saturation levels, and smoothing are proprietary lab work; the bias is applied at a gated weight (currently zero).</li>
+    <li><b>Whale alerts:</b> any single very large Payment touching a watchlist wallet adds a temporary pulse — negative for large inflows to exchanges (distribution-like), positive for large outflows (accumulation-like), smaller for tracked-whale moves — decaying linearly to zero over 48h, logged to the agent log.</li>
     <li><b>Validation, two ways:</b> (1) the standard 15-minute Brier contribution of the what-if series; (2) the 24h directional skill — does $\operatorname{sign}(b_t)$ match the sign of the 24h forward return (taken from the ledger's own later forecasts, so no lookahead)? The 24h read is the meaningful one: on-chain edge plays out over hours to days. If the XRPL API is unreachable the member abstains (bias 0) and the forecast never breaks.</li>
   </ul>
 
@@ -414,9 +419,9 @@
     <li><b>Confidence guard (shrinkage).</b> From live data the agent computes the ridge-regularised optimal shrinkage, the minimiser of $\sum_i(\tfrac12+\lambda(\tilde p_i-\tfrac12)-y_i)^2+\kappa\lambda^2$:
       $$\lambda^{*}=\operatorname{clip}\!\Big(\frac{\sum_i(\tilde p_i-\frac12)(y_i-\frac12)}{\sum_i(\tilde p_i-\frac12)^2+\kappa},0,1\Big),\quad \kappa=0.2 .$$
       The prior $\kappa$ pulls $\lambda$ toward 0, so a model has to <i>earn</i> confidence with roughly a thousand scored forecasts. It is applied only with at least 576 live forecasts, at most once per 24 h, and only if it moves by at least 0.10 (hysteresis). If the live evidence shows no skill, forecasts collapse toward 50% and the Brier score converges to the no-skill 0.25 rather than getting worse.</li>
-    <li><b>Champion/challenger search</b> every 6 hours (earlier if a degradation alarm fires). 40 challengers are generated by random multiplicative perturbations (factor in $[\tfrac12,2]$, on a log scale, or on $1-\lambda$ for decay parameters) of 1–3 hyper-parameters, or by toggling one feature. All are replayed with the production engine over the loaded 21-day history; the final 5 days (1440 bars) are the held-out block, and challengers are scored on the pre-shrink probability so that model quality is separated from the confidence guard.</li>
-    <li><b>Adoption gate.</b> The best challenger is adopted only if <i>all</i> hold: improvement in Brier $\ge2\times10^{-4}$; one-sided Diebold–Mariano $p<0.05/40$ (Bonferroni across the 40 tests); and the improvement has the same sign in both halves of the held-out block. At most one adoption per 24 hours. Otherwise the champion is kept and the numbers behind that decision are logged.</li>
-    <li><b>Live verification and rollback.</b> After an adoption, the previous champion is replayed over the live period and compared with what was actually issued (Diebold–Mariano on live pre-shrink losses). If the previous model would have been better ($\bar d>10^{-4}$, $p<0.05$, at least 288 forecasts), the agent reverts automatically.</li>
+    <li><b>Champion/challenger search</b> on a regular schedule (earlier if a degradation alarm fires). A set of challengers is generated by small random perturbations of a few hyper-parameters, or by toggling one feature. All are replayed with the production engine over the loaded multi-week history; the final days form the held-out block, and challengers are scored on the pre-shrink probability so that model quality is separated from the confidence guard.</li>
+    <li><b>Adoption gate.</b> The best challenger is adopted only if <i>all</i> hold: the Brier improvement clears a minimum effect size; a one-sided Diebold–Mariano test passes a Bonferroni-corrected significance bar across all candidates; and the improvement has the same sign in both halves of the held-out block. At most one adoption per day. Otherwise the champion is kept and the numbers behind that decision are logged.</li>
+    <li><b>Live verification and rollback.</b> After an adoption, the previous champion is replayed over the live period and compared with what was actually issued (Diebold–Mariano on live pre-shrink losses). If the previous model would have been clearly better, the agent reverts automatically.</li>
     <li><b>Degradation alarm.</b> If over the last 288 live forecasts the model is worse than climatology by more than $5\times10^{-4}$ in mean Brier ($p<0.1$), an early search is triggered.</li>
     <li><b>Fail-safe.</b> The runner refuses to start if the ledger's hash chain is broken, skips (and records) any bar it cannot forecast on time, and never edits past records.</li>
   </ol>

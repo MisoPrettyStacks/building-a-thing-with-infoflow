@@ -3,6 +3,7 @@
 import { coinbaseCandles, fetchBars } from './lib/data.js';
 import { walkForward, gridBars, DEFAULT_CONFIG, QLEVELS, STEP } from './lib/engine.js';
 import { binaryScores, quantileScores, dmTest, brier, mean } from './lib/stats.js';
+import { mashaAnswer, mashaIsIpProbe, mashaRepeatRefusal } from './lib/mashachat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -52,7 +53,7 @@ function renderInfoflow() {
     ['ifBx','ifXb','ifNet','ifPe','ifBrier','ifEnsBrier','ifWeight'].forEach((id) => { $(id).textContent = '—'; });
     $('ifBxZ').textContent = 'waiting for runner…'; $('ifXbZ').textContent = 'waiting for runner…';
     $('ifVote').textContent = 'member vote —'; $('ifRegime').textContent = '—';
-    $('ifBrierN').textContent = '—'; $('ifWeightNote').textContent = '0 = scored only, not used'; $('ifAge').textContent = '—';
+    $('ifBrierN').textContent = '—'; $('ifWeightNote').textContent = 'scored only, not used'; $('ifAge').textContent = '—';
     return;
   }
   $('ifBx').textContent = d.te_btc_xrp.toFixed(4);
@@ -72,8 +73,9 @@ function renderInfoflow() {
   } else {
     $('ifBrier').textContent = '—'; $('ifBrierN').textContent = 'no scored forecasts yet'; $('ifEnsBrier').textContent = '—';
   }
-  $('ifWeight').textContent = (d.weight || 0).toFixed(2);
-  $('ifWeightNote').textContent = d.enabled ? 'ACTIVE — agent found OOS evidence' : '0 = scored only, not used';
+  $('ifWeight').textContent = d.enabled ? 'Active' : 'Scored only';
+  $('ifWeight').style.color = d.enabled ? '#b5e6a2' : '';
+  $('ifWeightNote').textContent = d.enabled ? 'in the forecast — agent found OOS evidence' : 'not used in the forecast';
   const ageS = Math.max(0, Math.round((Date.now() - Date.parse(d.computed_at)) / 1000));
   $('ifAge').textContent = 'recomputed ' + (ageS < 90 ? ageS + 's ago' : Math.round(ageS / 60) + 'm ago');
   renderTopology();
@@ -97,7 +99,7 @@ function renderMasha() {
   const n = L.latest, c = n.computed;
   if (c) {
     setT('lmTe', `TE BTC→XRP   ${c.te_btc_xrp.toFixed(4)} nats`);
-    setT('lmZ', `z = ${c.z_btc_xrp.toFixed(2)}   (need > 2)`);
+    setT('lmZ', `z = ${c.z_btc_xrp.toFixed(2)}   (significance bar)`);
     setT('lmVote', `vote: ${c.vote === 0.5 ? 'abstain (0.50)' : 'P(up) = ' + c.vote.toFixed(3)}`);
   } else {
     setT('lmTe', 'not enough data…');
@@ -205,6 +207,61 @@ async function loadMashaVerdict() {
     esc((doc.updated_at || '').slice(0, 10)) +
     (lit.length ? ' · recent reading: ' + lit.map((p) =>
       '<a href="' + esc(p.id) + '" target="_blank" rel="noopener">' + esc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
+/* ---------------- Masha DM chat ---------------- */
+function initMashaChat() {
+  const log = $('mchatLog'), input = $('mchatText'), send = $('mchatSend'), chips = $('mchatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'mchat-row ' + who;
+    if (who === 'masha') {
+      const av = document.createElement('img');
+      av.src = 'masha-headshot.webp'; av.alt = 'Masha';
+      row.appendChild(av);
+    }
+    const b = document.createElement('div');
+    b.className = 'mchat-bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    log.appendChild(row);
+    scroll();
+  };
+  const CHIP_QS = ['What is transfer entropy?', "What's your verdict?", 'Is it in the forecast?', 'What do you do?'];
+  chips.innerHTML = '';
+  for (const q of CHIP_QS) {
+    const c = document.createElement('button');
+    c.type = 'button'; c.className = 'mchat-chip'; c.textContent = q;
+    c.addEventListener('click', () => { input.value = q; doSend(); });
+    chips.appendChild(c);
+  }
+  // repeat IP probers are counted (per browser) and get a firmer refusal
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('mchatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'mchat-row masha';
+    typing.innerHTML = '<img src="masha-headshot.webp" alt="Masha"><div class="mchat-bubble"><span class="mchat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (mashaIsIpProbe(text)) {
+      ipCount++;
+      try { localStorage.setItem('mchatIpCount', String(ipCount)); } catch { /* private mode */ }
+      reply = ipCount >= 3 ? mashaRepeatRefusal() : mashaAnswer(text);
+    } else {
+      reply = mashaAnswer(text);
+    }
+    setTimeout(() => { typing.remove(); bubble('masha', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('masha', "Hi! I'm Masha 🐾 Ask me anything about my information-flow research — my verdicts, how I measure the flow, or how I decide what enters the forecast!"), 800);
 }
 
 /* ---------------- Masha flipbook animation ---------------- */
@@ -992,6 +1049,7 @@ window.addEventListener('load', () => {
   runBacktest();
   loadAgents4();
   loadMashaVerdict();
+  initMashaChat();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);
