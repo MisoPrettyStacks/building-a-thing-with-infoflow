@@ -31,3 +31,4 @@
 {"ts": "2026-10-08T19:14:49Z", "agent": "watchdog", "decision": "triggered cf-rate.yml", "detail": "cf-rate.json computed_at 2026-10-08T18:45Z was 29+ min old (>20min threshold); dispatched manual run", "tag": "recover"}
 {"ts":"2026-10-08T19:44:38Z","agent":"watchdog","decision":"triggered cf-rate.yml (run 37834206462)","detail":"cf-rate.json computed_at 2026-10-08T19:14:48Z, 29.5min old > 20min threshold","tag":"recover"}
 {"ts": "2026-10-08T19:44:45+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3641800000000002, 'valid_partitions': 12, 'venues_used': 4, 'trades': 3594, 'official_rr': 1.40287}", "tag": "info"}
+{"ts": "2026-10-08T20:14:49+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3696383333333333, 'valid_partitions': 12, 'venues_used': 4, 'trades': 3328, 'official_rr': 1.40287}", "tag": "info"}
