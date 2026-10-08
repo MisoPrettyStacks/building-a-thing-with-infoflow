@@ -693,6 +693,93 @@
 
 </div>
 
+<div class="sophie-lab-wrap">
+<h2 class="sophie-lab-title"><img src="sophie-headshot.webp" alt="Sophie" class="sophie-lab-headshot"> SOPHIE'S LAB - SESSION SEASONALITY</h2>
+<div class="sophie-agent-intro">
+  <h3>Meet Sophie — an agentic agent, not a mascot</h3>
+  <p>Sophie doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching whether time-of-day rhythms in XRP's candles — the market's daily heartbeat across the Asia, Europe, and US sessions — carry real predictive information, researching the science of intraday seasonality, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Session Seasonality Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> market microstructure · behavioral finance · statistics · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: whether the daily rhythm of global trading leaves a measurable trace in XRP's candles, and whether that trace can help the forecast.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live session-seasonality measurements, guard bar-history and data quality, and keep the lab notebook. Analyze how intraday rhythms behave: which hours and sessions carry a persistent tilt, whether the pattern is stable or drifting, which regimes favor it. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she measures the hour-by-hour rhythm of XRP's candles and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether session seasonality earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing. She is blunt about magnitude: seasonal tilts are tiny, and she would rather report an honest whisper than sell a confident roar.</p>
+</div>
+
+<section id="sessionrhythm" class="card">
+  <h2>Session rhythm — time-of-day tilt <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Sophie groups the lab's own 5-minute XRP candles by their UTC hour and takes the mean return per hour. The next three hours from now get a small seasonal tilt — up if those hours historically run warm, down if they run cool. Her clock geography: Asia roughly 0–8 UTC, Europe 7–16 UTC, US 13–21 UTC, with quiet hours in between. Currently at weight zero, so it is scored but never affects the forecast until Sophie finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Seasonal tilt</div><div class="v" id="soTilt" style="font-size:15px">—</div><div class="s" id="soTiltSub">—</div></div>
+    <div class="stat"><div class="k">Current session</div><div class="v" id="soSession" style="font-size:15px">—</div><div class="s">UTC clock</div></div>
+    <div class="stat"><div class="k">Strongest hour</div><div class="v" id="soBestHour" style="font-size:15px">—</div><div class="s" id="soBestHourSub">historical hourly mean</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="soStatus" style="font-size:15px">—</div><div class="s" id="soStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="soSkill" style="font-size:15px">—</div><div class="s" id="soSkillSub">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="soSkill24" style="font-size:15px">—</div><div class="s" id="soSkill24Sub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="soVerdict" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="soSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">seasonal tilt per note</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner groups a week+ of closed 5-minute bars by UTC hour and averages the next three hours' historical means into a small tilt. The tilt is deliberately small — seasonal effects in 5-minute returns are whispers, and a whisper confidently applied would be worse than no read. Honest caveat: with 24 hours there are 24 chances to fool yourself — any hour-by-hour pattern gets strict multiple-comparison scrutiny before Sophie believes it. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="sophie3d" class="card">
+  <h2>Reading the clock in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Sophie's live view of the market's day. The glowing coral node at the center is the current session; the wheel of 24 wedges around it is the full UTC day — each wedge one hour, colored by its historical tilt: coral runs warm, slate runs cool. The glowing ring marks the current hour, so you're literally watching where the clock is right now. <a href="sophie3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="sophie3d.html?embed=1&v=1" title="Live 3D session-seasonality rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="sophie" class="card">
+  <h2>Sophie's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Sophie</b> — she spends every 5-minute cycle watching whether the market's daily rhythm can actually help the forecast. She writes down <i>everything</i>: what the bars showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="wv-panel" id="soPanel" hidden>
+    <div class="wv-head">SOPHIE'S STANDING VERDICT <span class="wv-badge" id="soVerdictBadge"></span></div>
+    <p class="wv-plain" id="soPlain"></p>
+    <div class="wv-ev" id="soEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="soDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="soHypotheses"></div></details>
+    <div class="wv-meta muted" id="soMeta"></div>
+  </div>
+  <div class="sophie-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="sophie.webp" alt="Sophie working at her chalkboard" id="soHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="soBubble"><span id="soBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Sophie's findings <span class="lm-live" id="soLiveDot"></span></div>
+        <div class="lm-line" id="soBoardTilt">warming up…</div>
+        <div class="lm-line" id="soBoardSession"></div>
+        <div class="lm-line" id="soBoardBest"></div>
+        <div class="lm-line lm-verdict" id="soBoardVerdict"></div>
+        <svg id="soBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="soBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="soBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox" id="soLog">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="soLogCount" class="muted"></span></div>
+    <div id="soLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Sophie ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title sophie-chat-title">CHAT WITH SOPHIE</h3>
+  <div class="wchat sophie-chat" id="sochat">
+    <div class="wchat-head">
+      <img src="sophie-headshot.webp" alt="Sophie">
+      <div class="wchat-who"><b>Sophie</b><span class="wchat-online"><i></i>online — ask me about session rhythms</span></div>
+    </div>
+    <div class="wchat-log" id="soChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="soChatChips"></div>
+    <div class="wchat-input">
+      <input id="soChatText" type="text" placeholder="Ask Sophie about session rhythms…" maxlength="300" autocomplete="off">
+      <button id="soChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Sophie answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 
 <section id="score" class="card">
