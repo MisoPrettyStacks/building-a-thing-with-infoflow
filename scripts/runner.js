@@ -59,13 +59,19 @@ function publish(force = false) {
   if (!PUSH) return;
   if (!force && Date.now() - lastPush < 4.5 * 60 * 1000) return;
   try {
+    // Fold in sibling-workflow commits (e.g. cf-rate.yml's fresh cf-rate.json)
+    // before amending, so our push never clobbers their data.
+    try { sh('git fetch -q origin data'); sh('git merge -q --no-edit origin/data'); }
+    catch { log('publish: remote data-branch merge skipped'); }
     sh('git add -A');
     if (!sh('git status --porcelain').trim()) return;
     let has = true;
     try { sh('git rev-parse HEAD'); } catch { has = false; }
     if (has) sh(`git commit --amend -q -m "data ${new Date().toISOString()}"`);
     else sh(`git commit -q -m "data ${new Date().toISOString()}"`);
-    sh('git push --force -q origin HEAD:data');
+    // Lease: never overwrite a concurrent cf-rate.yml push that landed mid-cycle.
+    try { sh('git push --force-with-lease -q origin HEAD:data'); }
+    catch { log('publish: remote moved during push, retrying next cycle'); return; }
     lastPush = Date.now();
   } catch (e) { log('publish failed:', String(e.stderr || e).slice(0, 300)); }
 }

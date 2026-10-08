@@ -36,7 +36,9 @@ jobs:
           git config --global user.email "forecast-bot@users.noreply.github.com"
           REMOTE="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           if git ls-remote --exit-code --heads "$REMOTE" data >/dev/null 2>&1; then
-            git clone --depth 1 --branch data "$REMOTE" data-branch
+            # Full clone (not --depth 1): publish() merges origin/data each cycle so
+            # sibling workflows' commits (cf-rate.yml) survive our amend+push.
+            git clone --branch data "$REMOTE" data-branch
           else
             mkdir data-branch && cd data-branch && git init -q -b data && git remote add origin "$REMOTE"
           fi
