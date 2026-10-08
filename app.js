@@ -121,10 +121,14 @@ function renderLittleMarlowe() {
       setT('lmSparkLabel', `TE BTC→XRP · last ${pts.length} notes`);
     } else { sp.setAttribute('points', ''); setT('lmSparkLabel', ''); }
   }
-  // speech bubble: short version of his finding
+  // speech bubble: short version of his finding (pops when it changes)
   if (bubble) {
     const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
-    bubble.textContent = short;
+    if (bubble.textContent !== short) {
+      bubble.textContent = short;
+      const b = $('lmBubble');
+      if (b) { b.classList.remove('lm-talk'); void b.offsetWidth; b.classList.add('lm-talk'); }
+    }
   }
   // the black notebook: newest first, click a row for the full workup
   $('lmLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';

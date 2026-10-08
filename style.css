@@ -77,8 +77,25 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .lm-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
 @media (max-width: 760px) { .lm-grid { grid-template-columns: 1fr; } }
 .lm-hero { position: relative; border-radius: 10px; overflow: hidden; }
-.lm-hero img { display: block; width: 100%; height: 100%; object-fit: cover; animation: lmWork 3.4s ease-in-out infinite; }
-@keyframes lmWork { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-7px) rotate(-0.6deg); } }
+.lm-hero img { display: block; width: 100%; height: 100%; object-fit: cover; animation: lmWork 2.8s ease-in-out infinite; }
+/* writing sway: he rocks side to side like he's writing on the board */
+@keyframes lmWork {
+  0%,100% { transform: scale(1.07) translate(0, 0) rotate(0deg); }
+  25% { transform: scale(1.07) translate(9px, -4px) rotate(0.8deg); }
+  50% { transform: scale(1.07) translate(-7px, -9px) rotate(-0.7deg); }
+  75% { transform: scale(1.07) translate(7px, -3px) rotate(0.5deg); }
+}
+/* chalk sparkle where his chalk meets the board */
+.lm-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #fff); opacity: 0; animation: lmTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes lmTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+/* bubble pops gently when he has something new to say */
+.lm-bubble.lm-talk { animation: lmTalk 1.2s ease-in-out; }
+@keyframes lmTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
 .lm-bubble {
   position: absolute; top: 12px; left: 12px; max-width: 280px;
   background: #fffdf5; border: 1px solid #d8cfb8; border-radius: 12px;
