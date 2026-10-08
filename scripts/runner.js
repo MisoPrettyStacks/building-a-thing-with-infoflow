@@ -90,13 +90,15 @@ let btcRaw = [];
 let btcBars = [];
 let lastClosedStart = 0; // set each cycle(); writeSummary() reads it for the calendar extras
 
-// --- Little Marlowe's lab log (persisted on the data branch via summary.json) ---
+// --- Masha's lab log (persisted on the data branch via summary.json) ---
 let labLog = [];
 function loadLabLog() {
   try {
     const prev = readJson(path.join(DIR, 'summary.json'), null);
-    if (prev && prev.littleMarlowe && Array.isArray(prev.littleMarlowe.log)) {
-      labLog = prev.littleMarlowe.log.slice(-LAB_LOG_CAP);
+    const prevLog = (prev && prev.masha && Array.isArray(prev.masha.log)) ? prev.masha.log
+      : (prev && prev.littleMarlowe && Array.isArray(prev.littleMarlowe.log)) ? prev.littleMarlowe.log : null;
+    if (prevLog) {
+      labLog = prevLog.slice(-LAB_LOG_CAP);
       log(`lab log restored: ${labLog.length} notes`);
     }
   } catch { /* first run: start a fresh notebook */ }
@@ -426,7 +428,7 @@ function writeLabNote(summary) {
     });
     labLog.push(note);
     while (labLog.length > LAB_LOG_CAP) labLog.shift();
-    summary.littleMarlowe = { latest: note, log: labLog.slice(), updated_at: new Date().toISOString() };
+    summary.masha = { latest: note, log: labLog.slice(), updated_at: new Date().toISOString() };
   } catch (e) { log('lab note hiccup:', String(e.message || e).slice(0, 120)); }
 }
 
@@ -438,7 +440,7 @@ async function main() {
     btcRaw = await fetchBars(HIST_BARS, { product: 'BTC-USD' });
     log(`btc history loaded: ${btcRaw.length} closed 5-min bars (infoflow experiment)`);
   } catch (e) { log('btc history failed (infoflow degraded):', String(e.message || e).slice(0, 150)); }
-  loadLabLog(); // restore Little Marlowe's notebook from the data branch
+  loadLabLog(); // restore Masha's notebook from the data branch
   const deadline = MINUTES > 0 ? startedAt + MINUTES * 60000 : 0;
   for (;;) {
     try {

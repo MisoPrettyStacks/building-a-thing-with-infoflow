@@ -41,7 +41,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderLittleMarlowe(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -79,10 +79,10 @@ function renderInfoflow() {
   renderTopology();
 }
 
-/* ---------------- Little Marlowe's lab ---------------- */
-function renderLittleMarlowe() {
+/* ---------------- Masha's lab ---------------- */
+function renderMasha() {
   if (!$('lmTe')) return;
-  const L = summary && summary.littleMarlowe;
+  const L = summary && (summary.masha || summary.littleMarlowe);
   const rowsEl = $('lmLogRows');
   const bubble = $('lmBubbleText');
   const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
@@ -91,7 +91,7 @@ function renderLittleMarlowe() {
     setT('lmTe', 'warming up…'); setT('lmZ', ''); setT('lmVote', ''); setT('lmVerdict', '');
     const sp = $('lmSpark'); if (sp) sp.setAttribute('points', '');
     setT('lmSparkLabel', '');
-    rowsEl.innerHTML = '<div class="lm-empty">Little Marlowe is setting up his lab — notebook entries appear after the next runner cycle.</div>';
+    rowsEl.innerHTML = '<div class="lm-empty">Masha is setting up her lab — notebook entries appear after the next runner cycle.</div>';
     return;
   }
   const n = L.latest, c = n.computed;
@@ -167,12 +167,12 @@ function renderLittleMarlowe() {
   }
 }
 
-/* ---------------- Little Marlowe flipbook animation ---------------- */
-function initLittleMarloweAnim() {
+/* ---------------- Masha flipbook animation ---------------- */
+function initMashaAnim() {
   const img = $('lmHeroImg');
   if (!img) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const BASE = 'little-marlowe.webp', WRITE = 'little-marlowe-write.webp', BLINK = 'little-marlowe-blink.webp';
+  const BASE = 'masha.webp', WRITE = 'masha-write.webp', BLINK = 'masha-blink.webp';
   let ready = 0;
   const go = () => { if (++ready >= 2) start(); };
   const fallback = setTimeout(() => start(), 4000);
@@ -916,7 +916,7 @@ window.addEventListener('load', () => {
 });
 (async function boot() {
   await resolveBases();
-  initLittleMarloweAnim();
+  initMashaAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
