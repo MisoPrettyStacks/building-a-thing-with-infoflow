@@ -140,10 +140,15 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
   padding: 20px 18px; margin: 20px 0;
 }
 .masha-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
   text-align: center; color: #f4a6c1; font-size: 22px; font-weight: 700;
   letter-spacing: 2px; margin: 28px 0 14px;
 }
-@media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } }
+.masha-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #f4a6c1; flex: 0 0 auto;
+}
+@media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } .masha-lab-headshot { width: 48px; height: 48px; } }
 
 /* ---------------- embedded 3D flow field ---------------- */
 .flow3d-embed { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
