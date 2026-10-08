@@ -516,6 +516,92 @@
 
 </div>
 
+<div class="daisy-lab-wrap">
+<h2 class="daisy-lab-title"><img src="daisy-headshot.webp" alt="Daisy" class="daisy-lab-headshot"> DAISY'S LAB - DERIVATIVES</h2>
+<div class="daisy-agent-intro">
+  <h3>Meet Daisy — an agentic agent, not a mascot</h3>
+  <p>Daisy doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the XRP perpetual-futures market for crowded positioning, researching the science of derivatives markets, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Derivatives Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> derivatives markets · market microstructure · statistics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: how funding rates and open interest on XRP perpetuals relate to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live derivatives measurements, guard feed and data quality, and keep the lab notebook. Analyze how positioning behaves: when funding regimes build and release, when open interest confirms or contradicts the tilt, which regimes the signal favors. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the derivatives feed's measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether derivatives positioning earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+</div>
+<section id="derivflow" class="card">
+  <h2>Derivatives positioning — perpetuals regime signal <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Daisy watches the public derivatives feed for XRP perpetuals. Funding is her crowd meter: persistently positive funding means the long side is crowded and fragile (bearish tilt); persistently negative funding means shorts are crowded (bullish tilt). Open interest is the amplifier — a tilt with rising open interest means fresh money piling into the crowded side, which strengthens the read. The member emits a slow positioning tilt — currently at weight zero, so it is scored but never affects the forecast until Daisy finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Positioning tilt</div><div class="v" id="daTilt" style="font-size:15px">—</div><div class="s" id="daTiltSub">—</div></div>
+    <div class="stat"><div class="k">Funding rate · 8h</div><div class="v" id="daFunding" style="font-size:15px">—</div><div class="s" id="daFundingSub">—</div></div>
+    <div class="stat"><div class="k">Open interest trend</div><div class="v" id="daOI" style="font-size:15px">—</div><div class="s" id="daOISub">recent window</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="daStatus" style="font-size:15px">—</div><div class="s" id="daStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="daBrier">—</div><div class="s" id="daBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="daSkill">—</div><div class="s" id="daSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="daWeight" style="font-size:15px">—</div><div class="s" id="daWeightNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Positioning history</div><div class="v" style="font-size:12px"><canvas id="daSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">slow tilt across cycles</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner reads the funding-rate history and open-interest trail for the XRP perpetual contract from the public exchange API (no keys) and asks one question — is the derivatives crowd packed into one side? The tilt is deliberately slow — it hangs in there across many windows until the positioning regime genuinely changes. Honest caveat: by the time a crowded regime is obvious on the funding board, the market has often already priced the squeeze — the edge, if any, is in persistent regimes the crowd misreads, not a single extreme print. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="daisy3d" class="card">
+  <h2>Watching the crowd in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Daisy's live view of the derivatives market. The gold dial is her funding-rate crowd meter — when the needle swings, the crowd is leaning hard one way. The towers are open interest: rising towers mean fresh money piling into the crowded side. When her positioning tilt is decisive, the dial burns brighter. So you're literally watching what the derivatives crowd is doing right now. <a href="daisy3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="daisy3d.html?embed=1&v=1" title="Live 3D derivatives rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="daisy" class="card">
+  <h2>Daisy's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Daisy</b> — she spends every 5-minute cycle watching whether derivatives positioning on XRP can actually help the forecast. She writes down <i>everything</i>: what the feed showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="dv-panel" id="daVerdict" hidden>
+    <div class="dv-head">DAISY'S STANDING VERDICT <span class="dv-badge" id="daVBadge"></span></div>
+    <p class="dv-plain" id="daVPlain"></p>
+    <div class="dv-ev" id="daVEvidence"></div>
+    <details class="dv-det"><summary>How she reached it — every discipline's read</summary><div id="daDisciplines"></div></details>
+    <details class="dv-det"><summary>Hypothesis ledger</summary><div id="daHypotheses"></div></details>
+    <div class="dv-meta muted" id="daVMeta"></div>
+  </div>
+  <div class="dd-scene">
+    <div class="dd-grid">
+      <div class="dd-hero">
+        <img src="daisy.webp" alt="Daisy working at her chalkboard" id="daHeroImg">
+        <span class="dd-sparkle" aria-hidden="true"></span>
+        <div class="dd-bubble" id="daBubble"><span id="daBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Daisy's findings <span class="lm-live" id="daLiveDot"></span></div>
+        <div class="lm-line" id="daBoardBias">warming up…</div>
+        <div class="lm-line" id="daBoardFund"></div>
+        <div class="lm-line" id="daBoardOI"></div>
+        <div class="lm-line lm-verdict" id="daBoardVerdict"></div>
+        <svg id="daSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="daSparkLine" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="daSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="daLogCount" class="muted"></span></div>
+    <div id="daLog"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Daisy ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="dchat-title">CHAT WITH DAISY</h3>
+  <div class="dchat" id="dchat">
+    <div class="dchat-head">
+      <img src="daisy-headshot.webp" alt="Daisy">
+      <div class="dchat-who"><b>Daisy</b><span class="dchat-online"><i></i>online — ask me about derivatives positioning</span></div>
+    </div>
+    <div class="dchat-log" id="daChatLog" aria-live="polite"></div>
+    <div class="dchat-chips" id="daChatChips"></div>
+    <div class="dchat-input">
+      <input id="daChatText" type="text" placeholder="Ask Daisy about funding rates…" maxlength="300" autocomplete="off">
+      <button id="daChatSend" type="button">Send</button>
+    </div>
+    <div class="dchat-note muted">Daisy answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 
 <section id="score" class="card">
