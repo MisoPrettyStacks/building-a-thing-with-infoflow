@@ -41,7 +41,41 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); schedDraw();
+}
+
+/* ---------------- information flow (experimental) ---------------- */
+function renderInfoflow() {
+  if (!$('ifBx')) return;
+  const d = summary && summary.extras && summary.extras.infoflow;
+  if (!d) {
+    ['ifBx','ifXb','ifNet','ifPe','ifBrier','ifEnsBrier','ifWeight'].forEach((id) => { $(id).textContent = '—'; });
+    $('ifBxZ').textContent = 'waiting for runner…'; $('ifXbZ').textContent = 'waiting for runner…';
+    $('ifVote').textContent = 'member vote —'; $('ifRegime').textContent = '—';
+    $('ifBrierN').textContent = '—'; $('ifWeightNote').textContent = '0 = scored only, not used'; $('ifAge').textContent = '—';
+    return;
+  }
+  $('ifBx').textContent = d.te_btc_xrp.toFixed(4);
+  $('ifBxZ').textContent = 'nats · z = ' + d.z_btc_xrp.toFixed(2) + (d.z_btc_xrp > 2 ? ' (significant)' : ' (not significant)');
+  $('ifXb').textContent = d.te_xrp_btc.toFixed(4);
+  $('ifXbZ').textContent = 'nats · z = ' + d.z_xrp_btc.toFixed(2) + (d.z_xrp_btc > 2 ? ' (significant)' : ' (not significant)');
+  const dir = d.net > 0 ? 'BTC → XRP' : d.net < 0 ? 'XRP → BTC' : 'balanced';
+  $('ifNet').textContent = dir + ' (' + Math.abs(d.net).toFixed(4) + ')';
+  $('ifVote').textContent = 'member vote ' + (d.vote === 0.5 ? 'abstains (0.50)' : 'P(up) = ' + d.vote.toFixed(3));
+  $('ifPe').textContent = d.perm_entropy.toFixed(3);
+  $('ifRegime').textContent = d.noisy ? 'noisy — guard ' + (d.enabled ? 'ACTIVE (shrinking)' : 'measured only') : 'ordered';
+  const mem = summary.windows && summary.windows.all && summary.windows.all.members;
+  if (mem && mem.infoflow != null) {
+    $('ifBrier').textContent = mem.infoflow.toFixed(5);
+    $('ifBrierN').textContent = 'n = ' + (mem.infoflow_n || '?') + ' scored forecasts';
+    $('ifEnsBrier').textContent = summary.windows.all.brier != null ? summary.windows.all.brier.toFixed(5) : '—';
+  } else {
+    $('ifBrier').textContent = '—'; $('ifBrierN').textContent = 'no scored forecasts yet'; $('ifEnsBrier').textContent = '—';
+  }
+  $('ifWeight').textContent = (d.weight || 0).toFixed(2);
+  $('ifWeightNote').textContent = d.enabled ? 'ACTIVE — agent found OOS evidence' : '0 = scored only, not used';
+  const ageS = Math.max(0, Math.round((Date.now() - Date.parse(d.computed_at)) / 1000));
+  $('ifAge').textContent = 'recomputed ' + (ageS < 90 ? ageS + 's ago' : Math.round(ageS / 60) + 'm ago');
 }
 
 /* ---------------- live price + chart ---------------- */

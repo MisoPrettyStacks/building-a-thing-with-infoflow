@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
+import { computeInfoflow } from '../lib/infoflow.js';
 import { appendRecord, readLedger, readJson, writeJson, verifyChain, canonical, sha256, ledgerFiles } from '../lib/io.js';
 import { buildSummary, joinLedger } from '../lib/summary.js';
 import { runAgent, INITIAL_CONFIG } from '../lib/agent.js';
@@ -47,7 +48,9 @@ if (!chain.ok) { log('LEDGER CHAIN BROKEN at seq', chain.brokenAt, '- refusing t
 
 let raw = [];
 let bars = [];
-const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null };
+let btcRaw = [];
+let btcBars = [];
+const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false };
 
 function append(payload) {
   const rec = appendRecord(DIR, payload);
@@ -63,6 +66,12 @@ async function cycle() {
   bars = gridBars(raw, STEP, lastClosedStart);
   const last = bars[bars.length - 1];
   if (!last || last.t !== lastClosedStart) throw new Error('latest closed bar missing');
+  // BTC feed for the infoflow experiment (best-effort; the forecast works without it)
+  try {
+    const btcFresh = await coinbaseCandles(t - 30 * STEP, t, STEP, 'BTC-USD');
+    btcRaw = mergeBars(btcRaw, btcFresh, t).slice(-(HIST_BARS + 600));
+    btcBars = gridBars(btcRaw, STEP, lastClosedStart);
+  } catch (e) { log('btc feed hiccup:', String(e.message || e).slice(0, 120)); }
 
   const J = joinLedger(records);
   const h = config.champion.h;
@@ -90,25 +99,47 @@ async function cycle() {
       append({ type: 'gap', bar_t: lastClosedStart, reason: `runner late by ${lag}s (> ${MAX_LATE_SEC}s)` });
       log('skipped bar', lastClosedStart, 'late by', lag);
     } else {
-      const { step, state } = forecastLatest(bars, config.champion);
+      // infoflow experiment: precompute the member vote + diagnostics for the bar being forecast
+      let infoOpts = null;
+      try {
+        if (btcBars.length > 300) {
+          const { votes, noisy, diag } = computeInfoflow(bars, btcBars, { fromIdx: bars.length - 1, shuffles: 50 });
+          infoOpts = { votes, noisy };
+          stats.lastInfoflow = diag[bars.length - 1];
+        }
+      } catch (e) { log('infoflow hiccup:', String(e.message || e).slice(0, 120)); }
+      const { step, state } = forecastLatest(bars, config.champion, infoOpts ? { infoflow: infoOpts } : {});
       const rec = append({
         type: 'forecast', id: lastClosedStart, bar_t: lastClosedStart, t_issue: lastClosedStart + STEP,
         target_t: lastClosedStart + STEP + h * STEP, issue_lag_sec: lag,
         p: +step.p.toFixed(6), p_raw: +step.praw.toFixed(6), m: step.m.map((x) => +x.toFixed(6)),
+        m_infoflow: +step.mInfo.toFixed(6),
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
         cfg_version: config.champion.version, cfg_hash: cfgHash(),
         input_digest: sha256(canonical(bars.slice(-48).map((b) => [b.t, b.c, b.v]))).slice(0, 16),
         source: 'coinbase:XRP-USD', weights: state.weights.map((x) => +x.toFixed(4)),
       });
-      log(`forecast ${rec.id}: P(up)=${rec.p} c0=${rec.c0} v${rec.cfg_version}`);
+      log(`forecast ${rec.id}: P(up)=${rec.p} c0=${rec.c0} v${rec.cfg_version}` + (stats.lastInfoflow ? ` infoflow_vote=${rec.m_infoflow}` : ''));
       stats.lastState = state;
+      // regime-filter transparency: log when the noise-regime guard engages or disengages
+      const noisyNow = !!(stats.lastInfoflow && stats.lastInfoflow.noisy && (config.champion.infoflowWeight || 0) > 0);
+      if (noisyNow && !stats.regimeWasNoisy) {
+        append({ type: 'agent', agent: 'infoflow', decision: 'regime filter engaged',
+          detail: `permutation entropy ${stats.lastInfoflow.perm_entropy} > 0.85 (noise regime); member outputs shrunk toward 0.5` });
+        log('agent: infoflow regime filter engaged');
+      } else if (!noisyNow && stats.regimeWasNoisy) {
+        append({ type: 'agent', agent: 'infoflow', decision: 'regime filter released',
+          detail: `permutation entropy back below 0.85; full model confidence restored` });
+        log('agent: infoflow regime filter released');
+      }
+      stats.regimeWasNoisy = noisyNow;
     }
   }
 
   // 3) agent review
   const resolved = joinLedger(records).resolved;
   const before = canonical(config);
-  const out = runAgent({ nowSec: t, resolved, bars, config });
+  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config });
   config = out.config;
   for (const ev of out.events) { append({ type: 'agent', ...ev }); log('agent:', ev.type, ev.decision || ev.action || ''); }
   if (canonical(config) !== before) saveConfig();
@@ -143,6 +174,12 @@ function writeSummary() {
       },
       ledger_files: ledgerFiles(DIR),
       model_state: stats.lastState || null,
+      infoflow: stats.lastInfoflow ? {
+        ...stats.lastInfoflow,
+        weight: config.champion.infoflowWeight || 0,
+        enabled: (config.champion.infoflowWeight || 0) > 0,
+        computed_at: new Date().toISOString(),
+      } : null,
     },
   });
   writeJson(path.join(DIR, 'summary.json'), summary);
@@ -152,6 +189,10 @@ async function main() {
   log(`runner start: dir=${DIR} minutes=${MINUTES} push=${PUSH} ledger_seq=${chain.seq || 0}`);
   raw = await fetchBars(HIST_BARS);
   log(`history loaded: ${raw.length} closed 5-min bars`);
+  try {
+    btcRaw = await fetchBars(HIST_BARS, { product: 'BTC-USD' });
+    log(`btc history loaded: ${btcRaw.length} closed 5-min bars (infoflow experiment)`);
+  } catch (e) { log('btc history failed (infoflow degraded):', String(e.message || e).slice(0, 150)); }
   const deadline = MINUTES > 0 ? startedAt + MINUTES * 60000 : 0;
   for (;;) {
     try {

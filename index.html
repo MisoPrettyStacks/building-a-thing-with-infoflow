@@ -86,6 +86,24 @@
   <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every 5 minutes the runner pulls recent XRP-USD trades from Coinbase, Kraken, Bitstamp and Gemini — four of the six official CF constituent venues (LMAX Digital and itBit have no free public feed and are excluded) — buckets the trailing 60 minutes into twelve 5-minute partitions, takes the volume-weighted median trade price per partition pooled across venues, and averages the twelve medians, exactly the calculation in CF's methodology. Your browser re-runs the current partial partition every 10 seconds from live Coinbase + Bitstamp trades, so the number above is seconds old. The official fixing publishes once daily at 16:00 London time; this page's live value is our implementation of the same calculation, not the official fixing.</p>
 </section>
 
+<section id="infoflow" class="card">
+  <h2>Information flow — transfer entropy <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Directed information flow between BTC and XRP, measured live with transfer entropy over trailing 5-minute returns. A fifth ensemble member votes from this signal — currently at weight zero, so it is scored but never affects the forecast until the agent finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">TE(BTC→XRP)</div><div class="v" id="ifBx">—</div><div class="s" id="ifBxZ">nats · —</div></div>
+    <div class="stat"><div class="k">TE(XRP→BTC)</div><div class="v" id="ifXb">—</div><div class="s" id="ifXbZ">nats · —</div></div>
+    <div class="stat"><div class="k">Net flow direction</div><div class="v" id="ifNet" style="font-size:15px">—</div><div class="s" id="ifVote">member vote —</div></div>
+    <div class="stat"><div class="k">Regime (perm. entropy)</div><div class="v" id="ifPe" style="font-size:15px">—</div><div class="s" id="ifRegime">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="ifBrier">—</div><div class="s" id="ifBrierN">—</div></div>
+    <div class="stat"><div class="k">Ensemble Brier (same window)</div><div class="v" id="ifEnsBrier">—</div><div class="s">lower is better</div></div>
+    <div class="stat"><div class="k">Blend weight</div><div class="v" id="ifWeight">—</div><div class="s" id="ifWeightNote">0 = scored only, not used</div></div>
+    <div class="stat"><div class="k">Window</div><div class="v" style="font-size:15px">288 bars · 24h</div><div class="s" id="ifAge">—</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner pulls BTC-USD 5-minute bars alongside XRP, discretizes trailing 24h returns into 3 quantile bins, and estimates transfer entropy in both directions with a 50-shuffle surrogate significance test. The member votes only when net BTC→XRP flow is positive <em>and</em> significant (z &gt; 2), following the recent BTC move; otherwise it abstains. Honest caveat: the literature measures information half-life in <em>milliseconds</em> — at 15-minute horizons this edge may be near zero. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
 <section id="score" class="card">
   <h2>Live out-of-sample accuracy</h2>
   <p class="muted" style="margin-top:0">Every number below is computed from the public, hash-chained ledger of forecasts that were issued <em>before</em> their outcome existed. Nothing is back-filled.</p>
