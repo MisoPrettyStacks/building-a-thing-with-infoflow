@@ -1,8 +1,7 @@
 // Nia's lab — frontend fragment.
 //
 // COORDINATOR: merge into app.js:
-//   1. Add to the import block: import { niaAnswer, niaIsIpProbe, niaRepeatRefusal } from './lib/niachat.js';
-//   2. Call initNia() in boot() next to initWendyAnim();
+//   1. Add to the import block: //   2. Call initNia() in boot() next to initWendyAnim();
 //   3. Call renderNiaPanel(summary) in loadSummary() next to renderWendy();
 //
 // Uses the module-level $, DATA_BASE, and summary from app.js.
