@@ -158,6 +158,7 @@
 
 </div>
 
+<div class="exp-wrap exp-wrap-yellow">
 <section id="calendar" class="card">
   <h2>Calendar effects <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
   <p class="muted" style="margin-top:0">Ripple releases 1B XRP from escrow on the 1st of each month, re-locking most of it days later. The model carries a tiny bearish tilt for the first 7 days — scored out-of-sample, applied only with evidence.</p>
@@ -169,6 +170,9 @@
   </div>
   <p class="muted" style="font-size:12px;margin-bottom:0">The effect is small and fully predictable — that is the point. History shows only mild 7-day swings around releases; this tilt is capped at 0.01 on P(up) and fades by the 7th. If the scoreboard below ever shows it hurting, the agent keeps it at weight zero.</p>
 </section>
+
+<div class="exp-wrap exp-wrap-green">
+</div>
 
 <section id="macro" class="card">
   <h2>Macro events <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
@@ -183,6 +187,9 @@
   <div id="macList" style="margin-top:12px;font-size:13px"></div>
   <p class="muted" style="font-size:12px;margin-bottom:0">Windows: ±60 min around tier-1 releases (FOMC decisions, CPI, nonfarm payrolls), ±30 min around tier-2 (PPI, retail sales, ISM). Inside a window the P(up) deviation is multiplied by 0.85 (tier-1) or 0.92 (tier-2) and the cone bands widen by the inverse. The schedule is hardcoded in <code>data/macro-calendar.json</code> from the official Fed/BLS/Census/ISM calendars — no data feed to break. Scored out-of-sample like everything else; the agent only arms it with evidence.</p>
 </section>
+
+<div class="exp-wrap exp-wrap-blue">
+</div>
 
 <section id="onchain" class="card">
   <h2>On-chain flows <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
@@ -208,6 +215,8 @@
   <div class="stat" style="margin-bottom:10px"><div class="k">Combined signal effect right now</div><div class="v" id="ocSigTotal" style="font-size:15px">—</div><div class="s" id="ocSigTotalN">—</div></div>
   <div class="log" id="ocSignalLog"><div class="muted">waiting for runner…</div></div>
 </section>
+
+</div>
 
 <section id="score" class="card">
   <h2>Live out-of-sample accuracy</h2>

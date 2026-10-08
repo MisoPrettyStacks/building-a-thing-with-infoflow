@@ -150,6 +150,13 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 }
 @media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } .masha-lab-headshot { width: 48px; height: 48px; } }
 
+/* ---------------- experimental section outlines ---------------- */
+.exp-wrap { border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
+.exp-wrap-yellow { border: 2px solid #f2d060; }
+.exp-wrap-green { border: 2px solid #7fd68f; }
+.exp-wrap-blue { border: 2px solid #7fb8f5; }
+.exp-wrap-purple { border: 2px solid #c39bf0; }
+
 /* ---------------- embedded 3D flow field ---------------- */
 .flow3d-embed { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
 .flow3d-embed iframe { display: block; width: 100%; height: 460px; border: 0; background: #05070d; }
