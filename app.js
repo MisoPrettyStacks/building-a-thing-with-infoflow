@@ -81,19 +81,45 @@ function renderInfoflow() {
 
 /* ---------------- Little Marlowe's lab ---------------- */
 function renderLittleMarlowe() {
-  if (!$('lmStage')) return;
+  if (!$('lmTe')) return;
   const L = summary && summary.littleMarlowe;
   const rowsEl = $('lmLogRows');
   const bubble = $('lmBubbleText');
+  const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
   if (!L || !L.latest) {
     if (bubble) bubble.textContent = 'setting up my lab…';
+    setT('lmTe', 'warming up…'); setT('lmZ', ''); setT('lmVote', ''); setT('lmVerdict', '');
+    const sp = $('lmSpark'); if (sp) sp.setAttribute('points', '');
+    setT('lmSparkLabel', '');
     rowsEl.innerHTML = '<div class="lm-empty">Little Marlowe is setting up his lab — notebook entries appear after the next runner cycle.</div>';
     return;
   }
-  const n = L.latest;
-  // 3D chalkboard + character state (the module draws real measurements)
-  if (window.__lm3d && window.__lm3d.setData) {
-    try { window.__lm3d.setData(n, L.log || []); } catch (e) { /* 3D still loading; next poll retries */ }
+  const n = L.latest, c = n.computed;
+  if (c) {
+    setT('lmTe', `TE BTC→XRP   ${c.te_btc_xrp.toFixed(4)} nats`);
+    setT('lmZ', `z = ${c.z_btc_xrp.toFixed(2)}   (need > 2)`);
+    setT('lmVote', `vote: ${c.vote === 0.5 ? 'abstain (0.50)' : 'P(up) = ' + c.vote.toFixed(3)}`);
+  } else {
+    setT('lmTe', 'not enough data…');
+    setT('lmZ', 'collecting bars…');
+    setT('lmVote', '');
+  }
+  const vEl = $('lmVerdict');
+  if (vEl) {
+    vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`;
+    vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879';
+  }
+  // sparkline of TE BTC→XRP over recent notes (real data)
+  const pts = (L.log || []).filter((e) => e.computed).slice(-24).map((e) => e.computed.te_btc_xrp);
+  const sp = $('lmSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      sp.setAttribute('points', pts.map((v, i) =>
+        (300 * i / (pts.length - 1)).toFixed(1) + ',' +
+        (60 - ((v - mn) / rg) * 52).toFixed(1)).join(' '));
+      setT('lmSparkLabel', `TE BTC→XRP · last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('lmSparkLabel', ''); }
   }
   // speech bubble: short version of his finding
   if (bubble) {

@@ -9,14 +9,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
 </head>
 <body>
 <!-- 3D intro: the flow field pops up first thing on a visit -->
@@ -145,8 +137,21 @@
   <h2>Little Marlowe's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
   <p class="muted" style="margin-top:0">Meet <b>Little Marlowe</b> — he spends every 5-minute cycle studying whether information flowing from BTC to XRP can actually help the forecast. He writes down <i>everything</i>: what data he collected, what he computed, what he found, and his honest verdict on whether it's useful — including the exact mathematical effect on the model. His notebook is saved to the data feed every cycle, whether or not his signal is ever used. He stays at his chalkboard regardless.</p>
   <div class="lm-scene">
-    <div id="lmStage"></div>
-    <div class="lm-bubble" id="lmBubble"><span id="lmBubbleText">setting up my lab…</span></div>
+    <div class="lm-grid">
+      <div class="lm-hero">
+        <img src="little-marlowe.webp" alt="Little Marlowe working at his chalkboard" id="lmHeroImg">
+        <div class="lm-bubble" id="lmBubble"><span id="lmBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Little Marlowe's findings <span class="lm-live" id="lmLiveDot"></span></div>
+        <div class="lm-line" id="lmTe">warming up…</div>
+        <div class="lm-line" id="lmZ"></div>
+        <div class="lm-line" id="lmVote"></div>
+        <div class="lm-line lm-verdict" id="lmVerdict"></div>
+        <svg id="lmSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="lmSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="lmSparkLabel"></div>
+      </div>
+    </div>
   </div>
   <div class="lm-logbox">
     <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="lmLogCount" class="muted"></span></div>
@@ -441,6 +446,5 @@
 <footer>Research and education only. Not financial advice. Probabilities are forecasts, not guarantees.</footer>
 </div>
 <script type="module" src="app.js"></script>
-<script type="module" src="marlowe3d.js"></script>
 </body>
 </html>
