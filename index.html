@@ -427,6 +427,95 @@
 
 </div>
 
+<!-- ================= Violet's Volatility Regime Lab ================= -->
+<!-- Fragment: coordinator inserts this into index.html inside the experiments area. -->
+<div class="violet-lab-wrap">
+<h2 class="violet-lab-title"><img src="violet-headshot.webp" alt="Violet" class="violet-lab-headshot"> VIOLET'S LAB - VOLATILITY REGIME</h2>
+<div class="violet-agent-intro">
+  <h3>Meet Violet — an agentic agent, not a mascot</h3>
+  <p>Violet doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: measuring realized volatility from the lab's own candles, classifying the market's regime, researching the science of volatility, learning from the evidence, and making real decisions about whether a confidence <em>dampener</em> belongs in the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Volatility Regime Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> financial econometrics · statistics · risk management · mathematics · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: how the market's volatility regime relates to how much confidence a forecast deserves.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live volatility measurements, guard candle and data quality, and keep the lab notebook. Analyze how regimes behave: how long wild regimes persist, whether calm regimes are trustworthy, which regimes the forecast's errors cluster in. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the market's volatility read and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the volatility dampener earns a place in the live forecast model. Her APPLY verdicts send the dampener to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p><strong>What she never does:</strong> predict direction. Violet's dampener only ever <em>shrinks confidence toward 0.5</em> in wild regimes — it cannot move the forecast up or down. Volatility tells you how wide the cone is, never which way the coin lands. 🔮</p>
+</div>
+<section id="volreg" class="card">
+  <h2>Volatility regime — confidence dampener <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Violet measures realized volatility from the lab's own closed candles and compares it against its own rolling baseline: <strong>calm</strong> (well below baseline), <strong>normal</strong>, or <strong>wild</strong> (well above). In wild regimes she nominates the dampener: the forecast admits uncertainty and shrinks toward 0.5 instead of bluffing through the storm. Currently at weight zero — scored, never applied, until Violet finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Current regime</div><div class="v" id="viRegime" style="font-size:15px">—</div><div class="s" id="viRegimeSub">—</div></div>
+    <div class="stat"><div class="k">Realized vol — now</div><div class="v" id="viVolNow" style="font-size:15px">—</div><div class="s" id="viVolNowSub">—</div></div>
+    <div class="stat"><div class="k">Vol baseline</div><div class="v" id="viVolMed" style="font-size:15px">—</div><div class="s" id="viVolMedSub">rolling median</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="viStatus" style="font-size:15px">—</div><div class="s" id="viStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Dampener what-if Brier</div><div class="v" id="viBrier">—</div><div class="s" id="viBrierN">—</div></div>
+    <div class="stat"><div class="k">Wild-regime share</div><div class="v" id="viSkill">—</div><div class="s" id="viSkillSub">of scored cycles</div></div>
+    <div class="stat"><div class="k">Dampener status</div><div class="v" id="viDamp" style="font-size:15px">—</div><div class="s" id="viDampNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Vol history</div><div class="v" style="font-size:12px"><canvas id="viSparkC" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent regime reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner reads the latest closed candles, computes the spread of recent returns, and compares it with its own rolling baseline to classify the regime. The regime call is relative, never absolute — markets change, and fixed thresholds do not survive contact with them. Honest caveat: wild regimes are rare, and a dampener that cries wolf in calm weather just dulls good forecasts. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="violet3d" class="card">
+  <h2>Watching the weather in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Violet's live view of volatility. The ribbon is rolling realized volatility over time — <span style="color:#a855f7">purple</span> where the regime is calm, <span style="color:#7fb8f5">blue</span> where it is normal, <span style="color:#ff5a5a">red</span> where it is wild. The glowing orb rides the latest reading, so you're watching the market's weather breathe in real time. <a href="violet3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="violet3d.html?embed=1&v=1" title="Live 3D volatility-regime rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="violet" class="card">
+  <h2>Violet's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Violet</b> — she spends every 5-minute cycle watching whether the market's volatility regime deserves to humble the forecast. She writes down <i>everything</i>: what the candles showed, what she computed, what she found, and her honest verdict — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her dampener is ever armed.</p>
+  <div class="vi-vpanel" id="viVPanel" hidden>
+    <div class="vi-vhead">VIOLET'S STANDING VERDICT <span class="vi-vbadge" id="viVBadge"></span></div>
+    <p class="vi-vplain" id="viVPlain"></p>
+    <div class="vi-vev" id="viVEvidence"></div>
+    <details class="vi-vdet"><summary>How she reached it — every discipline's read</summary><div id="viDisciplines"></div></details>
+    <details class="vi-vdet"><summary>Hypothesis ledger</summary><div id="viHypotheses"></div></details>
+    <div class="vi-vmeta muted" id="viVMeta"></div>
+  </div>
+  <div class="vi-scene">
+    <div class="vi-grid">
+      <div class="vi-hero">
+        <img src="violet.webp" alt="Violet working at her chalkboard" id="viHeroImg">
+        <span class="vi-sparkle" aria-hidden="true"></span>
+        <div class="vi-bubble" id="viBubble"><span id="viBubbleText">consulting the regimes…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Violet's findings <span class="lm-live" id="viLiveDot"></span></div>
+        <div class="lm-line" id="viBoardRegime">warming up…</div>
+        <div class="lm-line" id="viBoardVol"></div>
+        <div class="lm-line" id="viBoardDamp"></div>
+        <div class="lm-line lm-verdict" id="viVerdict"></div>
+        <svg id="viSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="viSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="viSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="viLogCount" class="muted"></span></div>
+    <div id="viLog"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Violet ever finds real out-of-sample evidence, the dampener will get wired into the forecast. It will never vote on direction — dampening is confidence, not a compass.</p>
+  <h3 class="vichat-title">CHAT WITH VIOLET</h3>
+  <div class="vichat" id="vichat">
+    <div class="vichat-head">
+      <img src="violet-headshot.webp" alt="Violet">
+      <div class="vichat-who"><b>Violet</b><span class="vichat-online"><i></i>online — ask me about volatility regimes</span></div>
+    </div>
+    <div class="vichat-log" id="viChatLog" aria-live="polite"></div>
+    <div class="vichat-chips" id="viChatChips"></div>
+    <div class="vichat-input">
+      <input id="viChatText" type="text" placeholder="Ask Violet about volatility regimes…" maxlength="300" autocomplete="off">
+      <button id="viChatSend" type="button">Send</button>
+    </div>
+    <div class="vichat-note muted">Violet answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 
 <section id="score" class="card">

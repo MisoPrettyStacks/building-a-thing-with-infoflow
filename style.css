@@ -495,3 +495,124 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .ochat-note { font-size: 11px; padding: 8px 14px 10px; }
 @media (max-width: 640px) { .opal-lab-title { font-size: 17px; letter-spacing: 1px; } .opal-lab-headshot { width: 48px; height: 48px; } }
 
+
+/* ============ Violet's lab theme ============ */
+/* ============ Violet's lab (purple) ============ */
+.violet-lab-wrap {
+  border: 3px solid #a855f7; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.violet-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #a855f7; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.violet-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #a855f7; flex: 0 0 auto;
+}
+.violet-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(168,85,247,0.06);
+}
+.violet-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #a855f7; letter-spacing: 1px; }
+.violet-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Violet's standing verdict panel */
+.vi-vpanel {
+  border: 1px solid #a855f7; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(168,85,247,0.05);
+}
+.vi-vhead { font-size: 13px; letter-spacing: 2px; color: #a855f7; font-weight: 700; margin-bottom: 8px; }
+.vi-vbadge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.vi-vbadge.hold { background: #3a3a3a; color: #c4a5f5; border: 1px solid #c4a5f5; }
+.vi-vbadge.apply { background: #2a1e3a; color: #d8b4fe; border: 1px solid #d8b4fe; }
+.vi-vbadge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.vi-vplain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.vi-vev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.vi-vev b { color: #a855f7; }
+.vi-vdet { margin: 8px 0; font-size: 13px; }
+.vi-vdet summary { cursor: pointer; color: #a855f7; }
+.vi-vdet .vi-vline { margin: 6px 0; line-height: 1.5; }
+.vi-vdet .vi-vd { color: #a855f7; font-weight: 600; text-transform: capitalize; }
+.vi-vhyp { margin: 6px 0; line-height: 1.5; }
+.vi-vhyp .st { font-weight: 700; }
+.vi-vhyp .st.open { color: #c4a5f5; } .vi-vhyp .st.supported { color: #b5e6a2; } .vi-vhyp .st.refuted { color: #f09797; } .vi-vhyp .st.proposed { color: #9ecfff; }
+.vi-vmeta { font-size: 12px; margin-top: 10px; }
+/* Violet scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.vi-scene { margin: 6px 0 14px; position: relative; }
+.vi-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .vi-grid { grid-template-columns: 1fr; } }
+.vi-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.vi-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.vi-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #e9d5ff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #e9d5ff); opacity: 0; animation: viTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes viTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.vi-bubble.vi-talk { animation: viTalk 1.2s ease-in-out; }
+@keyframes viTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.vi-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fbf7ff; border: 1px solid #d9c8f0; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.vi-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fbf7ff; border-bottom: 0;
+}
+/* Violet DM chat */
+.vichat-title {
+  color: #a855f7; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.vichat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.vichat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(168,85,247,0.10); border-bottom: 1px solid var(--line);
+}
+.vichat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #a855f7; }
+.vichat-who b { display: block; font-size: 15px; }
+.vichat-online { font-size: 12px; color: #a855f7; display: flex; align-items: center; gap: 5px; }
+.vichat-online i { width: 8px; height: 8px; border-radius: 50%; background: #a855f7; display: inline-block; }
+.vichat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.vichat-row { display: flex; gap: 8px; align-items: flex-end; }
+.vichat-row.me { justify-content: flex-end; }
+.vichat-row.violet img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #a855f7; flex: 0 0 auto; }
+.vichat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.vichat-row.violet .vichat-bubble { background: #2a2438; border-bottom-left-radius: 4px; color: #d8b4fe; }
+.vichat-row.me .vichat-bubble { background: #a855f7; color: #16121e; border-bottom-right-radius: 4px; }
+.vichat-typing { display: inline-block; }
+.vichat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #a855f7; animation: vitick 1s infinite; }
+.vichat-typing span:nth-child(2) { animation-delay: 0.15s; } .vichat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes vitick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.vichat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.vichat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #a855f7; color: #a855f7; background: transparent;
+}
+.vichat-chip:hover { background: rgba(168,85,247,0.12); }
+.vichat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.vichat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1a26; color: inherit; font-size: 14px; outline: none;
+}
+.vichat-input input:focus { border-color: #a855f7; }
+.vichat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #a855f7; color: #16121e; font-weight: 700; font-size: 14px;
+}
+.vichat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .violet-lab-title { font-size: 17px; letter-spacing: 1px; } .violet-lab-headshot { width: 48px; height: 48px; } }
+
