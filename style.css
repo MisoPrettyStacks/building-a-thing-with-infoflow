@@ -195,6 +195,10 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .mv-hyp .st.open { color: #f2c879; } .mv-hyp .st.supported { color: #b5e6a2; } .mv-hyp .st.refuted { color: #f09797; } .mv-hyp .st.proposed { color: #9ecfff; }
 .mv-meta { font-size: 12px; margin-top: 10px; }
 /* Masha DM chat */
+.mchat-title {
+  color: #f4a6c1; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
 .mchat {
   border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
   margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
