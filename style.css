@@ -135,6 +135,10 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .lm-check-pass { color: #8fe3a8; }
 .lm-check-fail { color: #f08a8a; }
 
+.masha-lab-wrap {
+  border: 2px solid #f4a6c1; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
 .masha-lab-title {
   text-align: center; color: #f4a6c1; font-size: 22px; font-weight: 700;
   letter-spacing: 2px; margin: 28px 0 14px;
