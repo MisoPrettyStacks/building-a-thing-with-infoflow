@@ -167,6 +167,46 @@ function renderMasha() {
   }
 }
 
+/* ---------------- Masha's standing verdict ---------------- */
+async function loadMashaVerdict() {
+  const panel = $('mvPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'masha_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('mvBadge');
+  const label = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.textContent = label;
+  badge.className = 'mv-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('mvPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  const pct = (x) => (x != null ? (x * 100).toFixed(1) + '%' : 'n/a');
+  $('mvEvidence').innerHTML =
+    'Evidence she used: <b>' + (ev.n || 0) + '</b> lab notes · significant flow <b>' + pct(ev.sig_frac) + '</b> · ' +
+    'noise regime <b>' + pct(ev.noise_frac) + '</b> · ' +
+    (ev.member_n >= 200
+      ? 'out-of-sample member Brier <b>' + ev.member_brier.toFixed(5) + '</b> vs ensemble <b>' + ev.ensemble_brier.toFixed(5) + '</b> (n=' + ev.member_n + ')'
+      : 'scoreboard warming up (n=' + (ev.member_n || 0) + '/200)');
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('mvDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) =>
+    '<div class="mv-line"><span class="mv-d">' + esc(d.discipline) + ':</span> ' + esc(d.assessment) + '</div>').join('');
+  $('mvHypotheses').innerHTML = (doc.hypotheses || []).map((h) =>
+    '<div class="mv-hyp"><b>' + esc(h.id) + '</b> — ' + esc(h.claim) + '<br>' +
+    'status: <span class="st ' + esc(h.status) + '">' + esc(h.status) + '</span>' +
+    (h.status_why ? ' <span class="muted">(' + esc(h.status_why) + ')</span>' : '') + '</div>').join('') ||
+    '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('mvMeta').innerHTML = 'Charter v' + esc(doc.charter_version) + ' · updated ' +
+    esc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((p) =>
+      '<a href="' + esc(p.id) + '" target="_blank" rel="noopener">' + esc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
 /* ---------------- Masha flipbook animation ---------------- */
 function initMashaAnim() {
   const img = $('lmHeroImg');
@@ -951,6 +991,7 @@ window.addEventListener('load', () => {
   await loadSummary();
   runBacktest();
   loadAgents4();
+  loadMashaVerdict();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);

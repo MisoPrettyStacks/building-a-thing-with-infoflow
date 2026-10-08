@@ -148,6 +148,36 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
   width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
   border: 2px solid #f4a6c1; flex: 0 0 auto;
 }
+.masha-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(244,166,193,0.06);
+}
+.masha-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #f4a6c1; letter-spacing: 1px; }
+.masha-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Masha's standing verdict panel */
+.mv-panel {
+  border: 1px solid #f4a6c1; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(244,166,193,0.05);
+}
+.mv-head { font-size: 13px; letter-spacing: 2px; color: #f4a6c1; font-weight: 700; margin-bottom: 8px; }
+.mv-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.mv-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.mv-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.mv-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.mv-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.mv-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.mv-ev b { color: #f4a6c1; }
+.mv-det { margin: 8px 0; font-size: 13px; }
+.mv-det summary { cursor: pointer; color: #f4a6c1; }
+.mv-det .mv-line { margin: 6px 0; line-height: 1.5; }
+.mv-det .mv-d { color: #f4a6c1; font-weight: 600; text-transform: capitalize; }
+.mv-hyp { margin: 6px 0; line-height: 1.5; }
+.mv-hyp .st { font-weight: 700; }
+.mv-hyp .st.open { color: #f2c879; } .mv-hyp .st.supported { color: #b5e6a2; } .mv-hyp .st.refuted { color: #f09797; } .mv-hyp .st.proposed { color: #9ecfff; }
+.mv-meta { font-size: 12px; margin-top: 10px; }
 @media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } .masha-lab-headshot { width: 48px; height: 48px; } }
 
 /* ---------------- experimental section outlines ---------------- */

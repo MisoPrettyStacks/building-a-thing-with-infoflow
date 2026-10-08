@@ -265,5 +265,75 @@ const macroCal = parseCalendar(JSON.parse(fs.readFileSync(new URL('../data/macro
   ok(oc.brierOnchain < oc.brierBase, 'helpful bias improves 15-min Brier');
   ok(oc.skill24h.n === 415 && Math.abs(oc.skill24h.hitRate - 1) < 1e-12, `24h skill read perfect on uptrend (n=${oc.skill24h.n})`);
 }
+// --- Masha supervisor: deterministic verdicts from evidence (fixtures only, never displayed)
+import { computeEvidence, decideVerdict, updateHypotheses, buildDisciplines, CHARTER_VERSION } from '../scripts/masha-supervisor.js';
+import { runAgent, freshAgentState, proposeCandidates } from '../lib/agent.js';
+const supNote = (z, net, noisy) => ({ computed: { z_btc_xrp: z, net, noisy } });
+const supBoard = (memB, ensB, n) => ({ brier: ensB, members: { infoflow: memB, infoflow_n: n } });
+{ // HOLD on thin history, no matter what
+  const notes = Array.from({ length: 30 }, () => supNote(5, 0.02, false));
+  const ev = computeEvidence(notes, supBoard(0.2, 0.25, 300));
+  ok(decideVerdict(ev).verdict === 'HOLD', 'supervisor HOLD when n<50');
+  // determinism: same inputs -> same verdict
+  ok(decideVerdict(computeEvidence(notes, supBoard(0.2, 0.25, 300))).verdict === 'HOLD', 'supervisor deterministic');
+}
+{ // APPLY_CANDIDATE: persistent significance + real OOS edge + ordered regime
+  const notes = Array.from({ length: 120 }, (_, i) => supNote(i < 80 ? 3.1 : 1.2, 0.01, false));
+  const ev = computeEvidence(notes, supBoard(0.24, 0.25, 250));
+  ok(ev.sig_frac > 0.6 && ev.oos_edge, 'evidence summary correct');
+  ok(decideVerdict(ev).verdict === 'APPLY_CANDIDATE', 'supervisor APPLY_CANDIDATE on strong evidence');
+}
+{ // WITHDRAW: sustained absence of evidence
+  const notes = Array.from({ length: 120 }, (_, i) => supNote(i < 10 ? 3.1 : 1.1, -0.005, false));
+  const ev = computeEvidence(notes, supBoard(0.26, 0.25, 250));
+  ok(decideVerdict(ev).verdict === 'WITHDRAW', 'supervisor WITHDRAW on dead evidence');
+}
+{ // HOLD in the middle: significance without OOS edge
+  const notes = Array.from({ length: 120 }, (_, i) => supNote(i < 80 ? 3.1 : 1.2, 0.01, false));
+  const ev = computeEvidence(notes, supBoard(0.26, 0.25, 250));
+  ok(decideVerdict(ev).verdict === 'HOLD', 'supervisor HOLD without OOS edge');
+}
+{ // hypothesis ledger: statuses change only on evidence
+  const thin = computeEvidence(Array.from({ length: 30 }, () => supNote(5, 0.02, false)), supBoard(0.2, 0.25, 50));
+  const h1 = updateHypotheses(null, thin, '2026-10-08T00:00:00Z');
+  ok(h1.length === 4 && h1.every((h) => h.status === 'open'), 'hypotheses seeded open on thin evidence');
+  ok(h1.every((h) => h.claim && h.prediction && h.test), 'every hypothesis cites claim, prediction, test');
+  const strong = computeEvidence(Array.from({ length: 120 }, () => supNote(3.1, 0.01, false)), supBoard(0.24, 0.25, 250));
+  const h2 = updateHypotheses(h1, strong, '2026-10-08T00:00:00Z');
+  ok(h2.find((h) => h.id === 'H1').status === 'supported', 'H1 supported on persistent significance');
+  ok(h2.find((h) => h.id === 'H2').status === 'supported', 'H2 supported on OOS edge');
+  const dead = computeEvidence(Array.from({ length: 120 }, () => supNote(1.1, -0.005, false)), supBoard(0.26, 0.25, 250));
+  const h3 = updateHypotheses(h1, dead, '2026-10-08T00:00:00Z');
+  ok(h3.find((h) => h.id === 'H1').status === 'refuted', 'H1 refuted on dead evidence');
+  ok(h3.find((h) => h.id === 'H2').status === 'refuted', 'H2 refuted when member loses OOS');
+}
+{ // every discipline renders one honest line from the numbers
+  const ev = computeEvidence(Array.from({ length: 120 }, (_, i) => supNote(i < 80 ? 3.1 : 1.2, 0.01, false)), supBoard(0.24, 0.25, 250));
+  const d = buildDisciplines(ev, 'APPLY_CANDIDATE');
+  ok(d.length === 11, 'eleven disciplines report');
+  ok(d.every((x) => x.discipline && x.assessment && x.assessment.length > 20), 'each discipline has a substantive assessment');
+  ok(new Set(d.map((x) => x.discipline)).size === 11, 'disciplines unique');
+  ok(CHARTER_VERSION === '1.0.0', 'charter version stamped');
+}
+{ // agent gate: infoflowWeight is never *proposed* without APPLY_CANDIDATE
+  const champ = { ...DEFAULT_CONFIG, infoflowWeight: 0, features: DEFAULT_CONFIG.features.slice() };
+  const held = proposeCandidates(champ, mulberry32(42), 500);
+  ok(held.every((c) => !c.desc.includes('infoflowWeight')), 'no infoflow proposals under HOLD');
+  const wd = proposeCandidates(champ, mulberry32(42), 500, { mashaVerdict: 'WITHDRAW' });
+  ok(wd.every((c) => !c.desc.includes('infoflowWeight')), 'no infoflow proposals under WITHDRAW');
+  const ap = proposeCandidates(champ, mulberry32(42), 500, { mashaVerdict: 'APPLY_CANDIDATE' });
+  ok(ap.some((c) => c.desc.includes('infoflowWeight')), 'infoflow proposals allowed under APPLY_CANDIDATE');
+}
+{ // agent: WITHDRAW steps an adopted weight back to 0 through the logged adoption path
+  const mk = (w, verdict) => runAgent({ nowSec: 1790000000, resolved: [], bars: [],
+    config: { champion: { ...DEFAULT_CONFIG, infoflowWeight: w }, previous: null, history: [], agent: freshAgentState() },
+    mashaVerdict: verdict });
+  const r1 = mk(0.1, 'WITHDRAW');
+  ok(r1.config.champion.infoflowWeight === 0, 'WITHDRAW returns weight to 0');
+  ok(r1.events.some((e) => e.type === 'masha-withdraw'), 'withdraw is logged as an event');
+  const r2 = mk(0.1, 'HOLD');
+  ok(r2.config.champion.infoflowWeight === 0.1, 'HOLD leaves an adopted weight alone');
+  ok(!r2.events.some((e) => e.type === 'masha-withdraw'), 'no withdraw event under HOLD');
+}
 
 console.log(`selftest: ${passed} checks passed`);

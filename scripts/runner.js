@@ -389,7 +389,15 @@ async function cycle() {
   // 3) agent review
   const resolved = joinLedger(records).resolved;
   const before = canonical(config);
-  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal });
+  // Masha's standing scientific verdict gates her lab's parameter: without
+  // APPLY_CANDIDATE the infoflow member can never gain weight; WITHDRAW
+  // steps an adopted weight back to 0. Missing/invalid file => HOLD (safe default).
+  let mashaVerdict = 'HOLD';
+  try {
+    const mv = JSON.parse(readFileSync(path.join(DIR, 'masha_supervisor.json'), 'utf8'));
+    if (mv && (mv.verdict === 'HOLD' || mv.verdict === 'APPLY_CANDIDATE' || mv.verdict === 'WITHDRAW')) mashaVerdict = mv.verdict;
+  } catch { /* HOLD */ }
+  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal, mashaVerdict });
   config = out.config;
   for (const ev of out.events) { append({ type: 'agent', ...ev }); log('agent:', ev.type, ev.decision || ev.action || ''); }
   if (canonical(config) !== before) saveConfig();
