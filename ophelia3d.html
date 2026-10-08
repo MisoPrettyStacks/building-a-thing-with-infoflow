@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On-Chain Flows — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0906; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #e8ddd0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #c9a06a; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #a68e72; max-width: 360px; }
+  #title a { color: #c9a06a; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(20, 14, 9, 0.72);
+    border: 1px solid rgba(201, 160, 106, 0.25); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 250px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #a68e72; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .inflow { color: #d98c5f; } #stats .outflow { color: #a3b18a; } #stats .quiet { color: #a68e72; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #7d6a54; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #e8ddd0; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(201, 160, 106, 0.35); border-radius: 999px;
+    background: rgba(20, 14, 9, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #c9a06a; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(13, 9, 6, 0.55); color: #e8ddd0; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>ON-CHAIN FLOWS</h1>
+  <p>Live aggregate XRPL exchange-wallet flows, read by Ophelia. Nodes are tracked exchange wallets; streams show aggregate 24h capital movement — sized by real flow velocity, directed by real inflow/outflow, glowing with real breadth.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#ophelia">OPHELIA'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { bias, flowVelocity, breadth, totalNetFlow, wallets, degraded, warmingUp, computedAt }
+let verdict = null; // { verdict, updated }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const fh = s.flowhealth || {};
+    live = {
+      bias: fh.bias ?? 0,
+      flowVelocity: fh.flowVelocity ?? 0,
+      breadth: fh.breadth ?? 0,
+      totalNetFlow: fh.totalNetFlow ?? 0,
+      wallets: fh.wallets ?? 0,
+      degraded: !!fh.degraded,
+      warmingUp: !!fh.warmingUp,
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshNodes();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+async function fetchVerdict() {
+  try {
+    const r = await fetch(DATA_BASE + 'ophelia_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d && d.verdict) { verdict = { verdict: d.verdict, updated: d.updated_at }; refreshHud(); }
+  } catch { /* best effort only */ }
+}
+
+function fmtXrp(x) {
+  if (x == null || !isFinite(x)) return '—';
+  const ax = Math.abs(x);
+  const s = x < 0 ? '−' : '+';
+  if (ax >= 1e6) return s + (ax / 1e6).toFixed(2) + 'M XRP';
+  if (ax >= 1e3) return s + (ax / 1e3).toFixed(0) + 'K XRP';
+  return s + Math.round(ax) + ' XRP';
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const net = live.totalNetFlow;
+  const dir = net > 0 ? 'inflow · bearish' : net < 0 ? 'outflow · bullish' : 'net flat';
+  const cls = net > 0 ? 'inflow' : net < 0 ? 'outflow' : 'quiet';
+  const status = live.degraded ? '<span class="inflow">feed blind (no snapshots)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up (&lt;72h history)</span>'
+    : `<span class="${cls}">${dir}</span>`;
+  const vl = verdict ? (verdict.verdict === 'APPLY_CANDIDATE' ? 'APPLY' : verdict.verdict) : null;
+  el.innerHTML =
+    `<div><span class="k">24h net flow</span> <span class="v ${cls}">${fmtXrp(net)}</span></div>` +
+    `<div><span class="k">velocity</span> <span class="v">${(live.flowVelocity * 100).toFixed(2)}%</span> <span class="k">breadth</span> <span class="v">${(live.breadth * 100).toFixed(0)}%</span></div>` +
+    `<div><span class="k">wallets</span> <span class="v">${live.wallets}</span></div>` +
+    `<div><span class="k">tilt</span> <span class="v">${live.bias >= 0 ? '+' : ''}${live.bias.toFixed(4)}</span></div>` +
+    (vl ? `<div><span class="k">verdict</span> <span class="v">${vl}</span></div>` : '') +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0d0906, 0.026);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 14, 28);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0xccb89a, 0.5));
+const key = new THREE.DirectionalLight(0xfff0dd, 1.0); key.position.set(10, 18, 8); scene.add(key);
+
+// direction color: inflow (toward exchanges = distribution pressure, bearish) is terracotta;
+// outflow (off exchanges = accumulation, bullish) is warm green; calm is chocolate tan.
+function flowColor(net) {
+  if (net > 0) return new THREE.Color(0xd98c5f);
+  if (net < 0) return new THREE.Color(0xa3b18a);
+  return new THREE.Color(0xcbb89d);
+}
+
+// central hub: the tracked exchange-venue set
+const flowGroup = new THREE.Group(); scene.add(flowGroup);
+const hubGeo = new THREE.SphereGeometry(2.2, 32, 32);
+const hubMat = new THREE.MeshStandardMaterial({ color: 0x5c3d2e, emissive: 0x8a5a3a, emissiveIntensity: 0.7, roughness: 0.4 });
+const hub = new THREE.Mesh(hubGeo, hubMat);
+hub.position.set(0, 2.2, 0);
+flowGroup.add(hub);
+// glow shell around the hub
+const glowGeo = new THREE.SphereGeometry(2.9, 32, 32);
+const glowMat = new THREE.MeshBasicMaterial({ color: 0x5c3d2e, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false });
+const hubGlow = new THREE.Mesh(glowGeo, glowMat);
+hubGlow.position.copy(hub.position);
+flowGroup.add(hubGlow);
+
+// breadth ring: a torus that glows brighter and more complete with breadth
+const ringGeo = new THREE.TorusGeometry(11, 0.16, 12, 96);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0xc9a06a, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false });
+const breadthRing = new THREE.Mesh(ringGeo, ringMat);
+breadthRing.rotation.x = Math.PI / 2;
+breadthRing.position.y = 0.3;
+scene.add(breadthRing);
+
+// wallet nodes: a ring of spheres, one per tracked wallet (capped for rendering)
+const MAX_NODES = 24, RING_R = 11;
+const nodeGeo = new THREE.SphereGeometry(0.55, 16, 16);
+const nodeMat = new THREE.MeshStandardMaterial({ color: 0x8a6a4a, emissive: 0x3a281a, emissiveIntensity: 0.8, roughness: 0.5 });
+const walletNodes = [];
+for (let i = 0; i < MAX_NODES; i++) {
+  const a = (i / MAX_NODES) * Math.PI * 2;
+  const n = new THREE.Mesh(nodeGeo, nodeMat.clone());
+  n.position.set(Math.cos(a) * RING_R, 0.55 + (i % 3) * 0.4, Math.sin(a) * RING_R);
+  scene.add(n); walletNodes.push(n);
+}
+function refreshNodes() {
+  if (!live) return;
+  const shown = live.wallets > 0 ? Math.min(live.wallets, MAX_NODES) : MAX_NODES;
+  for (let i = 0; i < MAX_NODES; i++) walletNodes[i].visible = i < shown;
+}
+
+// flow streams: particles sized by velocity. Outflow (net<0): hub -> nodes
+// (capital draining to custody). Inflow (net>0): nodes -> hub (capital
+// moving onto venues). Particle speed and opacity follow real velocity.
+const P_COUNT = 420;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({
+    t: Math.random(),
+    speed: 0.15 + Math.random() * 0.35,
+    node: Math.floor(Math.random() * MAX_NODES),
+    lift: 0.5 + Math.random() * 3.0,
+  });
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0xcbb89d, size: 0.22, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+function nodePos(i) {
+  return walletNodes[i] ? walletNodes[i].position : new THREE.Vector3(RING_R, 1, 0);
+}
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  const net = live ? live.totalNetFlow : 0;
+  const vel = live ? Math.min(live.flowVelocity * 20, 1) : 0; // velocity is small; scale up for the eye
+  const breadth = live ? live.breadth : 0;
+  const c = flowColor(net);
+
+  // hub breathes; breadth ring glows with real breadth; everything tilts to the live direction color
+  const breathe = 1 + Math.sin(t * 1.6) * 0.04;
+  hub.scale.setScalar(breathe);
+  hubGlow.material.color.copy(c);
+  hubGlow.material.opacity = 0.12 + vel * 0.3;
+  ringMat.color.copy(c);
+  ringMat.opacity = 0.15 + breadth * 0.55;
+  breadthRing.rotation.z = t * 0.05;
+  pMat.color.copy(c);
+  pMat.opacity = 0.15 + vel * 0.7;
+
+  // stream direction: inflow -> nodes converge to hub; outflow -> hub radiates to nodes
+  const inflow = net > 0;
+  const pos = pGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed * (0.3 + vel * 2.2);
+    if (s.t > 1) s.t -= 1;
+    const np = nodePos(s.node);
+    const k = inflow ? s.t : 1 - s.t; // travel param: node->hub for inflow, hub->node for outflow
+    const x = np.x + (0 - np.x) * k;
+    const z = np.z + (0 - np.z) * k;
+    const y = 0.6 + Math.sin(k * Math.PI) * s.lift + k * 1.6;
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  // gentle drift of the whole group, stronger when flows run hot
+  flowGroup.rotation.y = Math.sin(t * 0.2) * 0.05 * (1 + vel * 2);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+await fetchVerdict();
+setInterval(fetchSummary, 30000);
+setInterval(fetchVerdict, 120000);
+animate();
+</script>
+</body>
+</html>

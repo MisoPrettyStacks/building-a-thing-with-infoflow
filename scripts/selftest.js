@@ -492,6 +492,7 @@ import { cherryAnswer, cherryIsIpProbe, cherryRepeatRefusal } from '../lib/cherr
 import { sageAnswer, sageIsIpProbe, sageRepeatRefusal } from '../lib/sagechat.js';
 import { sashaAnswer, sashaIsIpProbe, sashaRepeatRefusal } from '../lib/sashachat.js';
 import { niaAnswer, niaIsIpProbe, niaRepeatRefusal } from '../lib/niachat.js';
+import { opheliaAnswer, opheliaIsIpProbe, opheliaRepeatRefusal } from '../lib/opheliachat.js';
 import { computeEvidence as opalEvidence, decideVerdict as opalDecide } from '../scripts/opal-supervisor.js';
 import { computeEvidence as violetEvidence, decideVerdict as violetDecide } from '../scripts/violet-supervisor.js';
 import { computeEvidence as daisyEvidence, decideVerdict as daisyDecide } from '../scripts/daisy-supervisor.js';
@@ -502,11 +503,12 @@ import { computeEvidence as cherryEvidence, decideVerdict as cherryDecide } from
 import { computeEvidence as sageEvidence, decideVerdict as sageDecide } from '../scripts/sage-supervisor.js';
 import { computeEvidence as sashaEvidence, decideVerdict as sashaDecide } from '../scripts/sasha-supervisor.js';
 import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../scripts/nia-supervisor.js';
+import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } from '../scripts/ophelia-supervisor.js';
 
 { // registry + engine + gate contracts
-  ok(AGENT_DEFS.length === 10, 'ten lab agents registered');
+  ok(AGENT_DEFS.length === 11, 'eleven lab agents registered');
   const names = AGENT_DEFS.map((d) => d.name);
-  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia']) {
+  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia']) {
     ok(names.includes(n), `registry includes ${n}`);
   }
   for (const def of AGENT_DEFS) {
@@ -517,7 +519,7 @@ import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../s
     ok(def.supFile === `${def.name}_supervisor.json`, `${def.name}: supervisor filename`);
     ok(Number.isFinite(def.pageWindow) && def.pageWindow > 0, `${def.name}: page window`);
   }
-  ok(EXTRA_BIAS_MEMBERS.length === 9, 'nine bias members in the engine table');
+  ok(EXTRA_BIAS_MEMBERS.length === 10, 'ten bias members in the engine table');
   ok(VOL_SHRINK === 0.9, 'volatility shrink constant');
   for (const def of AGENT_DEFS) {
     ok(VERDICT_GATES[def.weightKey] === def.name, `verdict gate ${def.weightKey} -> ${def.name}`);
@@ -539,6 +541,7 @@ import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../s
     sage: { totalChange: 2.0, usdtChange24h: 1.0, usdcChange24h: 1.0, cached: false },
     sasha: { z: 2.0, rawScore: 0.3, postsScanned: 50 },
     nia: { activeCatalysts: [{ headline: 'XRP ETF approved', dir: 1, weight: 1 }], catalysts24h: 1 },
+    ophelia: { flowVelocity: 0.05, breadth: 0.85, totalNetFlow: -2e6, wallets: 8 },
   };
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };
   // Violet is a dampener, not a directional member: her positive verdict is 'dampening'.
@@ -570,6 +573,7 @@ import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../s
     { name: 'sage', answer: sageAnswer, isProbe: sageIsIpProbe, refuse: sageRepeatRefusal },
     { name: 'sasha', answer: sashaAnswer, isProbe: sashaIsIpProbe, refuse: sashaRepeatRefusal },
     { name: 'nia', answer: niaAnswer, isProbe: niaIsIpProbe, refuse: niaRepeatRefusal },
+    { name: 'ophelia', answer: opheliaAnswer, isProbe: opheliaIsIpProbe, refuse: opheliaRepeatRefusal },
   ];
   for (const c of CHATS) {
     const id = c.answer('who are you');
@@ -594,6 +598,7 @@ import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../s
     { name: 'sage', evidence: sageEvidence, decide: sageDecide },
     { name: 'sasha', evidence: sashaEvidence, decide: sashaDecide },
     { name: 'nia', evidence: niaEvidence, decide: niaDecide },
+    { name: 'ophelia', evidence: opheliaEvidence, decide: opheliaDecide },
   ];
   const strong = Array.from({ length: 120 }, () => ({ computed: { bias: 0.006, warming_up: false, degraded: false, decisive: true } }));
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Macro Events — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0508; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #f3e6ec;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #c98aa5; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #a98a96; max-width: 340px; }
+  #title a { color: #c98aa5; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(24, 10, 16, 0.72);
+    border: 1px solid rgba(123, 45, 67, 0.45); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 270px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #a98a96; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .hot { color: #e78aa8; font-weight: 600; }
+  #stats .calm { color: #a98a96; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #7a5a66; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #f3e6ec; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(123, 45, 67, 0.55); border-radius: 999px;
+    background: rgba(24, 10, 16, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #c98aa5; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(11, 5, 8, 0.55); color: #e8c9d6; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>MACRO EVENTS</h1>
+  <p>Live scheduled US macro releases, kept by Molly. The three pillars are the next releases; the cone is the forecast's uncertainty — it widens inside an event window, when confidence is a liability.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#macro">MOLLY'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // summary.macro: { active, tier, event, date, time_et, minutes_to_event, shrink, dampening_applied, next[], computed_at }
+let board = null; // windows.all.macro: { n, brierMacro, brierBase, eventWindow }
+let verdict = null; // { verdict, updated }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const m = s.macro || {};
+    const w = (s.windows && s.windows.all && s.windows.all.macro) || null;
+    live = {
+      active: !!m.active,
+      tier: m.tier || 0,
+      event: m.event || null,
+      date: m.date || null,
+      time_et: m.time_et || null,
+      minutesToEvent: m.minutes_to_event,
+      shrink: m.shrink || 1.0,
+      dampeningApplied: !!m.dampening_applied,
+      enabled: !!m.enabled,
+      next: Array.isArray(m.next) ? m.next.slice(0, 3) : [],
+      computedAt: s.generated_at,
+    };
+    board = w ? { n: w.n, brierMacro: w.brierMacro, brierBase: w.brierBase, eventWindow: w.eventWindow || null } : null;
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshPillars();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+async function fetchVerdict() {
+  try {
+    const r = await fetch(DATA_BASE + 'molly_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d && d.verdict) { verdict = { verdict: d.verdict, updated: d.updated_at }; refreshHud(); }
+  } catch { /* best effort only */ }
+}
+
+function fmtCountdown(min) {
+  if (min == null || !isFinite(min)) return '—';
+  const a = Math.abs(min);
+  if (a < 1) return 'now';
+  if (a < 60) return `${Math.round(a)}m ${min > 0 ? 'away' : 'ago'}`;
+  if (a < 48 * 60) { const h = Math.floor(a / 60); return `${h}h ${Math.round(a % 60)}m away`; }
+  return `${(a / 1440).toFixed(1)}d away`;
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const winCls = live.active ? 'hot' : 'calm';
+  const winTxt = live.active
+    ? `<span class="hot">ACTIVE · tier ${live.tier} — ${live.event || ''}</span>`
+    : `<span class="calm">quiet</span>`;
+  const nx = live.next[0];
+  const ew = board && board.eventWindow;
+  const vl = verdict ? (verdict.verdict === 'APPLY_CANDIDATE' ? 'APPLY' : verdict.verdict) : null;
+  el.innerHTML =
+    `<div><span class="k">window</span> <span class="v">${winTxt}</span></div>` +
+    `<div><span class="k">next release</span> <span class="v">${nx ? `${nx.event} <span class="k">(tier ${nx.tier})</span>` : '—'}</span></div>` +
+    `<div><span class="k">countdown</span> <span class="v">${nx ? fmtCountdown(nx.minutes_until) : '—'}</span></div>` +
+    `<div><span class="k">dampening</span> <span class="v ${live.dampeningApplied ? 'hot' : ''}">${live.dampeningApplied ? 'APPLIED — confidence shrunk, cone widened' : (live.enabled ? 'armed · no window active' : 'scored only (what-if)')}</span></div>` +
+    (ew ? `<div><span class="k">in-window Brier</span> <span class="v">${ew.brierMacro.toFixed(5)} vs ${ew.brierBase.toFixed(5)} <span class="k">(n=${ew.n})</span></span></div>` : '') +
+    (vl ? `<div><span class="k">verdict</span> <span class="v">${vl}</span></div>` : '');
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0b0508, 0.026);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 12, 28);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0xbb99aa, 0.5));
+const key = new THREE.DirectionalLight(0xffe8f0, 1.0); key.position.set(10, 18, 8); scene.add(key);
+
+// floor grid: the calendar plane everything stands on
+const grid = new THREE.GridHelper(40, 20, 0x7b2d43, 0x2a1219);
+grid.position.y = -0.01; scene.add(grid);
+
+// --- the forecast cone: apex at now, opening upward into the future.
+// Its flare widens inside an event window (volatility cone widening).
+const CONE_H = 12, CONE_R = 4.5;
+const coneGeo = new THREE.ConeGeometry(CONE_R, CONE_H, 48, 1, true);
+coneGeo.translate(0, -CONE_H / 2, 0); // apex at origin…
+const coneGroup = new THREE.Group();
+coneGroup.position.set(0, CONE_H, 0); // …then lifted so the apex sits at y=0 and it opens upward
+const coneMat = new THREE.MeshStandardMaterial({
+  color: 0x7b2d43, emissive: 0x3d1521, emissiveIntensity: 0.8,
+  roughness: 0.4, metalness: 0.1, transparent: true, opacity: 0.5, side: THREE.DoubleSide,
+});
+const cone = new THREE.Mesh(coneGeo, coneMat);
+coneGroup.add(cone);
+scene.add(coneGroup);
+
+// a soft inner cone for depth
+const innerMat = new THREE.MeshBasicMaterial({ color: 0xc98aa5, transparent: true, opacity: 0.10, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending });
+coneGroup.add(new THREE.Mesh(coneGeo, innerMat));
+
+// --- event pillars: the next three scheduled releases.
+// Taller = nearer; tier-1 glows burgundy-bright, tier-2 is muted.
+const PILLAR_X = [-7.5, 0, 7.5], PILLAR_MAX_H = 10;
+const pillarGroup = new THREE.Group(); scene.add(pillarGroup);
+const pillars = [];
+const pGeo = new THREE.BoxGeometry(1.1, 1, 1.1);
+const ringGeo = new THREE.RingGeometry(1.15, 1.45, 48);
+for (let i = 0; i < 3; i++) {
+  const mat = new THREE.MeshStandardMaterial({ color: 0x7b2d43, emissive: 0x2a0d15, emissiveIntensity: 0.9, roughness: 0.35 });
+  const mesh = new THREE.Mesh(pGeo, mat);
+  mesh.position.x = PILLAR_X[i]; mesh.visible = false;
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xc98aa5, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2; ring.position.set(PILLAR_X[i], 0.02, 0); ring.visible = false;
+  pillarGroup.add(mesh); pillarGroup.add(ring);
+  pillars.push({ mesh, mat, ring, ringMat, h: 1, tier: 0 });
+}
+
+function refreshPillars() {
+  if (!live) return;
+  for (let i = 0; i < 3; i++) {
+    const p = pillars[i];
+    const nx = live.next[i];
+    if (!nx) { p.mesh.visible = false; p.ring.visible = false; continue; }
+    const mu = Math.max(nx.minutes_until || 0, 0);
+    // urgency: nearer releases stand taller (half-height at ~3 days out)
+    const urgency = 1 / (1 + mu / 4320);
+    p.h = 1.2 + urgency * (PILLAR_MAX_H - 1.2);
+    p.tier = nx.tier || 0;
+    p.mesh.visible = true; p.ring.visible = true;
+    p.mesh.scale.y = p.h; p.mesh.position.y = p.h / 2;
+    if (nx.tier === 1) { p.mat.color.setHex(0xa83a5c); p.mat.emissive.setHex(0x5c1024); }
+    else { p.mat.color.setHex(0x6e2438); p.mat.emissive.setHex(0x2a0d15); }
+    p.userData = nx;
+  }
+}
+
+// volatility particles: rise inside the cone, faster and denser when a window is active
+const P_COUNT = 420;
+const ptGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({ t: Math.random(), speed: 0.12 + Math.random() * 0.3, r: Math.sqrt(Math.random()), a: Math.random() * Math.PI * 2 });
+}
+ptGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const ptMat = new THREE.PointsMaterial({ color: 0xd98aa5, size: 0.18, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(ptGeo, ptMat);
+scene.add(particles);
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+let coneWiden = 1; // animated toward the live target
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  // live target: widen the cone when a window is active and dampening applies
+  const target = (live && live.active && live.dampeningApplied && live.shrink > 0 && live.shrink < 1)
+    ? 1 / live.shrink : 1;
+  coneWiden += (target - coneWiden) * Math.min(dt * 2.5, 1);
+  coneGroup.scale.set(coneWiden, 1, coneWiden);
+  const hot = live && live.active;
+  coneMat.emissiveIntensity = (hot ? 1.4 : 0.8) + Math.sin(t * (hot ? 4 : 1.5)) * (hot ? 0.5 : 0.12);
+  coneMat.opacity = 0.42 + (hot ? 0.18 : 0);
+
+  // pillars breathe; the base ring pulses faster the nearer the release
+  for (const p of pillars) {
+    if (!p.mesh.visible) continue;
+    p.mesh.position.y = p.h / 2 + Math.sin(t * 1.2 + p.mesh.position.x) * 0.08;
+    const mu = Math.max((p.userData && p.userData.minutes_until) || 0, 0);
+    const urgency = 1 / (1 + mu / 4320);
+    const s = 1 + Math.sin(t * (1 + urgency * 6)) * 0.12 * (0.3 + urgency);
+    p.ring.scale.set(s, s, 1);
+    p.ringMat.opacity = 0.25 + urgency * 0.55 + Math.sin(t * (1 + urgency * 6)) * 0.15;
+  }
+
+  // particles rise inside the cone; speed and brightness track window heat
+  const strength = hot ? 1 : 0.35;
+  const pos = ptGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed * (0.5 + strength * 2.2);
+    if (s.t > 1) { s.t -= 1; s.r = Math.sqrt(Math.random()); s.a = Math.random() * Math.PI * 2; }
+    const rr = s.r * CONE_R * s.t * coneWiden;
+    pos[i * 3] = Math.cos(s.a) * rr;
+    pos[i * 3 + 1] = s.t * CONE_H;
+    pos[i * 3 + 2] = Math.sin(s.a) * rr;
+  }
+  ptGeo.attributes.position.needsUpdate = true;
+  ptMat.opacity = 0.3 + strength * 0.45;
+  ptMat.color.setHex(hot ? 0xe78aa8 : 0xd98aa5);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+await fetchVerdict();
+setInterval(fetchSummary, 30000);
+setInterval(fetchVerdict, 120000);
+animate();
+</script>
+</body>
+</html>

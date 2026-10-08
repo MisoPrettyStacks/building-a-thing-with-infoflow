@@ -351,7 +351,8 @@ async function cycle() {
       // Each fetcher never throws; on failure the member abstains (bias 0).
       const labSignals = {};
       try {
-        const xrpl = { recentTx: ocState.recentTx || [], txCount: chain.seq || 0 };
+        const xrpl = { recentTx: ocState.recentTx || [], txCount: chain.seq || 0,
+          ocSnapshots: Array.isArray(ocState.snapshots) ? ocState.snapshots.slice(-200) : [] };
         for (const def of AGENT_DEFS) {
           try {
             labSignals[def.key] = await def.fetchSignal({ t, bars, btcBars, dir: DIR, getJson, xrpl });
@@ -456,6 +457,8 @@ async function cycle() {
         sentiment_bias: +(+step.sentimentBias || 0).toFixed(6),
         p_news: step.pNews == null ? null : +step.pNews.toFixed(6),
         news_bias: +(+step.newsBias || 0).toFixed(6),
+        p_flowhealth: step.pFlowHealth == null ? null : +step.pFlowHealth.toFixed(6),
+        flowhealth_bias: +(+step.flowHealthBias || 0).toFixed(6),
         p_volatility: step.pVolatility == null ? null : +step.pVolatility.toFixed(6),
         vol_active: step.volActive ? 1 : 0,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
@@ -665,7 +668,7 @@ function writeAgentNotes(summary) {
   for (const def of AGENT_DEFS) {
     try {
       const signal = summary[def.key] || null;
-      const sbRaw = windowsAll ? windowsAll[def.key] : null;
+      const sbRaw = windowsAll ? windowsAll[def.scoreboardKey || def.key] : null;
       const note = def.buildNote({
         signal,
         scoreboard: normalizeScoreboard(sbRaw, def.brierKey),

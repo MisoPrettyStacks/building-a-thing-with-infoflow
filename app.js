@@ -15,6 +15,7 @@ import { noraAnswer, noraIsIpProbe, noraRepeatRefusal } from './lib/norachat.js'
 import { daisyAnswer, daisyIsIpProbe, daisyRepeatRefusal } from './lib/daisychat.js';
 import { violetAnswer, violetIsIpProbe, violetRepeatRefusal } from './lib/violetchat.js';
 import { opalAnswer, opalIsIpProbe, opalRepeatRefusal } from './lib/opalchat.js';
+import { opheliaAnswer, opheliaIsIpProbe, opheliaRepeatRefusal } from './lib/opheliachat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -54,7 +55,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw(); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -1601,9 +1602,12 @@ function initOpalAnim() {
 
 function initOpal() {
   initOpalAnim();
+  initOpheliaAnim();
   if (typeof summary !== 'undefined' && summary) renderOpalPanel(summary);
   loadOpalVerdict();
   initOpalChat();
+  loadOpheliaVerdict();
+  initOpheliaChat();
 }
 
 // ================= Violet app glue (fragment) =================
@@ -4156,11 +4160,288 @@ function initNia() {
   initNiaChat();
 }
 
+
+/* ---------------- Ophelia's lab ---------------- */
+function ohDrawSpark(canvasId, vals) {
+  const c = $(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  if (!ctx) return;
+  const W = c.width, H = c.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!vals || vals.length < 2) return;
+  const mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
+  ctx.strokeStyle = '#8b5a2b'; ctx.lineWidth = 1.5; ctx.beginPath();
+  vals.forEach((v, i) => {
+    const x = (W * i) / (vals.length - 1);
+    const y = H - 3 - ((v - mn) / rg) * (H - 6);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+function renderOpheliaPanel(summary) {
+  if (!$('ohBoardBias')) return;
+  const fh = summary && summary.flowhealth;
+  const sb = summary && summary.windows && summary.windows.all && summary.windows.all.flowhealth;
+  if (fh) {
+    const b = fh.bias || 0;
+    const vel = fh.flowVelocity || 0, br = fh.breadth;
+    const dirWord = b > 0.001 ? 'outflows (bullish)' : b < -0.001 ? 'inflows (bearish)' : 'balanced';
+    setT('ohVel', (vel * 100).toFixed(2) + '%');
+    setT('ohVelSub', vel > 0.02 ? 'capital moving fast' : 'quiet books');
+    setT('ohBreadth', br != null ? (br * 100).toFixed(0) + '%' : '—');
+    setT('ohBreadthSub', br != null && br > 0.7 ? 'wallets agree' : 'mixed directions');
+    const nf = fh.totalNetFlow;
+    setT('ohNet', nf != null ? (nf >= 0 ? '+' : '') + (Math.abs(nf) >= 1e6 ? (nf / 1e6).toFixed(1) + 'M' : Math.abs(nf) >= 1e3 ? (nf / 1e3).toFixed(0) + 'K' : nf.toFixed(0)) + ' XRP' : '—');
+    setT('ohStatus', fh.degraded ? 'Ledger unseen' : fh.warmingUp ? 'Warming up' : 'Live');
+    setT('ohStatusSub', fh.degraded ? 'snapshots missing — abstaining' : 'balance snapshots each cycle');
+    const w = fh.weight || 0;
+    setT('ohWeight', w > 0 ? 'Active' : 'Scored only');
+    setT('ohWeightNote', w > 0 ? 'blended at weight ' + w.toFixed(2) : 'scored only, not used');
+    void dirWord;
+  }
+  if (sb && sb.n >= 30) {
+    setT('ohBrier', sb.brierFlowHealth != null ? sb.brierFlowHealth.toFixed(5) : '—');
+    setT('ohBrierN', 'n=' + sb.n + ' scored' + (sb.brierFlowHealth < sb.brierBase ? ' · beats baseline ✓' : ''));
+    if (sb.skill24h && sb.skill24h.n >= 30) {
+      setT('ohSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
+      setT('ohSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
+    }
+  }
+  // chalkboard + notebook
+  const L = summary && summary.ophelia;
+  const rowsEl = $('ohLogRows');
+  const bubble = $('ohBubbleText');
+  if (!L || !L.latest) {
+    if (bubble) bubble.textContent = 'setting up my lab…';
+    setT('ohBoardBias', 'warming up…'); setT('ohBoardVel', ''); setT('ohBoardBreadth', ''); setT('ohBoardVerdict', '');
+    const sp = $('ohBoardSpark'); if (sp) sp.setAttribute('points', '');
+    setT('ohBoardSparkLabel', '');
+    if (rowsEl) rowsEl.innerHTML = '<div class="lm-empty">Ophelia is setting up her lab — notebook entries appear after the next runner cycle.</div>';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c && !c.degraded && !c.warming_up) {
+    const dirWord = c.bias > 0.001 ? 'outflows — bullish' : c.bias < -0.001 ? 'inflows — bearish' : 'balanced';
+    setT('ohBoardBias', `flow tilt  ${c.bias >= 0 ? '+' : ''}${c.bias.toFixed(4)}  (${dirWord})`);
+    setT('ohBoardVel', `velocity  ${((c.flow_velocity || 0) * 100).toFixed(2)}%`);
+    setT('ohBoardBreadth', `breadth  ${c.breadth != null ? (c.breadth * 100).toFixed(0) + '%' : '—'}`);
+  } else {
+    setT('ohBoardBias', c && c.degraded ? 'ledger unseen…' : 'warming up…');
+    setT('ohBoardVel', 'collecting snapshots…'); setT('ohBoardBreadth', '');
+  }
+  const vEl = $('ohBoardVerdict');
+  if (vEl) {
+    vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`;
+    vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879';
+  }
+  const pts = (L.log || []).filter((e) => e.computed && !e.computed.degraded).slice(-24).map((e) => e.computed.bias);
+  ohDrawSpark('ohSpark', pts);
+  const sp = $('ohBoardSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      sp.setAttribute('points', pts.map((v, i) =>
+        (300 * i / (pts.length - 1)).toFixed(1) + ',' +
+        (60 - ((v - mn) / rg) * 52).toFixed(1)).join(' '));
+      setT('ohBoardSparkLabel', `flow tilt · last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('ohBoardSparkLabel', ''); }
+  }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    if (bubble.textContent !== short) {
+      bubble.textContent = short;
+      const b = $('ohBubble');
+      if (b) { b.classList.remove('oh-talk'); void b.offsetWidth; b.classList.add('oh-talk'); }
+    }
+  }
+  if (rowsEl) {
+    $('ohLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+    rowsEl.innerHTML = '';
+    const notes = (L.log || []).slice().reverse().slice(0, 40);
+    if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+    for (const e of notes) {
+      const row = document.createElement('div');
+      row.className = 'lm-row';
+      const head = document.createElement('button');
+      head.className = 'lm-rowhead';
+      const t = document.createElement('span'); t.className = 'lm-t';
+      const dt = new Date(e.t);
+      t.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+        dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const v = document.createElement('span');
+      v.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+      v.textContent = e.verdict;
+      const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+      head.append(t, v, f);
+      const det = document.createElement('div');
+      det.className = 'lm-detail'; det.hidden = true;
+      const col = e.collected || {};
+      det.innerHTML =
+        '<div class="lm-sec"><span class="lm-k">COLLECTED</span><br>' +
+        opEsc(col.source || 'XRP Ledger snapshots') + ' · ' + opEsc(col.window || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' +
+        (e.checks || []).map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' +
+          (k.pass ? '✓' : '✗') + '</span> ' + opEsc(k.name) + ' — ' + opEsc(k.detail)).join('<br>') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + opEsc(e.verdict_why || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + opEsc((e.math_effect || {}).detail || '') + '</div>';
+      head.addEventListener('click', () => { det.hidden = !det.hidden; });
+      row.append(head, det);
+      rowsEl.appendChild(row);
+    }
+  }
+}
+
+/* ---------------- Ophelia's standing verdict ---------------- */
+async function loadOpheliaVerdict() {
+  const panel = $('ohPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'ophelia_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('ohBadge');
+  const label = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.textContent = label;
+  badge.className = 'oh-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('ohPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  const pct = (x) => (x != null ? (x * 100).toFixed(1) + '%' : 'n/a');
+  $('ohEvidence').innerHTML =
+    'Evidence she used: <b>' + (ev.n || 0) + '</b> lab notes · decisive flow reads <b>' + pct(ev.decisive_frac) + '</b> · ' +
+    (ev.member_n >= 200
+      ? 'out-of-sample member Brier <b>' + ev.member_brier.toFixed(5) + '</b> vs baseline <b>' + ev.base_brier.toFixed(5) + '</b> (n=' + ev.member_n + ')'
+      : 'scoreboard warming up (n=' + (ev.member_n || 0) + '/200)');
+  $('ohDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) =>
+    '<div class="oh-line"><span class="oh-d">' + opEsc(d.discipline) + ':</span> ' + opEsc(d.assessment) + '</div>').join('');
+  $('ohHypotheses').innerHTML = (doc.hypotheses || []).map((h) =>
+    '<div class="oh-hyp"><b>' + opEsc(h.id) + '</b> — ' + opEsc(h.claim) + '<br>' +
+    'status: <span class="st ' + opEsc(h.status) + '">' + opEsc(h.status) + '</span>' +
+    (h.status_why ? ' <span class="muted">(' + opEsc(h.status_why) + ')</span>' : '') + '</div>').join('') ||
+    '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('ohMeta').innerHTML = 'Charter v' + opEsc(doc.charter_version) + ' · updated ' +
+    opEsc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((p) =>
+      '<a href="' + opEsc(p.id) + '" target="_blank" rel="noopener">' + opEsc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
+/* ---------------- Ophelia DM chat ---------------- */
+function initOpheliaChat() {
+  const log = $('ohChatLog'), input = $('ohChatText'), send = $('ohChatSend'), chips = $('ohChatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'ohchat-row ' + who;
+    if (who === 'ophelia') {
+      const av = document.createElement('img');
+      av.src = 'ophelia-headshot.webp'; av.alt = 'Ophelia';
+      row.appendChild(av);
+    }
+    const b = document.createElement('div');
+    b.className = 'ohchat-bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    log.appendChild(row);
+    scroll();
+  };
+  const CHIP_QS = ['How are you different from Wendy?', 'What is flow velocity?', 'What is flow breadth?', "What's your verdict?"];
+  if (chips) {
+    chips.innerHTML = '';
+    for (const q of CHIP_QS) {
+      const c = document.createElement('button');
+      c.type = 'button'; c.className = 'ohchat-chip'; c.textContent = q;
+      c.addEventListener('click', () => { input.value = q; doSend(); });
+      chips.appendChild(c);
+    }
+  }
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('opheliaChatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'ohchat-row ophelia';
+    typing.innerHTML = '<img src="ophelia-headshot.webp" alt="Ophelia"><div class="ohchat-bubble"><span class="ohchat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (opheliaIsIpProbe(text)) {
+      ipCount++;
+      try { localStorage.setItem('opheliaChatIpCount', String(ipCount)); } catch { /* private mode */ }
+      reply = ipCount >= 3 ? opheliaRepeatRefusal() : opheliaAnswer(text);
+    } else {
+      reply = opheliaAnswer(text);
+    }
+    setTimeout(() => { typing.remove(); bubble('ophelia', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('ophelia', "Hi! I'm Ophelia 🤎 I watch broad capital flows across exchange wallets — velocity, breadth, drift. Ask me how I differ from Wendy, what I'm measuring, or what my verdict is!"), 800);
+}
+
+/* ---------------- Ophelia flipbook animation ---------------- */
+function initOpheliaAnim() {
+  const img = $('ohHeroImg');
+  if (!img) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const BASE = 'ophelia.webp', WRITE = 'ophelia-write.webp', BLINK = 'ophelia-blink.webp';
+  let ready = 0;
+  const go = () => { if (++ready >= 2) start(); };
+  const fallback = setTimeout(() => start(), 4000);
+  [WRITE, BLINK].forEach((src) => {
+    const im = new Image();
+    im.onload = go; im.onerror = go;
+    im.src = src;
+  });
+  function start() {
+    if (start.done) return; start.done = true;
+    clearTimeout(fallback);
+    let onScreen = true, pageVisible = !document.hidden;
+    let writeTimer = null, blinkTimer = null;
+    const show = (src) => { if (img.getAttribute('src') !== src) img.setAttribute('src', src); };
+    const kick = () => {
+      const active = onScreen && pageVisible;
+      if (active && !writeTimer) {
+        writeTimer = setInterval(() => {
+          show(WRITE);
+          setTimeout(() => show(BASE), 1600);
+        }, 9000);
+        blinkTimer = setInterval(() => {
+          show(BLINK);
+          setTimeout(() => show(BASE), 180);
+        }, 4500);
+      } else if (!active && writeTimer) {
+        clearInterval(writeTimer); clearInterval(blinkTimer);
+        writeTimer = blinkTimer = null;
+        show(BASE);
+      }
+    };
+    new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; kick(); }, { threshold: 0.1 }).observe(img);
+    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; kick(); });
+    kick();
+  }
+}
+
+function initOphelia() {
+  initOpheliaAnim();
+  loadOpheliaVerdict();
+  initOpheliaChat();
+}
+
 (async function boot() {
   await resolveBases();
   initMashaAnim();
   initWendyAnim();
   initOpalAnim();
+  initOpheliaAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
@@ -4189,6 +4470,8 @@ function initNia() {
   initVioletChat();
   loadOpalVerdict();
   initOpalChat();
+  loadOpheliaVerdict();
+  initOpheliaChat();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);

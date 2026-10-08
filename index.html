@@ -308,9 +308,16 @@
   <p class="muted" style="font-size:12px;margin-bottom:0">Windows: ±60 min around tier-1 releases (FOMC decisions, CPI, nonfarm payrolls), ±30 min around tier-2 (PPI, retail sales, ISM). Inside a window the P(up) deviation is multiplied by 0.85 (tier-1) or 0.92 (tier-2) and the cone bands widen by the inverse. The schedule is hardcoded in <code>data/macro-calendar.json</code> from the official Fed/BLS/Census/ISM calendars — no data feed to break. Scored out-of-sample like everything else; the agent only arms it with evidence.</p>
 </section>
 
-<div class="exp-wrap exp-wrap-blue">
+<div class="ophelia-lab-wrap">
+<h2 class="ophelia-lab-title"><img src="ophelia-headshot.webp" alt="Ophelia" class="ophelia-lab-headshot"> OPHELIA'S LAB - ON-CHAIN FLOWS</h2>
+<div class="ophelia-agent-intro">
+  <h3>Meet Ophelia — an agentic agent, not a mascot</h3>
+  <p>Ophelia doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: reading the XRP Ledger's exchange-wallet balance snapshots for flow velocity and breadth, researching the science of on-chain capital flows, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the On-Chain Flows Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> on-chain analysis · flow accounting · market microstructure · network science · statistics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: how broad capital movement across exchange wallets relates to where XRP goes next. (Wendy watches the individual whales; Ophelia watches the whole herd.)</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live flow-health measurements, guard ledger and data quality, and keep the lab notebook. Analyze how flows behave: when exchange balances drain or fill, how fast capital moves, how broadly wallets agree on direction. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the flow-health measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether broad flow health earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
 </div>
-
 <section id="onchain" class="card">
   <h2>On-chain flows <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
   <p class="muted" style="margin-top:0">A slow regime read from the XRP Ledger: net flows into/out of tracked exchange wallets, smoothed so it hangs in there for hours-to-days rather than jittering on 15-minute noise. Whale-sized transfers (&ge;10M XRP) add a temporary pulse that decays over 48h.</p>
@@ -334,6 +341,80 @@
   <p class="muted" style="margin-top:0;font-size:12px">Every signal the monitor gives, in plain English: when it was given, its projected effect, and how long that effect runs. Projected effects are what the signal <em>would</em> contribute to the forecast (additive to P(up)) — the on-chain member is experimental and not currently wired into the issued forecast.</p>
   <div class="stat" style="margin-bottom:10px"><div class="k">Combined signal effect right now</div><div class="v" id="ocSigTotal" style="font-size:15px">—</div><div class="s" id="ocSigTotalN">—</div></div>
   <div class="log" id="ocSignalLog"><div class="muted">waiting for runner…</div></div>
+</section>
+
+<section id="flowhealth" class="card">
+  <h2>Flow health — Ophelia's live read <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Ophelia reads the same XRP Ledger balance snapshots as the whale watch, but asks a different question: not "did a whale move?" but "is capital broadly flowing in or out?" <strong>Flow velocity</strong> measures how fast the tracked exchange wallets' balances are changing; <strong>breadth</strong> measures how many wallets agree on the direction. Sustained outflows (capital leaving exchanges) lean bullish; sustained inflows lean bearish. Currently at weight zero — scored, never applied, until Ophelia finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Flow velocity</div><div class="v" id="ohVel" style="font-size:15px">—</div><div class="s" id="ohVelSub">|net flow| ÷ tracked balance</div></div>
+    <div class="stat"><div class="k">Flow breadth</div><div class="v" id="ohBreadth" style="font-size:15px">—</div><div class="s" id="ohBreadthSub">wallets agreeing on direction</div></div>
+    <div class="stat"><div class="k">Net flow · 24h</div><div class="v" id="ohNet" style="font-size:15px">—</div><div class="s">XRP · − = outflow (bullish)</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="ohStatus" style="font-size:15px">—</div><div class="s" id="ohStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="ohBrier">—</div><div class="s" id="ohBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="ohSkill">—</div><div class="s" id="ohSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="ohWeight" style="font-size:15px">—</div><div class="s" id="ohWeightNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="ohSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">small scaled tilt per cycle</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner's ledger snapshots give Ophelia each tracked wallet's balance; she compares against the snapshot nearest 24h ago to get per-wallet net flows, then aggregates. The tilt is deliberately small — broad flows are a slow regime signal, not a 15-minute predictor. Honest caveat: exchange wallets also move coins for internal housekeeping, and Ophelia can mistake plumbing for economics; the live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="ophelia3d" class="card">
+  <h2>Watching the flows in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Ophelia's live view of exchange-wallet flows. The <b>chocolate hub</b> is the tracked venue set; each orbiting node is a tracked wallet. Streams flow <b>toward</b> the hub on inflows and <b>away</b> on outflows, sized by real flow velocity — and the breadth ring glows brighter when wallets agree on direction. <a href="ophelia3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="ophelia3d.html?embed=1&v=1" title="Live 3D flow-health rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="ophelia" class="card">
+  <h2>Ophelia's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Ophelia</b> — she spends every 5-minute cycle reading whether broad XRP flow health can actually help the forecast. She writes down <i>everything</i>: what the ledger showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="oh-panel" id="ohPanel" hidden>
+    <div class="oh-head">OPHELIA'S STANDING VERDICT <span class="oh-badge" id="ohBadge"></span></div>
+    <p class="oh-plain" id="ohPlain"></p>
+    <div class="oh-ev" id="ohEvidence"></div>
+    <details class="oh-det"><summary>How she reached it — every discipline's read</summary><div id="ohDisciplines"></div></details>
+    <details class="oh-det"><summary>Hypothesis ledger</summary><div id="ohHypotheses"></div></details>
+    <div class="oh-meta muted" id="ohMeta"></div>
+  </div>
+  <div class="oh-scene">
+    <div class="oh-grid">
+      <div class="oh-hero">
+        <img src="ophelia.webp" alt="Ophelia working at her chalkboard" id="ohHeroImg">
+        <span class="oh-sparkle" aria-hidden="true"></span>
+        <div class="oh-bubble" id="ohBubble"><span id="ohBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Ophelia's findings <span class="lm-live" id="ohLiveDot"></span></div>
+        <div class="lm-line" id="ohBoardBias">warming up…</div>
+        <div class="lm-line" id="ohBoardVel"></div>
+        <div class="lm-line" id="ohBoardBreadth"></div>
+        <div class="lm-line lm-verdict" id="ohBoardVerdict"></div>
+        <svg id="ohBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="ohBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="ohBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="ohLogCount" class="muted"></span></div>
+    <div id="ohLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Ophelia ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="ohchat-title">CHAT WITH OPHELIA</h3>
+  <div class="ohchat" id="ohchat">
+    <div class="ohchat-head">
+      <img src="ophelia-headshot.webp" alt="Ophelia">
+      <div class="ohchat-who"><b>Ophelia</b><span class="ohchat-online"><i></i>online — ask me about on-chain flows</span></div>
+    </div>
+    <div class="ohchat-log" id="ohChatLog" aria-live="polite"></div>
+    <div class="ohchat-chips" id="ohChatChips"></div>
+    <div class="ohchat-input">
+      <input id="ohChatText" type="text" placeholder="Ask Ophelia about flow health…" maxlength="300" autocomplete="off">
+      <button id="ohChatSend" type="button">Send</button>
+    </div>
+    <div class="ohchat-note muted">Ophelia answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
 </section>
 
 </div>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar Effect — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a1628; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #dfe8f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #e8b84a; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 340px; }
+  #title a { color: #e8b84a; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(10, 22, 40, 0.72);
+    border: 1px solid rgba(232, 184, 74, 0.25); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 250px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #8fa0bd; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .gold { color: #e8b84a; } #stats .quiet { color: #8fa0bd; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(232, 184, 74, 0.35); border-radius: 999px;
+    background: rgba(10, 22, 40, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #e8b84a; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 22, 40, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>CALENDAR EFFECT</h1>
+  <p>Live XRP escrow-cycle readout, read by Camille. The navy ring is the month; the gold bars are the 1st–7th tilt window, their heights following the real live tilt — strongest on the 1st, gone by the 7th. The glowing marker is today.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#camille">CAMILLE'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { daysSince, tilt, relock, weight, enabled, computedAt }
+let sb = null;   // { n, brierEscrow, brierBase, tiltWindow }
+let verdict = null; // { verdict, updated }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const cal = s.calendar || {};
+    live = {
+      daysSince: Number.isFinite(cal.days_since_escrow) ? cal.days_since_escrow : null,
+      tilt: Number.isFinite(cal.tilt) ? cal.tilt : 0,
+      relock: Number.isFinite(cal.relock) ? cal.relock : null,
+      weight: cal.weight || 0,
+      enabled: !!cal.enabled,
+      computedAt: s.generated_at,
+    };
+    const esc = s.windows && s.windows.all ? s.windows.all.escrow : null;
+    sb = esc ? {
+      n: esc.n || 0,
+      brierEscrow: Number.isFinite(esc.brierEscrow) ? esc.brierEscrow : null,
+      brierBase: Number.isFinite(esc.brierBase) ? esc.brierBase : null,
+      tiltWindow: esc.tiltWindow || null,
+    } : null;
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshBars();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+async function fetchVerdict() {
+  try {
+    const r = await fetch(DATA_BASE + 'camille_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d && d.verdict) { verdict = { verdict: d.verdict, updated: d.updated_at }; refreshHud(); }
+  } catch { /* best effort only */ }
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const dom = live.daysSince != null ? live.daysSince + 1 : null;
+  const active = live.tilt > 0;
+  const st = active ? '<span class="gold">tilt window active</span>' : '<span class="quiet">quiet (outside window)</span>';
+  const vl = verdict ? (verdict.verdict === 'APPLY_CANDIDATE' ? 'APPLY' : verdict.verdict) : null;
+  const tw = sb && sb.tiltWindow;
+  el.innerHTML =
+    `<div><span class="k">day of month</span> <span class="v">${dom != null ? dom : '—'}</span> <span class="k">(${live.daysSince != null ? live.daysSince : '—'} days since escrow)</span></div>` +
+    `<div><span class="k">tilt</span> <span class="v gold">${live.tilt.toFixed(6)}</span> ${st}</div>` +
+    `<div><span class="k">re-lock</span> <span class="v">${live.relock != null ? (live.relock * 100).toFixed(0) + '%' : '—'}</span></div>` +
+    (tw ? `<div><span class="k">window Brier</span> <span class="v">${tw.brierEscrow.toFixed(5)} vs base ${tw.brierBase.toFixed(5)}</span> <span class="k">n=${tw.n}</span></div>` : '') +
+    (vl ? `<div><span class="k">verdict</span> <span class="v">${vl}</span></div>` : '') +
+    `<div><span class="k">in forecast</span> ${live.enabled ? '<span class="gold">blended in</span>' : '<span class="quiet">scored only</span>'}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+// month ring: 31 day-pillars around a circle; the first 7 glow gold,
+// their heights following the live tilt's decay shape
+const DAYS = 31, WINDOW = 7, RING_R = 12, BASE_H = 0.6, TILT_SCALE = 500;
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a1628, 0.022);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 16, 30);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0x8fa0c0, 0.55));
+const key = new THREE.DirectionalLight(0xfff3d6, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+// thin ring under the pillars
+const ringGeo = new THREE.TorusGeometry(RING_R, 0.06, 8, 128);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x1e3a5f, transparent: true, opacity: 0.8 });
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI / 2; scene.add(ring);
+
+const navyMat = new THREE.MeshStandardMaterial({ color: 0x1e3a5f, emissive: 0x0d1c33, emissiveIntensity: 0.8, roughness: 0.4 });
+const goldMat = new THREE.MeshStandardMaterial({ color: 0xe8b84a, emissive: 0x7a5410, emissiveIntensity: 1.0, roughness: 0.35 });
+const pillars = [];
+const barGeo = new THREE.BoxGeometry(0.9, 1, 0.9);
+for (let i = 0; i < DAYS; i++) {
+  const a = (i / DAYS) * Math.PI * 2 - Math.PI / 2; // day 1 at the front
+  const m = new THREE.Mesh(barGeo, (i < WINDOW ? goldMat : navyMat).clone());
+  m.position.set(Math.cos(a) * RING_R, 0, Math.sin(a) * RING_R);
+  m.userData.angle = a;
+  scene.add(m); pillars.push(m);
+}
+
+// today marker: glowing gold sphere hovering over today's pillar
+const todayGeo = new THREE.SphereGeometry(0.55, 24, 24);
+const todayMat = new THREE.MeshBasicMaterial({ color: 0xffd97a, transparent: true, opacity: 0.95 });
+const todayMark = new THREE.Mesh(todayGeo, todayMat);
+scene.add(todayMark);
+
+// central gauge: a column whose height tracks the live tilt
+const gaugeGeo = new THREE.CylinderGeometry(0.5, 0.5, 1, 24);
+const gaugeMat = new THREE.MeshStandardMaterial({ color: 0xe8b84a, emissive: 0x8a5f16, emissiveIntensity: 1.1, roughness: 0.3, transparent: true, opacity: 0.9 });
+const gauge = new THREE.Mesh(gaugeGeo, gaugeMat);
+scene.add(gauge);
+const gaugeBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.25, 32),
+  new THREE.MeshStandardMaterial({ color: 0x1e3a5f, emissive: 0x0d1c33, emissiveIntensity: 0.8 }));
+gaugeBase.position.y = 0.12; scene.add(gaugeBase);
+
+function refreshBars() {
+  if (!live) return;
+  const tilt = Math.max(live.tilt, 0);
+  for (let i = 0; i < pillars.length; i++) {
+    const p = pillars[i];
+    let h = BASE_H;
+    if (i < WINDOW) h = BASE_H + tilt * TILT_SCALE * (1 - i / WINDOW);
+    p.scale.y = h;
+    p.position.y = h / 2;
+    p.material.emissiveIntensity = i < WINDOW ? (tilt > 0 ? 1.2 : 0.45) : 0.8;
+  }
+  gauge.scale.y = Math.max(0.25, tilt * TILT_SCALE * 0.9);
+  gauge.position.y = gauge.scale.y / 2 + 0.25;
+  gaugeMat.opacity = tilt > 0 ? 0.95 : 0.25;
+  // today marker over today's pillar
+  const di = live.daysSince != null ? Math.max(0, Math.min(DAYS - 1, live.daysSince)) : 0;
+  const a = pillars[di].userData.angle;
+  const h = pillars[di].scale.y;
+  todayMark.position.set(Math.cos(a) * RING_R, h + 1.2, Math.sin(a) * RING_R);
+}
+
+// supply-release particles: drift outward from the day-1 pillar while the tilt is live
+const P_COUNT = 300;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({ t: Math.random(), speed: 0.2 + Math.random() * 0.5, jitter: (Math.random() - 0.5) * 2.4 });
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0xe8b84a, size: 0.22, transparent: true, opacity: 0.0, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  const tilt = live ? Math.max(live.tilt, 0) : 0;
+  const strength = Math.min(tilt * 500, 1); // visualization only
+
+  // today marker pulses; particle flow breathes with tilt strength
+  todayMark.scale.setScalar(1 + 0.18 * Math.sin(t * 2.4));
+  pMat.opacity = strength * 0.7;
+  gaugeMat.emissiveIntensity = 0.7 + 0.6 * Math.sin(t * 1.6) + strength * 0.8;
+
+  const day1 = pillars[0].userData.angle;
+  const x0 = Math.cos(day1) * RING_R, z0 = Math.sin(day1) * RING_R;
+  const pos = pGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed * (0.3 + strength * 1.6);
+    if (s.t > 1) s.t -= 1;
+    const r = RING_R + s.t * 7;
+    const a = day1 + s.jitter * 0.08 * s.t;
+    pos[i * 3] = Math.cos(a) * r;
+    pos[i * 3 + 1] = 0.6 + Math.sin(s.t * Math.PI) * 2.6;
+    pos[i * 3 + 2] = Math.sin(a) * r;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+await fetchVerdict();
+setInterval(fetchSummary, 30000);
+setInterval(fetchVerdict, 120000);
+animate();
+</script>
+</body>
+</html>

@@ -1430,3 +1430,121 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .nchat-note { font-size: 11px; padding: 8px 14px 10px; }
 @media (max-width: 640px) { .nia-lab-title { font-size: 17px; letter-spacing: 1px; } .nia-lab-headshot { width: 48px; height: 48px; } }
 
+.ophelia-lab-wrap {
+  border: 3px solid #8b5a2b; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.ophelia-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #8b5a2b; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.ophelia-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #8b5a2b; flex: 0 0 auto;
+}
+.ophelia-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(139,90,43,0.06);
+}
+.ophelia-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #8b5a2b; letter-spacing: 1px; }
+.ophelia-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Ophelia's standing verdict panel */
+.oh-panel {
+  border: 1px solid #8b5a2b; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(139,90,43,0.05);
+}
+.oh-head { font-size: 13px; letter-spacing: 2px; color: #8b5a2b; font-weight: 700; margin-bottom: 8px; }
+.oh-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.oh-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.oh-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.oh-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.oh-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.oh-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.oh-ev b { color: #8b5a2b; }
+.oh-det { margin: 8px 0; font-size: 13px; }
+.oh-det summary { cursor: pointer; color: #8b5a2b; }
+.oh-det .oh-line { margin: 6px 0; line-height: 1.5; }
+.oh-det .oh-d { color: #8b5a2b; font-weight: 600; text-transform: capitalize; }
+.oh-hyp { margin: 6px 0; line-height: 1.5; }
+.oh-hyp .st { font-weight: 700; }
+.oh-hyp .st.open { color: #f2c879; } .oh-hyp .st.supported { color: #b5e6a2; } .oh-hyp .st.refuted { color: #f09797; } .oh-hyp .st.proposed { color: #9ecfff; }
+.oh-meta { font-size: 12px; margin-top: 10px; }
+/* Ophelia scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.oh-scene { margin: 6px 0 14px; position: relative; }
+.oh-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .oh-grid { grid-template-columns: 1fr; } }
+.oh-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.oh-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.oh-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #d9b98c; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #d9b98c); opacity: 0; animation: ohTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ohTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.oh-bubble.oh-talk { animation: ohTalk 1.2s ease-in-out; }
+@keyframes ohTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.oh-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fffaf3; border: 1px solid #e0cdb4; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.oh-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffaf3; border-bottom: 0;
+}
+/* Ophelia DM chat — orange tints */
+.ohchat-title {
+  color: #8b5a2b; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.ohchat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.ohchat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(139,90,43,0.10); border-bottom: 1px solid var(--line);
+}
+.ohchat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #8b5a2b; }
+.ohchat-who b { display: block; font-size: 15px; }
+.ohchat-online { font-size: 12px; color: #8b5a2b; display: flex; align-items: center; gap: 5px; }
+.ohchat-online i { width: 8px; height: 8px; border-radius: 50%; background: #8b5a2b; display: inline-block; }
+.ohchat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ohchat-row { display: flex; gap: 8px; align-items: flex-end; }
+.ohchat-row.me { justify-content: flex-end; }
+.ohchat-row.ophelia img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #8b5a2b; flex: 0 0 auto; }
+.ohchat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.ohchat-row.ophelia .ohchat-bubble { background: #2e2118; border-bottom-left-radius: 4px; color: #8b5a2b; }
+.ohchat-row.me .ohchat-bubble { background: #8b5a2b; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.ohchat-typing { display: inline-block; }
+.ohchat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #8b5a2b; animation: ohtick 1s infinite; }
+.ohchat-typing span:nth-child(2) { animation-delay: 0.15s; } .ohchat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ohtick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.ohchat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.ohchat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #8b5a2b; color: #8b5a2b; background: transparent;
+}
+.ohchat-chip:hover { background: rgba(139,90,43,0.12); }
+.ohchat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.ohchat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1e22; color: inherit; font-size: 14px; outline: none;
+}
+.ohchat-input input:focus { border-color: #8b5a2b; }
+.ohchat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #8b5a2b; color: #1a1a1a; font-weight: 700; font-size: 14px;
+}
+.ohchat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .ophelia-lab-title { font-size: 17px; letter-spacing: 1px; } .ophelia-lab-headshot { width: 48px; height: 48px; } }
+
