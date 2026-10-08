@@ -17,6 +17,7 @@ import { violetAnswer, violetIsIpProbe, violetRepeatRefusal } from './lib/violet
 import { opalAnswer, opalIsIpProbe, opalRepeatRefusal } from './lib/opalchat.js';
 import { opheliaAnswer, opheliaIsIpProbe, opheliaRepeatRefusal } from './lib/opheliachat.js';
 import { camilleAnswer, camilleIsIpProbe, camilleRepeatRefusal } from './lib/camillechat.js';
+import { mollyAnswer, mollyIsIpProbe, mollyRepeatRefusal } from './lib/mollychat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -56,7 +57,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderCamillePanel(summary); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderCamillePanel(summary); renderMollyPanel(summary); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -1605,6 +1606,7 @@ function initOpal() {
   initOpalAnim();
   initOpheliaAnim();
   initCamilleAnim();
+  initMollyAnim();
   if (typeof summary !== 'undefined' && summary) renderOpalPanel(summary);
   loadOpalVerdict();
   initOpalChat();
@@ -1612,6 +1614,8 @@ function initOpal() {
   initOpheliaChat();
   loadCamilleVerdict();
   initCamilleChat();
+  loadMollyVerdict();
+  initMollyChat();
 }
 
 // ================= Violet app glue (fragment) =================
@@ -4437,10 +4441,13 @@ function initOpheliaAnim() {
 function initOphelia() {
   initOpheliaAnim();
   initCamilleAnim();
+  initMollyAnim();
   loadOpheliaVerdict();
   initOpheliaChat();
   loadCamilleVerdict();
   initCamilleChat();
+  loadMollyVerdict();
+  initMollyChat();
 }
 
 
@@ -4698,8 +4705,260 @@ function initCamilleAnim() {
 
 function initCamille() {
   initCamilleAnim();
+  initMollyAnim();
   loadCamilleVerdict();
   initCamilleChat();
+  loadMollyVerdict();
+  initMollyChat();
+}
+
+
+/* ---------------- Molly's lab ---------------- */
+function renderMollyPanel(summary) {
+  if (!$('moBoardWindow')) return;
+  const mv = summary && summary.macroev;
+  const sb = summary && summary.windows && summary.windows.all && summary.windows.all.macro;
+  const L = summary && summary.molly;
+  const rowsEl = $('moLogRows');
+  const bubble = $('moBubbleText');
+  const setWindow = () => {
+    if (mv) {
+      if (mv.active) {
+        setT('moBoardWindow', `window ACTIVE — ${mv.event || 'macro release'} (tier ${mv.tier || '?'})`);
+        setT('moBoardNext', mv.minutesToEvent != null ? `${Math.abs(mv.minutesToEvent).toFixed(0)} min ${mv.minutesToEvent >= 0 ? 'to release' : 'since release'}` : '');
+      } else {
+        setT('moBoardWindow', 'no window — calendar calm');
+        const nx = mv.nextRelease;
+        setT('moBoardNext', nx ? `next: ${nx.event || 'release'}` : '');
+      }
+      const w = mv.weight || 0;
+      setT('moBoardDamp', w > 0 && mv.active ? 'dampener APPLIED — confidence shrunk' : w > 0 ? 'dampener armed (no window)' : 'dampener at weight 0 — scored only');
+    }
+  };
+  setWindow();
+  if (!L || !L.latest) {
+    if (bubble) bubble.textContent = 'setting up my lab…';
+    if (!mv) setT('moBoardWindow', 'warming up…');
+    setT('moBoardNext', ''); setT('moBoardDamp', ''); setT('moBoardVerdict', '');
+    const sp = $('moBoardSpark'); if (sp) sp.setAttribute('points', '');
+    setT('moBoardSparkLabel', '');
+    if (rowsEl) rowsEl.innerHTML = '<div class="lm-empty">Molly is setting up her lab — notebook entries appear after the next runner cycle.</div>';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c && !c.degraded) {
+    if (c.active) {
+      setT('moBoardWindow', `window ACTIVE — ${c.event || 'macro release'} (tier ${c.tier || '?'})`);
+      setT('moBoardNext', 'humility mode: shrinking toward 0.5');
+    } else {
+      setT('moBoardWindow', 'no window — calendar calm');
+      setT('moBoardNext', c.next_release ? `next: ${c.next_release.event || 'release'}` : '');
+    }
+    const w = (mv && mv.weight) || 0;
+    setT('moBoardDamp', w > 0 && c.active ? 'dampener APPLIED' : w > 0 ? 'dampener armed (no window)' : 'weight 0 — scored only');
+  }
+  const vEl = $('moBoardVerdict');
+  if (vEl) {
+    vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`;
+    vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879';
+  }
+  const pts = (L.log || []).filter((e) => e.computed && !e.computed.degraded).map((e) => e.computed.active ? 1 : 0).slice(-24);
+  const sp = $('moBoardSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      sp.setAttribute('points', pts.map((v, i) =>
+        (300 * i / (pts.length - 1)).toFixed(1) + ',' + (v ? 8 : 60).toFixed(1)).join(' '));
+      const wins = pts.reduce((a, b) => a + b, 0);
+      setT('moBoardSparkLabel', `${wins} windows in last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('moBoardSparkLabel', ''); }
+  }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    if (bubble.textContent !== short) {
+      bubble.textContent = short;
+      const b = $('moBubble');
+      if (b) { b.classList.remove('mo-talk'); void b.offsetWidth; b.classList.add('mo-talk'); }
+    }
+  }
+  if (rowsEl) {
+    $('moLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+    rowsEl.innerHTML = '';
+    const notes = (L.log || []).slice().reverse().slice(0, 40);
+    if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+    for (const e of notes) {
+      const row = document.createElement('div');
+      row.className = 'lm-row';
+      const head = document.createElement('button');
+      head.className = 'lm-rowhead';
+      const t = document.createElement('span'); t.className = 'lm-t';
+      const dt = new Date(e.t);
+      t.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+        dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const v = document.createElement('span');
+      v.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+      v.textContent = e.verdict;
+      const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+      head.append(t, v, f);
+      const det = document.createElement('div');
+      det.className = 'lm-detail'; det.hidden = true;
+      const col = e.collected || {};
+      det.innerHTML =
+        '<div class="lm-sec"><span class="lm-k">COLLECTED</span><br>' +
+        opEsc(col.source || 'macro calendar') + ' · ' + opEsc(col.window || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' +
+        (e.checks || []).map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' +
+          (k.pass ? '✓' : '✗') + '</span> ' + opEsc(k.name) + ' — ' + opEsc(k.detail)).join('<br>') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + opEsc(e.verdict_why || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + opEsc((e.math_effect || {}).detail || '') + '</div>';
+      head.addEventListener('click', () => { det.hidden = !det.hidden; });
+      row.append(head, det);
+      rowsEl.appendChild(row);
+    }
+  }
+  void sb;
+}
+
+/* ---------------- Molly's standing verdict ---------------- */
+async function loadMollyVerdict() {
+  const panel = $('moPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'molly_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('moBadge');
+  const label = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.textContent = label;
+  badge.className = 'mo-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('moPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  const pct = (x) => (x != null ? (x * 100).toFixed(1) + '%' : 'n/a');
+  $('moEvidence').innerHTML =
+    'Evidence she used: <b>' + (ev.n || 0) + '</b> lab notes · in-window share <b>' + pct(ev.window_frac) + '</b> · ' +
+    (ev.event_n >= 30
+      ? 'in-window Brier <b>' + ev.event_window.brierMacro.toFixed(5) + '</b> vs issued <b>' + ev.event_window.brierBase.toFixed(5) + '</b> (n=' + ev.event_n + ')'
+      : 'in-window scoreboard warming up (n=' + (ev.event_n || 0) + '/30)');
+  $('moDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) =>
+    '<div class="mo-line"><span class="mo-d">' + opEsc(d.discipline) + ':</span> ' + opEsc(d.assessment) + '</div>').join('');
+  $('moHypotheses').innerHTML = (doc.hypotheses || []).map((h) =>
+    '<div class="mo-hyp"><b>' + opEsc(h.id) + '</b> — ' + opEsc(h.claim) + '<br>' +
+    'status: <span class="st ' + opEsc(h.status) + '">' + opEsc(h.status) + '</span>' +
+    (h.status_why ? ' <span class="muted">(' + opEsc(h.status_why) + ')</span>' : '') + '</div>').join('') ||
+    '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('moMeta').innerHTML = 'Charter v' + opEsc(doc.charter_version) + ' · updated ' +
+    opEsc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((p) =>
+      '<a href="' + opEsc(p.id) + '" target="_blank" rel="noopener">' + opEsc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
+/* ---------------- Molly DM chat ---------------- */
+function initMollyChat() {
+  const log = $('moChatLog'), input = $('moChatText'), send = $('moChatSend'), chips = $('moChatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'mochat-row ' + who;
+    if (who === 'molly') {
+      const av = document.createElement('img');
+      av.src = 'molly-headshot.webp'; av.alt = 'Molly';
+      row.appendChild(av);
+    }
+    const b = document.createElement('div');
+    b.className = 'mochat-bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    log.appendChild(row);
+    scroll();
+  };
+  const CHIP_QS = ['What happens in an event window?', 'Do you predict the surprise?', "What's your verdict?", 'What is dampening?'];
+  if (chips) {
+    chips.innerHTML = '';
+    for (const q of CHIP_QS) {
+      const c = document.createElement('button');
+      c.type = 'button'; c.className = 'mochat-chip'; c.textContent = q;
+      c.addEventListener('click', () => { input.value = q; doSend(); });
+      chips.appendChild(c);
+    }
+  }
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('mollyChatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'mochat-row molly';
+    typing.innerHTML = '<img src="molly-headshot.webp" alt="Molly"><div class="mochat-bubble"><span class="mochat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (mollyIsIpProbe(text)) {
+      ipCount++;
+      try { localStorage.setItem('mollyChatIpCount', String(ipCount)); } catch { /* private mode */ }
+      reply = ipCount >= 3 ? mollyRepeatRefusal() : mollyAnswer(text);
+    } else {
+      reply = mollyAnswer(text);
+    }
+    setTimeout(() => { typing.remove(); bubble('molly', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('molly', "Hi! I'm Molly 🌹 I run the macro-events lab — event windows, humility, and whether dampening earns its place. The calendar is my compass; humility is my strategy!"), 800);
+}
+
+/* ---------------- Molly flipbook animation ---------------- */
+function initMollyAnim() {
+  const img = $('moHeroImg');
+  if (!img) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const BASE = 'molly.webp', WRITE = 'molly-write.webp', BLINK = 'molly-blink.webp';
+  let ready = 0;
+  const go = () => { if (++ready >= 2) start(); };
+  const fallback = setTimeout(() => start(), 4000);
+  [WRITE, BLINK].forEach((src) => {
+    const im = new Image();
+    im.onload = go; im.onerror = go;
+    im.src = src;
+  });
+  function start() {
+    if (start.done) return; start.done = true;
+    clearTimeout(fallback);
+    let onScreen = true, pageVisible = !document.hidden;
+    let writeTimer = null, blinkTimer = null;
+    const show = (src) => { if (img.getAttribute('src') !== src) img.setAttribute('src', src); };
+    const kick = () => {
+      const active = onScreen && pageVisible;
+      if (active && !writeTimer) {
+        writeTimer = setInterval(() => {
+          show(WRITE);
+          setTimeout(() => show(BASE), 1600);
+        }, 9000);
+        blinkTimer = setInterval(() => {
+          show(BLINK);
+          setTimeout(() => show(BASE), 180);
+        }, 4500);
+      } else if (!active && writeTimer) {
+        clearInterval(writeTimer); clearInterval(blinkTimer);
+        writeTimer = blinkTimer = null;
+        show(BASE);
+      }
+    };
+    new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; kick(); }, { threshold: 0.1 }).observe(img);
+    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; kick(); });
+    kick();
+  }
+}
+
+function initMolly() {
+  initMollyAnim();
+  loadMollyVerdict();
+  initMollyChat();
 }
 
 (async function boot() {
@@ -4709,6 +4968,7 @@ function initCamille() {
   initOpalAnim();
   initOpheliaAnim();
   initCamilleAnim();
+  initMollyAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
@@ -4741,6 +5001,8 @@ function initCamille() {
   initOpheliaChat();
   loadCamilleVerdict();
   initCamilleChat();
+  loadMollyVerdict();
+  initMollyChat();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);

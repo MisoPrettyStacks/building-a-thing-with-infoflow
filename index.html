@@ -359,9 +359,17 @@
 
 </div>
 
-<div class="exp-wrap exp-wrap-green">
+<div class="molly-lab-wrap">
+<h2 class="molly-lab-title"><img src="molly-headshot.webp" alt="Molly" class="molly-lab-headshot"> MOLLY'S LAB - MACRO EVENTS</h2>
+<div class="molly-agent-intro">
+  <h3>Meet Molly — an agentic agent, not a mascot</h3>
+  <p>Molly doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the calendar of scheduled US macro releases, researching the science of announcement volatility, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Macro Events Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> macroeconomics · market microstructure · statistics · risk management · data engineering · behavioral finance — with real market-trading experience and knowledge. She is the expert in her area of study: how scheduled macro releases relate to forecast confidence.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the macro calendar, verify event windows engage on schedule, guard data quality, and keep the lab notebook. Analyze how windows behave: whether volatility truly spikes inside them, whether the dampener earns its keep, which tiers matter. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the macro-calendar state and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the macro dampener earns a place in the live forecast model. Her APPLY verdicts send the dampener to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p><strong>What she never does:</strong> predict the surprise. The direction of a macro surprise is a coin flip — Molly's dampener only ever <em>shrinks confidence toward 0.5</em> inside windows. It cannot move the forecast up or down. Humility is her strategy. 🌹</p>
 </div>
-
 <section id="macro" class="card">
   <h2>Macro events <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
   <p class="muted" style="margin-top:0">Scheduled US macro releases (FOMC, CPI, payrolls…) reliably spike volatility. The surprise direction is a coin flip, so inside an event window the model does the humble thing: it shrinks its confidence toward 0.5 and widens the forecast cone instead of guessing.</p>
@@ -375,6 +383,64 @@
   <div id="macList" style="margin-top:12px;font-size:13px"></div>
   <p class="muted" style="font-size:12px;margin-bottom:0">Windows: ±60 min around tier-1 releases (FOMC decisions, CPI, nonfarm payrolls), ±30 min around tier-2 (PPI, retail sales, ISM). Inside a window the P(up) deviation is multiplied by 0.85 (tier-1) or 0.92 (tier-2) and the cone bands widen by the inverse. The schedule is hardcoded in <code>data/macro-calendar.json</code> from the official Fed/BLS/Census/ISM calendars — no data feed to break. Scored out-of-sample like everything else; the agent only arms it with evidence.</p>
 </section>
+
+<section id="molly3d" class="card">
+  <h2>The event window in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Molly's live view of macro time. The <b>burgundy cone</b> is the forecast's uncertainty — watch it visibly widen when an event window engages and her dampener applies. The three pillars are upcoming releases, taller and brighter as their countdowns run down, with pulsing rings marking the windows. <a href="molly3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="molly3d.html?embed=1&v=1" title="Live 3D macro-event rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="molly" class="card">
+  <h2>Molly's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Molly</b> — she spends every 5-minute cycle checking whether macro-event humility can actually help the forecast. She writes down <i>everything</i>: what the calendar showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her dampener is ever used.</p>
+  <div class="mo-panel" id="moPanel" hidden>
+    <div class="mo-head">MOLLY'S STANDING VERDICT <span class="mo-badge" id="moBadge"></span></div>
+    <p class="mo-plain" id="moPlain"></p>
+    <div class="mo-ev" id="moEvidence"></div>
+    <details class="mo-det"><summary>How she reached it — every discipline's read</summary><div id="moDisciplines"></div></details>
+    <details class="mo-det"><summary>Hypothesis ledger</summary><div id="moHypotheses"></div></details>
+    <div class="mo-meta muted" id="moMeta"></div>
+  </div>
+  <div class="mo-scene">
+    <div class="mo-grid">
+      <div class="mo-hero">
+        <img src="molly.webp" alt="Molly working at her chalkboard" id="moHeroImg">
+        <span class="mo-sparkle" aria-hidden="true"></span>
+        <div class="mo-bubble" id="moBubble"><span id="moBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Molly's findings <span class="lm-live" id="moLiveDot"></span></div>
+        <div class="lm-line" id="moBoardWindow">warming up…</div>
+        <div class="lm-line" id="moBoardNext"></div>
+        <div class="lm-line" id="moBoardDamp"></div>
+        <div class="lm-line lm-verdict" id="moBoardVerdict"></div>
+        <svg id="moBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="moBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="moBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="moLogCount" class="muted"></span></div>
+    <div id="moLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Molly ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="mochat-title">CHAT WITH MOLLY</h3>
+  <div class="mochat" id="mochat">
+    <div class="mochat-head">
+      <img src="molly-headshot.webp" alt="Molly">
+      <div class="mochat-who"><b>Molly</b><span class="mochat-online"><i></i>online — ask me about macro events</span></div>
+    </div>
+    <div class="mochat-log" id="moChatLog" aria-live="polite"></div>
+    <div class="mochat-chips" id="moChatChips"></div>
+    <div class="mochat-input">
+      <input id="moChatText" type="text" placeholder="Ask Molly about event windows…" maxlength="300" autocomplete="off">
+      <button id="moChatSend" type="button">Send</button>
+    </div>
+    <div class="mochat-note muted">Molly answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
 
 <div class="ophelia-lab-wrap">
 <h2 class="ophelia-lab-title"><img src="ophelia-headshot.webp" alt="Ophelia" class="ophelia-lab-headshot"> OPHELIA'S LAB - ON-CHAIN FLOWS</h2>
