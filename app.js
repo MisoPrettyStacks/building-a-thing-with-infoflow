@@ -167,6 +167,46 @@ function renderLittleMarlowe() {
   }
 }
 
+/* ---------------- Little Marlowe flipbook animation ---------------- */
+function initLittleMarloweAnim() {
+  const img = $('lmHeroImg');
+  if (!img) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const BASE = 'little-marlowe.webp', WRITE = 'little-marlowe-write.webp', BLINK = 'little-marlowe-blink.webp';
+  let ready = 0;
+  const go = () => { if (++ready >= 2) start(); };
+  const fallback = setTimeout(() => start(), 4000);
+  [WRITE, BLINK].forEach((src) => {
+    const im = new Image();
+    im.onload = go; im.onerror = go;
+    im.src = src;
+  });
+  function start() {
+    if (start.done) return; start.done = true;
+    clearTimeout(fallback);
+    let onScreen = true, pageVisible = !document.hidden;
+    let writing = false, writeTimer = null, blinkTimer = null;
+    const show = (src) => { if (img.getAttribute('src') !== src) img.setAttribute('src', src); };
+    const kick = () => {
+      const active = onScreen && pageVisible;
+      if (active && !writeTimer) {
+        writeTimer = setInterval(() => { writing = !writing; show(writing ? WRITE : BASE); }, 750);
+        blinkTimer = setInterval(() => {
+          show(BLINK);
+          setTimeout(() => show(writing ? WRITE : BASE), 170);
+        }, 4200);
+      } else if (!active && writeTimer) {
+        clearInterval(writeTimer); clearInterval(blinkTimer);
+        writeTimer = blinkTimer = null;
+        show(BASE);
+      }
+    };
+    new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; kick(); }, { threshold: 0.1 }).observe(img);
+    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; kick(); });
+    kick();
+  }
+}
+
 /* ---------------- 3D intro popup ---------------- */
 function initIntro3d() {
   const ov = $('intro3d');
@@ -905,6 +945,7 @@ window.addEventListener('load', () => {
 (async function boot() {
   await resolveBases();
   initIntro3d();
+  initLittleMarloweAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
