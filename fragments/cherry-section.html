@@ -1,0 +1,86 @@
+<div class="cherry-lab-wrap">
+<h2 class="cherry-lab-title"><img src="cherry-headshot.webp" alt="Cherry" class="cherry-lab-headshot"> CHERRY'S LAB - CORRELATION REGIME</h2>
+<div class="cherry-agent-intro">
+  <h3>Meet Cherry — an agentic agent, not a mascot</h3>
+  <p>Cherry doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the coupling between XRP and BTC, researching the science of correlation regimes, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Correlation Regime Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> statistics · quantitative finance · mathematics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: whether XRP is truly moving with BTC right now, and whether that coupling carries anything predictable.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live coupling measurements, guard bar alignment and data quality, and keep the lab notebook. Analyze how coupling behaves: when XRP and BTC lock together, when they decouple, whether the coupling rule favors certain regimes. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she measures the rolling correlation of XRP and BTC returns and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the correlation regime earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing. Her rule is conditional by design: she follows BTC <em>only</em> when the pair is coupled.</p>
+</div>
+
+<section id="corr" class="card">
+  <h2>Correlation regime — BTC coupling <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Cherry aligns the lab's own XRP and BTC 5-minute candles by timestamp and measures the rolling correlation of their returns over the last day. When the pair is coupled, BTC's recent drift becomes a conditional tilt on XRP — currently at weight zero, so it is scored but never affects the forecast until Cherry finds out-of-sample evidence. When they decouple, she abstains: following BTC then would be importing someone else's noise.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">24h correlation</div><div class="v" id="chCorr" style="font-size:15px">—</div><div class="s" id="chCorrSub">rolling, log returns</div></div>
+    <div class="stat"><div class="k">Regime</div><div class="v" id="chCoupled" style="font-size:15px">—</div><div class="s" id="chCoupledSub">coupled or decoupled</div></div>
+    <div class="stat"><div class="k">Conditional tilt</div><div class="v" id="chTilt" style="font-size:15px">—</div><div class="s" id="chTiltSub">BTC drift, when licensed</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="chStatus" style="font-size:15px">—</div><div class="s" id="chStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="chBrier">—</div><div class="s" id="chBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="chSkill" style="font-size:15px">—</div><div class="s" id="chSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="chSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">Correlation history</div><div class="v" style="font-size:12px"><canvas id="chSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">rolling coupling estimate</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner pairs XRP and BTC bars by exact timestamp, computes log returns, and takes the correlation over the last day of shared bars. Only in a coupled regime does BTC's recent drift become a tilt — and only if that drift is expressive, not a whisper. Honest caveat: correlations regime-shift — altcoins decouple on idiosyncratic news and re-couple on macro moves, so conditionality is the signal, not the correlation itself. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="cherry3d" class="card">
+  <h2>The coupling bridge in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Cherry's live view of the coupling. The two glowing nodes are BTC and XRP; the crimson beam between them is their rolling 24-hour correlation — thick and luminous when coupled, fading to a whisper when the pair decouples. Sparks drift across the bridge while the coupling holds. So you're literally watching the relationship she trades on — and when it breaks, you see the break. <a href="cherry3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="cherry3d.html?embed=1&v=1" title="Live 3D correlation rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="cherry" class="card">
+  <h2>Cherry's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Cherry</b> — she spends every 5-minute cycle watching whether the XRP/BTC coupling can actually help the forecast. She writes down <i>everything</i>: what the bars showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="wv-panel" id="chPanel" hidden>
+    <div class="wv-head">CHERRY'S STANDING VERDICT <span class="wv-badge" id="chVerdict"></span></div>
+    <p class="wv-plain" id="chPlain"></p>
+    <div class="wv-ev" id="chEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="chDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="chHypotheses"></div></details>
+    <div class="wv-meta muted" id="chMeta"></div>
+  </div>
+  <div class="cherry-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="cherry.webp" alt="Cherry working at her chalkboard" id="chHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="chBubble"><span id="chBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Cherry's findings <span class="lm-live" id="chLiveDot"></span></div>
+        <div class="lm-line" id="chCorrBoard">warming up…</div>
+        <div class="lm-line" id="chCoupledBoard"></div>
+        <div class="lm-line" id="chTiltBoard"></div>
+        <div class="lm-line lm-verdict" id="chVerdictBoard"></div>
+        <svg id="chBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="chBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="chBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox" id="chLog">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="chLogCount" class="muted"></span></div>
+    <div id="chLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Cherry ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title cherry-chat-title">CHAT WITH CHERRY</h3>
+  <div class="wchat cherry-chat" id="chchat">
+    <div class="wchat-head">
+      <img src="cherry-headshot.webp" alt="Cherry">
+      <div class="wchat-who"><b>Cherry</b><span class="wchat-online"><i></i>online — ask me about coupling regimes</span></div>
+    </div>
+    <div class="wchat-log" id="chChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="chChatChips"></div>
+    <div class="wchat-input">
+      <input id="chChatText" type="text" placeholder="Ask Cherry about coupling regimes…" maxlength="300" autocomplete="off">
+      <button id="chChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Cherry answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

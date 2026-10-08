@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order-Book Depth — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #04090b; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #dfe8f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #14b8a6; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 340px; }
+  #title a { color: #14b8a6; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(8, 18, 20, 0.72);
+    border: 1px solid rgba(20, 184, 166, 0.25); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 250px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #8fa0bd; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .bid { color: #2dd4bf; } #stats .ask { color: #fde9d8; } #stats .quiet { color: #8fa0bd; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(20, 184, 166, 0.35); border-radius: 999px;
+    background: rgba(8, 18, 20, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #14b8a6; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(4, 9, 11, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>ORDER-BOOK DEPTH</h1>
+  <p>Live XRP-USD order book, read by Opal. The teal wall is resting bids (demand), the pale wall is resting asks (supply); bar heights come from the real aggregate resting notional. The scene leans toward the heavier side.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#opal">OPAL'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { bias, spreadBps, imbalance, depthBid, depthAsk, degraded, warmingUp, computedAt }
+let verdict = null; // { verdict, updated }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const ob = s.orderbook || {};
+    live = {
+      bias: ob.bias ?? 0,
+      spreadBps: ob.spreadBps ?? null,
+      imbalance: ob.imbalance ?? 0,
+      depthBid: ob.depthBid ?? 0,
+      depthAsk: ob.depthAsk ?? 0,
+      degraded: !!ob.degraded,
+      warmingUp: !!ob.warmingUp,
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshWalls();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+async function fetchVerdict() {
+  try {
+    const r = await fetch(DATA_BASE + 'opal_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d && d.verdict) { verdict = { verdict: d.verdict, updated: d.updated_at }; refreshHud(); }
+  } catch { /* best effort only */ }
+}
+
+function fmtUsd(x) {
+  if (x == null || !isFinite(x)) return '—';
+  if (x >= 1e6) return '$' + (x / 1e6).toFixed(1) + 'M';
+  if (x >= 1e3) return '$' + (x / 1e3).toFixed(0) + 'K';
+  return '$' + Math.round(x);
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const imb = live.imbalance;
+  const side = imb > 0.02 ? 'bid-heavy' : imb < -0.02 ? 'ask-heavy' : 'balanced';
+  const cls = imb > 0.02 ? 'bid' : imb < -0.02 ? 'ask' : 'quiet';
+  const status = live.degraded ? '<span class="ask">book unseen (feed down)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${side}</span>`;
+  const vl = verdict ? (verdict.verdict === 'APPLY_CANDIDATE' ? 'APPLY' : verdict.verdict) : null;
+  el.innerHTML =
+    `<div><span class="k">spread</span> <span class="v">${live.spreadBps != null ? live.spreadBps.toFixed(1) + ' bps' : '—'}</span></div>` +
+    `<div><span class="k">imbalance</span> <span class="v ${cls}">${imb >= 0 ? '+' : ''}${(imb * 100).toFixed(1)}% ${side}</span></div>` +
+    `<div><span class="k">bid depth</span> <span class="v bid">${fmtUsd(live.depthBid)}</span> <span class="k">ask depth</span> <span class="v ask">${fmtUsd(live.depthAsk)}</span></div>` +
+    `<div><span class="k">tilt</span> <span class="v">${live.bias >= 0 ? '+' : ''}${live.bias.toFixed(4)}</span></div>` +
+    (vl ? `<div><span class="k">verdict</span> <span class="v">${vl}</span></div>` : '') +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x04090b, 0.028);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 13, 27);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0x8899aa, 0.55));
+const key = new THREE.DirectionalLight(0xe8fff9, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+// bookGroup holds both walls; it leans with the live imbalance
+const bookGroup = new THREE.Group(); scene.add(bookGroup);
+
+// mid marker: thin glowing line between the walls
+const midGeo = new THREE.BoxGeometry(0.12, 0.12, 15);
+const midMat = new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+const midLine = new THREE.Mesh(midGeo, midMat);
+bookGroup.add(midLine);
+
+// depth walls: bars whose heights come from aggregate resting notional,
+// evenly divided across the bars (a real total, honestly divided)
+const NB = 16, WALL_X = 8, MAX_BAR_H = 9, BAR_W = 0.55, SPAN = 14;
+const bidMat = new THREE.MeshStandardMaterial({ color: 0x14b8a6, emissive: 0x0a5f55, emissiveIntensity: 0.9, roughness: 0.35 });
+const askMat = new THREE.MeshStandardMaterial({ color: 0xe9f5f2, emissive: 0x6a7a78, emissiveIntensity: 0.55, roughness: 0.45 });
+const bidBars = [], askBars = [];
+const barGeo = new THREE.BoxGeometry(BAR_W, 1, BAR_W);
+for (let i = 0; i < NB; i++) {
+  const z = -SPAN / 2 + (SPAN * i) / (NB - 1);
+  const b = new THREE.Mesh(barGeo, bidMat.clone());
+  b.position.set(-WALL_X, 0, z); bookGroup.add(b); bidBars.push(b);
+  const a = new THREE.Mesh(barGeo, askMat.clone());
+  a.position.set(WALL_X, 0, z); bookGroup.add(a); askBars.push(a);
+}
+
+function refreshWalls() {
+  if (!live) return;
+  const total = Math.max(live.depthBid, live.depthAsk, 1e-9);
+  for (const b of bidBars) {
+    b.scale.y = Math.max(0.15, (live.depthBid / total) * MAX_BAR_H);
+    b.position.y = b.scale.y / 2;
+  }
+  for (const a of askBars) {
+    a.scale.y = Math.max(0.15, (live.depthAsk / total) * MAX_BAR_H);
+    a.position.y = a.scale.y / 2;
+  }
+}
+
+// pressure particles: drift from the heavier side toward the mid
+const P_COUNT = 400;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({ t: Math.random(), speed: 0.15 + Math.random() * 0.35, z: (Math.random() - 0.5) * SPAN, lane: (Math.random() - 0.5) * 1.4 });
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0x14b8a6, size: 0.2, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  const imb = live ? live.imbalance : 0;
+  const strength = live ? Math.min(Math.abs(imb), 1) : 0;
+
+  // the whole book leans toward the heavier side
+  const targetLean = -imb * 0.35;
+  bookGroup.rotation.z += (targetLean - bookGroup.rotation.z) * Math.min(dt * 2, 1);
+  bookGroup.rotation.y = Math.sin(t * 0.25) * 0.04;
+
+  // mid marker breathes; particle color follows the dominant side
+  midMat.opacity = 0.35 + 0.25 * Math.sin(t * 1.8) + strength * 0.25;
+  pMat.color.setHex(imb > 0.02 ? 0x2dd4bf : imb < -0.02 ? 0xf5d7b8 : 0x14b8a6);
+  pMat.opacity = 0.25 + strength * 0.6;
+
+  const pos = pGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed * (0.4 + strength * 1.8);
+    if (s.t > 1) s.t -= 1;
+    // particles start on the heavier wall and drift toward the mid line
+    const fromX = imb >= 0 ? -WALL_X : WALL_X;
+    const x = fromX + (0 - fromX) * s.t + s.lane * 0.25;
+    const y = 0.5 + Math.sin(s.t * Math.PI) * 3.5;
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = s.z;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+await fetchVerdict();
+setInterval(fetchSummary, 30000);
+setInterval(fetchVerdict, 120000);
+animate();
+</script>
+</body>
+</html>

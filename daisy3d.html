@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derivatives — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #f4f6f9; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #2b3442;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #a8842c; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #6b7688; max-width: 340px; }
+  #title a { color: #a8842c; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(168, 132, 44, 0.35); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 240px;
+    backdrop-filter: blur(4px); box-shadow: 0 2px 12px rgba(43, 52, 66, 0.08);
+  }
+  #stats .k { color: #6b7688; }
+  #stats .v { color: #1c2430; font-variant-numeric: tabular-nums; }
+  #stats .acc { color: #2e8b57; } #stats .dist { color: #c0392b; } #stats .quiet { color: #6b7688; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #8a93a3; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #2b3442; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(168, 132, 44, 0.5); border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #a8842c; color: #1c2430; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(244, 246, 249, 0.6); color: #6b7688; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>DERIVATIVES — LIVE 3D</h1>
+  <p>Daisy's live view of XRP perpetual-futures positioning. The gold dial is the funding-rate crowd meter; the towers are open interest. Crowded regimes tilt the dial.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#daisy">DAISY'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { bias, funding8h, oiTrend, oiRising, warmingUp, degraded, verdict }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const dv = s.deriv || {};
+    live = {
+      bias: dv.bias ?? 0,
+      funding8h: dv.funding8h ?? null,
+      oiTrend: dv.oiTrend ?? null,
+      oiRising: !!dv.oiRising,
+      warmingUp: !!dv.warmingUp,
+      degraded: !!dv.degraded,
+      computedAt: s.generated_at,
+      verdict: null,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshGauge();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+  try {
+    const r2 = await fetch(DATA_BASE + 'daisy_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (r2.ok) {
+      const doc = await r2.json();
+      if (live) { live.verdict = doc.verdict || null; live.verdictPlain = doc.verdict_plain || ''; }
+      refreshHud();
+    }
+  } catch { /* verdict panel optional */ }
+}
+
+function fmtFunding(f) {
+  if (f == null || !isFinite(f)) return '—';
+  return (f * 100).toFixed(4) + '%';
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const dir = live.bias > 0.0005 ? 'crowded shorts' : live.bias < -0.0005 ? 'crowded longs' : 'balanced';
+  const cls = live.bias > 0.0005 ? 'acc' : live.bias < -0.0005 ? 'dist' : 'quiet';
+  const status = live.degraded ? '<span class="dist">blind (feed down)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${dir}</span>`;
+  el.innerHTML =
+    `<div><span class="k">funding 8h</span> <span class="v">${fmtFunding(live.funding8h)}</span></div>` +
+    `<div><span class="k">OI trend</span> <span class="v">${live.oiTrend != null ? (live.oiTrend >= 0 ? '+' : '') + (live.oiTrend * 100).toFixed(1) + '%' : '—'}</span> <span class="${live.oiRising ? 'acc' : 'quiet'}">${live.oiRising ? 'rising' : 'flat/falling'}</span></div>` +
+    `<div><span class="k">positioning tilt</span> <span class="v ${cls}">${live.bias >= 0 ? '+' : ''}${live.bias.toFixed(4)}</span> <span class="${cls}">${dir}</span></div>` +
+    `<div><span class="k">verdict</span> <span class="v">${live.verdict || '—'}</span></div>` +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0xf4f6f9, 0.022);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 10, 24);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+const key = new THREE.DirectionalLight(0xfff2cc, 1.2); key.position.set(10, 18, 8); scene.add(key);
+const fill = new THREE.DirectionalLight(0xdfe8f2, 0.5); fill.position.set(-8, 6, -6); scene.add(fill);
+
+// funding gauge: dial ring + needle, left side of scene
+const gaugeGroup = new THREE.Group(); gaugeGroup.position.set(-6, 4, 0); scene.add(gaugeGroup);
+const dialMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.1 });
+const dial = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.5, 64), dialMat);
+dial.rotation.x = Math.PI / 2; gaugeGroup.add(dial);
+const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.14, 16, 100),
+  new THREE.MeshStandardMaterial({ color: 0xd9b445, roughness: 0.25, metalness: 0.6 }));
+gaugeGroup.add(rim);
+// tick marks
+for (let i = 0; i <= 8; i++) {
+  const a = Math.PI * (0.15 + 0.7 * (i / 8));
+  const tick = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x8a93a3 }));
+  tick.position.set(Math.cos(a) * 2.9, Math.sin(a) * 2.9, 0.3);
+  tick.rotation.z = a - Math.PI / 2;
+  gaugeGroup.add(tick);
+}
+// needle
+const needleGroup = new THREE.Group(); needleGroup.position.z = 0.45; gaugeGroup.add(needleGroup);
+const needle = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.8, 0.12),
+  new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.3 }));
+needle.position.y = 1.2; needleGroup.add(needle);
+const hub = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 18),
+  new THREE.MeshStandardMaterial({ color: 0xd9b445, metalness: 0.7, roughness: 0.3 }));
+hub.position.z = 0.45; gaugeGroup.add(hub);
+// side labels
+function textSprite(txt, color) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  g.font = '600 34px ui-sans-serif, system-ui'; g.textAlign = 'center'; g.fillStyle = color;
+  g.fillText(txt, 128, 44);
+  const tex = new THREE.CanvasTexture(c);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  sp.scale.set(3.4, 0.85, 1);
+  return sp;
+}
+const lblL = textSprite('SHORTS', '#2e8b57'); lblL.position.set(-3.1, -1.4, 0.6); gaugeGroup.add(lblL);
+const lblR = textSprite('LONGS', '#c0392b'); lblR.position.set(3.1, -1.4, 0.6); gaugeGroup.add(lblR);
+
+// open-interest towers, right side of scene
+const TOWERS = 8;
+const towerGroup = new THREE.Group(); towerGroup.position.set(6, 0, 0); scene.add(towerGroup);
+const towerMat = new THREE.MeshStandardMaterial({ color: 0xd9b445, roughness: 0.35, metalness: 0.35 });
+const towers = [];
+for (let i = 0; i < TOWERS; i++) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1, 0.7), towerMat.clone());
+  m.position.set((i - (TOWERS - 1) / 2) * 1.15, 0.5, 0);
+  towerGroup.add(m); towers.push(m);
+}
+const baseLine = new THREE.Mesh(new THREE.BoxGeometry(TOWERS * 1.15 + 0.4, 0.08, 1.2),
+  new THREE.MeshStandardMaterial({ color: 0xc9d2de }));
+baseLine.position.set(0, 0.04, 0); towerGroup.add(baseLine);
+const lblOI = textSprite('OPEN INTEREST', '#6b7688'); lblOI.position.set(0, -0.8, 0); towerGroup.add(lblOI);
+
+// daisy flowers: small petal puffs floating (white/silver accent)
+const petalGroup = new THREE.Group(); scene.add(petalGroup);
+const petalMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, transparent: true, opacity: 0.9 });
+const petals = [];
+for (let i = 0; i < 14; i++) {
+  const p = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), petalMat);
+  p.scale.set(1, 0.35, 0.7);
+  p.position.set((Math.random() - 0.5) * 22, 2 + Math.random() * 6, (Math.random() - 0.5) * 14);
+  p.userData = { ph: Math.random() * Math.PI * 2, sp: 0.4 + Math.random() * 0.8 };
+  petalGroup.add(p); petals.push(p);
+}
+
+function refreshGauge() {
+  // needle angle from funding: normalized by a small reference band (conceptual — not exact)
+  const f = live && live.funding8h != null ? live.funding8h : 0;
+  const norm = Math.max(-1, Math.min(1, f / 0.001));
+  // funding > 0 (crowded longs) swings right; funding < 0 (crowded shorts) swings left
+  const target = -norm * 1.15; // radians
+  needleGroup.userData.target = target;
+  const dirColor = f > 0.00005 ? 0xc0392b : f < -0.00005 ? 0x2e8b57 : 0x8a93a3;
+  needle.material.color.setHex(dirColor);
+  // OI towers: grow with trend; newest tower last. Without history, show a gentle rising shape.
+  const tr = live && live.oiTrend != null ? live.oiTrend : 0;
+  for (let i = 0; i < TOWERS; i++) {
+    const frac = i / (TOWERS - 1);
+    const h = 1.2 + frac * 2.2 + tr * 12 * frac * frac;
+    const clamped = Math.max(0.3, Math.min(6.5, h));
+    towers[i].scale.y = clamped;
+    towers[i].position.y = clamped / 2;
+    towers[i].material.color.setHex(live && live.oiRising && i === TOWERS - 1 ? 0xf2d060 : 0xd9b445);
+  }
+}
+needleGroup.userData.target = 0;
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  // needle eases toward target
+  const cur = needleGroup.rotation.z || 0;
+  const tgt = needleGroup.userData.target ?? 0;
+  needleGroup.rotation.z = cur + (tgt - cur) * Math.min(1, dt * 3);
+
+  // gauge breathes gently
+  gaugeGroup.position.y = 4 + Math.sin(t * 0.7) * 0.15;
+
+  // petals drift
+  petals.forEach((p) => {
+    p.position.y += Math.sin(t * p.userData.sp + p.userData.ph) * dt * 0.6;
+    p.rotation.y += dt * p.userData.sp * 0.5;
+  });
+
+  // tilt drives dial glow: decisive positioning burns brighter
+  const strength = live ? Math.min(Math.abs(live.bias) / 0.01, 1) : 0;
+  rim.material.emissive = rim.material.emissive || new THREE.Color(0x000000);
+  rim.material.emissive.setHex(0xd9b445);
+  rim.material.emissiveIntensity = 0.15 + strength * 0.85;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+setInterval(fetchSummary, 30000);
+animate();
+</script>
+</body>
+</html>

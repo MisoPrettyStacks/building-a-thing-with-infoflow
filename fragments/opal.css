@@ -1,0 +1,118 @@
+/* ============ Opal's lab (teal) ============ */
+.opal-lab-wrap {
+  border: 3px solid #14b8a6; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.opal-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #14b8a6; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.opal-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #14b8a6; flex: 0 0 auto;
+}
+.opal-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(20,184,166,0.06);
+}
+.opal-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #14b8a6; letter-spacing: 1px; }
+.opal-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Opal's standing verdict panel */
+.op-panel {
+  border: 1px solid #14b8a6; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(20,184,166,0.05);
+}
+.op-head { font-size: 13px; letter-spacing: 2px; color: #14b8a6; font-weight: 700; margin-bottom: 8px; }
+.op-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.op-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.op-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.op-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.op-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.op-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.op-ev b { color: #14b8a6; }
+.op-det { margin: 8px 0; font-size: 13px; }
+.op-det summary { cursor: pointer; color: #14b8a6; }
+.op-det .op-line { margin: 6px 0; line-height: 1.5; }
+.op-det .op-d { color: #14b8a6; font-weight: 600; text-transform: capitalize; }
+.op-hyp { margin: 6px 0; line-height: 1.5; }
+.op-hyp .st { font-weight: 700; }
+.op-hyp .st.open { color: #f2c879; } .op-hyp .st.supported { color: #b5e6a2; } .op-hyp .st.refuted { color: #f09797; } .op-hyp .st.proposed { color: #9ecfff; }
+.op-meta { font-size: 12px; margin-top: 10px; }
+/* Opal scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.op-scene { margin: 6px 0 14px; position: relative; }
+.op-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .op-grid { grid-template-columns: 1fr; } }
+.op-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.op-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.op-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #a7f3ec; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #a7f3ec); opacity: 0; animation: opTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes opTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.op-bubble.op-talk { animation: opTalk 1.2s ease-in-out; }
+@keyframes opTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.op-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fffdf5; border: 1px solid #d8cfb8; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.op-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffdf5; border-bottom: 0;
+}
+/* Opal DM chat */
+.ochat-title {
+  color: #14b8a6; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.ochat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.ochat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(20,184,166,0.10); border-bottom: 1px solid var(--line);
+}
+.ochat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #14b8a6; }
+.ochat-who b { display: block; font-size: 15px; }
+.ochat-online { font-size: 12px; color: #14b8a6; display: flex; align-items: center; gap: 5px; }
+.ochat-online i { width: 8px; height: 8px; border-radius: 50%; background: #14b8a6; display: inline-block; }
+.ochat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ochat-row { display: flex; gap: 8px; align-items: flex-end; }
+.ochat-row.me { justify-content: flex-end; }
+.ochat-row.opal img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #14b8a6; flex: 0 0 auto; }
+.ochat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.ochat-row.opal .ochat-bubble { background: #0f2e2c; border-bottom-left-radius: 4px; color: #5eead4; }
+.ochat-row.me .ochat-bubble { background: #14b8a6; color: #062a28; border-bottom-right-radius: 4px; }
+.ochat-typing { display: inline-block; }
+.ochat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #14b8a6; animation: otick 1s infinite; }
+.ochat-typing span:nth-child(2) { animation-delay: 0.15s; } .ochat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes otick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.ochat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.ochat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #14b8a6; color: #5eead4; background: transparent;
+}
+.ochat-chip:hover { background: rgba(20,184,166,0.12); }
+.ochat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.ochat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1e22; color: inherit; font-size: 14px; outline: none;
+}
+.ochat-input input:focus { border-color: #14b8a6; }
+.ochat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #14b8a6; color: #062a28; font-weight: 700; font-size: 14px;
+}
+.ochat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .opal-lab-title { font-size: 17px; letter-spacing: 1px; } .opal-lab-headshot { width: 48px; height: 48px; } }

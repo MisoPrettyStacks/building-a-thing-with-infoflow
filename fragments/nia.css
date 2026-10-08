@@ -1,0 +1,118 @@
+/* ============ Nia's lab (orange) ============ */
+.nia-lab-wrap {
+  border: 3px solid #fb923c; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.nia-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #fb923c; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.nia-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #fb923c; flex: 0 0 auto;
+}
+.nia-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(251,146,60,0.06);
+}
+.nia-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #fb923c; letter-spacing: 1px; }
+.nia-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Nia's standing verdict panel */
+.nv-panel {
+  border: 1px solid #fb923c; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(251,146,60,0.05);
+}
+.nv-head { font-size: 13px; letter-spacing: 2px; color: #fb923c; font-weight: 700; margin-bottom: 8px; }
+.nv-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.nv-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.nv-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.nv-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.nv-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.nv-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.nv-ev b { color: #fb923c; }
+.nv-det { margin: 8px 0; font-size: 13px; }
+.nv-det summary { cursor: pointer; color: #fb923c; }
+.nv-det .nv-line { margin: 6px 0; line-height: 1.5; }
+.nv-det .nv-d { color: #fb923c; font-weight: 600; text-transform: capitalize; }
+.nv-hyp { margin: 6px 0; line-height: 1.5; }
+.nv-hyp .st { font-weight: 700; }
+.nv-hyp .st.open { color: #f2c879; } .nv-hyp .st.supported { color: #b5e6a2; } .nv-hyp .st.refuted { color: #f09797; } .nv-hyp .st.proposed { color: #9ecfff; }
+.nv-meta { font-size: 12px; margin-top: 10px; }
+/* Nia scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.ni-scene { margin: 6px 0 14px; position: relative; }
+.ni-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .ni-grid { grid-template-columns: 1fr; } }
+.ni-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.ni-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ni-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #ffd9b3; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #ffd9b3); opacity: 0; animation: niTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes niTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.ni-bubble.ni-talk { animation: niTalk 1.2s ease-in-out; }
+@keyframes niTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.ni-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fffaf3; border: 1px solid #e0cdb4; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.ni-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffaf3; border-bottom: 0;
+}
+/* Nia DM chat — orange tints */
+.nchat-title {
+  color: #fb923c; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.nchat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.nchat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(251,146,60,0.10); border-bottom: 1px solid var(--line);
+}
+.nchat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fb923c; }
+.nchat-who b { display: block; font-size: 15px; }
+.nchat-online { font-size: 12px; color: #fb923c; display: flex; align-items: center; gap: 5px; }
+.nchat-online i { width: 8px; height: 8px; border-radius: 50%; background: #fb923c; display: inline-block; }
+.nchat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.nchat-row { display: flex; gap: 8px; align-items: flex-end; }
+.nchat-row.me { justify-content: flex-end; }
+.nchat-row.nia img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #fb923c; flex: 0 0 auto; }
+.nchat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.nchat-row.nia .nchat-bubble { background: #2e2419; border-bottom-left-radius: 4px; color: #fb923c; }
+.nchat-row.me .nchat-bubble { background: #fb923c; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.nchat-typing { display: inline-block; }
+.nchat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #fb923c; animation: ntick 1s infinite; }
+.nchat-typing span:nth-child(2) { animation-delay: 0.15s; } .nchat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ntick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.nchat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.nchat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #fb923c; color: #fb923c; background: transparent;
+}
+.nchat-chip:hover { background: rgba(251,146,60,0.12); }
+.nchat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.nchat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1e22; color: inherit; font-size: 14px; outline: none;
+}
+.nchat-input input:focus { border-color: #fb923c; }
+.nchat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #fb923c; color: #1a1a1a; font-weight: 700; font-size: 14px;
+}
+.nchat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .nia-lab-title { font-size: 17px; letter-spacing: 1px; } .nia-lab-headshot { width: 48px; height: 48px; } }

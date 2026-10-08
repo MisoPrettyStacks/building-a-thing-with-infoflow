@@ -1,0 +1,92 @@
+<div class="nia-lab-wrap">
+<h2 class="nia-lab-title"><img src="nia-headshot.webp" alt="Nia" class="nia-lab-headshot"> NIA'S LAB - NEWS CATALYSTS</h2>
+<div class="nia-agent-intro">
+  <h3>Meet Nia — an agentic agent, not a mascot</h3>
+  <p>Nia doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the crypto news wire for XRP catalysts, researching the science of news impact, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the News Catalyst Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> event studies · intelligence analysis · statistics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: whether crypto-specific news catalysts move XRP next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live news-catalyst measurements, guard feed and headline quality, and keep the lab notebook. Analyze how catalysts behave: which kinds push the read, how fast the effect fades, which regimes the signal favors. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she reads the news wire and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether news catalysts earn a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p><strong>Scope:</strong> Nia covers <em>crypto-specific</em> news catalysts — Ripple/XRP/XRPL events, listings, regulation, hacks. Scheduled economic events (FOMC, CPI, payrolls) already live on the macro calendar, so she doesn't duplicate them. Her feeds are free public RSS — sparse and unstructured — and her catalyst detection is keyword-based. She says so plainly: a keyword match is a lead, not a verdict.</p>
+</div>
+<section id="newscat" class="card">
+  <h2>News catalysts — headline regime signal <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Nia reads two free public RSS feeds (CoinDesk, CoinTelegraph) every cycle and keeps headlines about XRP, Ripple, or XRPL. Signed ones become catalysts — a fresh catalyst pushes the tilt, then fades out of memory over the hours. Upbeat words (approval, launch, listing, ETF, partnership, win) tilt up; worrying words (lawsuit, hack, delist, enforcement, fine, crash) tilt down; when both appear, the worrying read wins. The member emits a small news tilt — currently at weight zero, so it is scored but never affects the forecast until Nia finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">News tilt</div><div class="v" id="niTilt" style="font-size:15px">—</div><div class="s" id="niTiltSub">—</div></div>
+    <div class="stat"><div class="k">Active catalysts</div><div class="v" id="niActive">—</div><div class="s" id="niActiveSub">—</div></div>
+    <div class="stat"><div class="k">Latest headline</div><div class="v" id="niLast" style="font-size:12px">—</div><div class="s" id="niLastSub">—</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="niStatus" style="font-size:15px">—</div><div class="s" id="niStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="niVerdict">—</div><div class="s" id="niVerdictSub">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="niSkill">—</div><div class="s" id="niSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Standing verdict</div><div class="v" id="niDisciplines" style="font-size:15px">—</div><div class="s" id="niDisciplinesSub">HOLD / APPLY / WITHDRAW</div></div>
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="niSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">fading catalyst memory</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Hypotheses on the ledger</div><div class="v" id="niHypotheses">—</div><div class="s" id="niHypothesesSub">NI1–NI4 · open / supported / refuted</div></div>
+    <div class="stat"><div class="k">Lab notes saved</div><div class="v" id="niLog">—</div><div class="s">every cycle, forever</div></div>
+    <div class="stat"><div class="k">Catalysts in 24h</div><div class="v" id="niCats24" style="font-size:15px">—</div><div class="s">fresh headlines counted</div></div>
+    <div class="stat"><div class="k">Read cadence</div><div class="v" style="font-size:15px">5 min</div><div class="s">every cycle, live</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner pulls the two public RSS feeds, keeps XRP-relevant items, signs them by catalyst word lists, and decays live catalysts as the market's memory fades. Honest caveat: the edge in news is measured in minutes and an RSS feed is slow — by the time a headline lands in the wire, the market has often already traded it. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="nia3d" class="card">
+  <h2>Watching the news wire in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Nia's live view of the headlines. The glowing orange node at the center is XRP; the orbiting satellites are real catalysts she's detected — their brightness is how fresh they are, their color is the direction they push (green up, orange-red down). The whole scene breathes with her live measurements: when her catalyst read is decisive, the dominant direction burns brighter. So you're literally watching the news that matters right now. <a href="nia3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="nia3d.html?embed=1&v=1" title="Live 3D news-catalyst rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="nia" class="card">
+  <h2>Nia's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Nia</b> — she spends every 5-minute cycle watching whether crypto news catalysts can actually help the forecast. She writes down <i>everything</i>: what the wire showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="nv-panel" id="niVPanel" hidden>
+    <div class="nv-head">NIA'S STANDING VERDICT <span class="nv-badge" id="niVBadge"></span></div>
+    <p class="nv-plain" id="niVPlain"></p>
+    <div class="nv-ev" id="niVEvidence"></div>
+    <details class="nv-det"><summary>How she reached it — every discipline's read</summary><div id="niVDisciplines"></div></details>
+    <details class="nv-det"><summary>Hypothesis ledger</summary><div id="niVHypotheses"></div></details>
+    <div class="nv-meta muted" id="niVMeta"></div>
+  </div>
+  <div class="ni-scene">
+    <div class="ni-grid">
+      <div class="ni-hero">
+        <img src="nia.webp" alt="Nia working at her chalkboard" id="niHeroImg">
+        <span class="ni-sparkle" aria-hidden="true"></span>
+        <div class="ni-bubble" id="niBubble"><span id="niBubbleText">tuning into the wire…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Nia's findings <span class="lm-live" id="niLiveDot"></span></div>
+        <div class="lm-line" id="niBoardTilt">warming up…</div>
+        <div class="lm-line" id="niBoardActive"></div>
+        <div class="lm-line" id="niBoardTop"></div>
+        <div class="lm-line lm-verdict" id="niBoardVerdict"></div>
+        <svg id="niBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="niBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="niBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="niLogCount" class="muted"></span></div>
+    <div id="niLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Nia ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="nchat-title">CHAT WITH NIA</h3>
+  <div class="nchat" id="niChat">
+    <div class="nchat-head">
+      <img src="nia-headshot.webp" alt="Nia">
+      <div class="nchat-who"><b>Nia</b><span class="nchat-online"><i></i>online — ask me about news catalysts</span></div>
+    </div>
+    <div class="nchat-log" id="niChatLog" aria-live="polite"></div>
+    <div class="nchat-chips" id="niChatChips"></div>
+    <div class="nchat-input">
+      <input id="niChatText" type="text" placeholder="Ask Nia about news catalysts…" maxlength="300" autocomplete="off">
+      <button id="niChatSend" type="button">Send</button>
+    </div>
+    <div class="nchat-note muted">Nia answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

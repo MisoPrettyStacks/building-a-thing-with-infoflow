@@ -1,0 +1,90 @@
+<!-- NORA'S LAB — NETWORK HEALTH section (fragment).
+     Coordinator: insert this inside the page's experimental sections, next to
+     Wendy's .wendy-lab-wrap block. Requires fragments/nora.css classes and
+     the renderNoraPanel/initNora wiring from fragments/nora-app.js. -->
+<div class="nora-lab-wrap">
+<h2 class="nora-lab-title"><img src="nora-headshot.webp" alt="Nora" class="nora-lab-headshot"> NORA'S LAB — NETWORK HEALTH</h2>
+<div class="nora-agent-intro">
+  <h3>Meet Nora — an agentic agent, not a mascot</h3>
+  <p>Nora doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the crowd on the XRP Ledger, researching the science of network activity, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Network Health Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> network science · on-chain analysis · statistics · data engineering · intelligence analysis — with real market-trading experience and knowledge. She is the expert in her area of study: how the everyday pulse of the XRP network relates to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live crowd-activity measurements, guard scan and history quality, and keep the lab notebook. Analyze how activity behaves: when payment counts surge or fade, when participation broadens or narrows, which regimes the signal favors. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the ledger's measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the crowd earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p class="muted">Wendy watches the <strong>whales</strong> — the rare, enormous transfers. Nora watches <strong>everyone else</strong> — the crowd. Whales are events; the crowd is the climate. 💚🌿</p>
+</div>
+<section id="network" class="card">
+  <h2>Crowd activity — network health signal <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Nora tends three garden beds on the public XRP Ledger: how many payments settle each day, how many distinct wallets take part, and how much XRP moves. Each is compared against its own recent history — a blooming crowd (clearly more active than usual) suggests adoption and attention; a wilting crowd (clearly quieter) suggests attention has moved on. The member emits a slow, bounded activity tilt — currently at weight zero, so it is scored but never affects the forecast until Nora finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Activity tilt</div><div class="v" id="noTilt" style="font-size:15px">—</div><div class="s" id="noTiltSub">—</div></div>
+    <div class="stat"><div class="k">Payments · 24h</div><div class="v" id="noTx">—</div><div class="s" id="noTxSub">vs 7-day median</div></div>
+    <div class="stat"><div class="k">Active addresses · 24h</div><div class="v" id="noAddrs">—</div><div class="s" id="noAddrsSub">distinct wallets</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="noStatus" style="font-size:15px">—</div><div class="s" id="noStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="noSkill">—</div><div class="s" id="noSkillSub">vs baseline</div></div>
+    <div class="stat"><div class="k">Payment volume · 24h</div><div class="v" id="noVol">—</div><div class="s">XRP moved</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="noState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">Activity z-score</div><div class="v" id="noZ" style="font-size:15px">—</div><div class="s" id="noZSub">crowd vs its norm</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner folds fresh XRPL scan payments into hourly buckets (about a month of history) and Nora compares the last 24 hours of payment counts, distinct wallets, and volume against their 7-day medians. The tilt is deliberately patient — crowd trends build over days, not minutes. Honest caveat: network activity is a slow variable — by the time an adoption trend is obvious to everyone, the market has often already priced it. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="nora3d" class="card">
+  <h2>Watching the crowd in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Nora's live view of the ledger. The glowing emerald node at the center is XRP; the satellite nodes are wallets, pulsing with payment activity. The emerald arcs between them are live payment streams — they multiply and speed up as the crowd blooms, and settle down as it wilts. The whole scene breathes with her live measurements. <a href="nora3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="nora3d.html?embed=1&v=1" title="Live 3D network-health rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="nora" class="card">
+  <h2>Nora's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Nora</b> — she spends every 5-minute cycle tending the network's health on the XRP Ledger, checking whether the crowd's pulse can actually help the forecast. She writes down <i>everything</i>: what the ledger showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="no-panel" id="noPanel" hidden>
+    <div class="no-head">NORA'S STANDING VERDICT <span class="no-badge" id="noBadge"></span></div>
+    <p class="no-plain" id="noVerdict"></p>
+    <div class="no-ev" id="noEvidence"></div>
+    <details class="no-det"><summary>How she reached it — every discipline's read</summary><div id="noDisciplines"></div></details>
+    <details class="no-det"><summary>Hypothesis ledger</summary><div id="noHypotheses"></div></details>
+    <div class="no-meta muted" id="noMeta"></div>
+  </div>
+  <div class="no-scene">
+    <div class="no-grid">
+      <div class="no-hero">
+        <img src="nora.webp" alt="Nora working at her chalkboard" id="noHeroImg">
+        <span class="no-sparkle" aria-hidden="true"></span>
+        <div class="no-bubble" id="noBubble"><span id="noBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Nora's findings <span class="lm-live" id="noLiveDot"></span></div>
+        <div class="lm-line" id="noTiltLine">warming up…</div>
+        <div class="lm-line" id="noTxLine"></div>
+        <div class="lm-line" id="noAddrsLine"></div>
+        <div class="lm-line lm-verdict" id="noVerdictLine"></div>
+        <svg id="noSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="noSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="noSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="noLogCount" class="muted"></span></div>
+    <div id="noLog"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Nora ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="nchat-title">CHAT WITH NORA</h3>
+  <div class="nchat" id="nchat">
+    <div class="nchat-head">
+      <img src="nora-headshot.webp" alt="Nora">
+      <div class="nchat-who"><b>Nora</b><span class="nchat-online"><i></i>online — ask me about network health</span></div>
+    </div>
+    <div class="nchat-log" id="noChatLog" aria-live="polite"></div>
+    <div class="nchat-chips" id="noChatChips"></div>
+    <div class="nchat-input">
+      <input id="noChatText" type="text" placeholder="Ask Nora about network health…" maxlength="300" autocomplete="off">
+      <button id="noChatSend" type="button">Send</button>
+    </div>
+    <div class="nchat-note muted">Nora answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

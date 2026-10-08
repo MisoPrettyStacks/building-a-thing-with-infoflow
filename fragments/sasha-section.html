@@ -1,0 +1,86 @@
+<div class="sasha-lab-wrap">
+<h2 class="sasha-lab-title"><img src="sasha-headshot.webp" alt="Sasha" class="sasha-lab-headshot"> SASHA'S LAB - SENTIMENT (NOISY EXPERIMENTAL)</h2>
+<div class="ss-noise">⚠ NOISY EXPERIMENTAL READ — social mood from public Reddit is sparse, gameable, and weakly linked to 15-minute moves. Sasha is the lab's designated skeptic and says so.</div>
+<div class="sasha-agent-intro">
+  <h3>Meet Sasha — an agentic agent, not a mascot</h3>
+  <p>Sasha doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: reading the crowd's mood about XRP on Reddit, researching the science of social sentiment and returns, learning from the evidence, and making real decisions that control what enters the forecast model. She is wryly self-aware: she knows her data is the noisiest on this page, and she will tell you so herself.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Sentiment Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> behavioral finance · social data science · statistics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: whether public social mood about XRP carries any real predictive information.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live mood measurements, guard feed and word-list quality, and keep the lab notebook. Analyze how the mood score behaves: when it spikes, whether spikes lead or lag moves, how often the read is decisive at all. Research the science — she has internet access and studies the literature, reading the skeptical papers first.</p>
+  <p><strong>What she does:</strong> Every five minutes she reads Reddit's newest XRP posts, scores the crowd's mood, and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether social mood earns a place in the live forecast model. Her charter requires her to be <strong>more</strong> skeptical than the other agents: the same evidence bar, which will likely keep her at HOLD indefinitely. That is the honest outcome.</p>
+</div>
+<section id="sentiment" class="card">
+  <h2>Crowd mood — Reddit sentiment signal <span class="badge" style="font-size:11px;vertical-align:middle">noisy experimental</span></h2>
+  <p class="muted" style="margin-top:0">Sasha reads the newest post titles from r/XRP and r/CryptoCurrency (public pages, no keys) and counts mood words against a pre-registered, frozen word list. The score is normalized against its own recent history, so a strong read means strong <em>relative to usual Reddit</em>. The tilt is deliberately tiny — this is the noisiest feed in the model. Currently at weight zero: scored, never used, until Sasha finds out-of-sample evidence. Honest caveat: the word list can't read sarcasm, threads can be brigaded, and crowd mood lags price as often as it leads it.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Mood tilt</div><div class="v" id="ssTilt" style="font-size:15px">—</div><div class="s" id="ssTiltSub">—</div></div>
+    <div class="stat"><div class="k">Mood z-score</div><div class="v" id="ssZ" style="font-size:15px">—</div><div class="s" id="ssZSub">vs recent history</div></div>
+    <div class="stat"><div class="k">Posts scanned</div><div class="v" id="ssPosts">—</div><div class="s" id="ssPostsSub">titles this cycle</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="ssStatus" style="font-size:15px">—</div><div class="s" id="ssStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="ssSkill">—</div><div class="s" id="ssSkillN">—</div></div>
+    <div class="stat"><div class="k">Decisive reads</div><div class="v" id="ssDecisive">—</div><div class="s" id="ssDecisiveSub">fraction of cycles</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="ssWeight" style="font-size:15px">—</div><div class="s" id="ssWeightNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="ssSparkC" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">mood tilt over recent notes</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner fetches the newest post titles from two public subreddits and Sasha scores the crowd's mood; a notably strong read (relative to recent history) registers as decisive. The live scoreboard above is the verdict, not the theory — and the theory says: be skeptical.</p>
+</section>
+
+<section id="sasha3d" class="card">
+  <h2>The crowd's mood in 3D <span class="badge" style="font-size:11px;vertical-align:middle">noisy experimental</span></h2>
+  <p class="muted" style="margin-top:0">This is Sasha's live view of Reddit mood. Lavender word-bubbles lean optimistic, slate ones lean fearful; when her mood read strengthens, the leaning side glows a touch brighter. The bubbles are <em>illustrative</em> — her actual word list is proprietary. So you're literally watching what the crowd is feeling right now — with the standing reminder that feelings are not forecasts. <a href="sasha3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="sasha3d.html?embed=1&v=1" title="Live 3D sentiment rendering (noisy experimental)" loading="lazy"></iframe></div>
+</section>
+
+<section id="sasha" class="card">
+  <h2>Sasha's lab <span class="badge" style="font-size:11px;vertical-align:middle">noisy experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Sasha</b> — she spends every 5-minute cycle asking whether the crowd's mood on Reddit can actually help the forecast, and answering with unusual honesty. She writes down <i>everything</i>: what Reddit showed, what she computed, what she found, and her verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used. She will be the first to tell you her data is noisy.</p>
+  <div class="ss-panel" id="ssVerdictPanel" hidden>
+    <div class="ss-head">SASHA'S STANDING VERDICT <span class="ss-badge" id="ssVerdictBadge"></span></div>
+    <p class="ss-plain" id="ssVerdictPlain"></p>
+    <div class="ss-ev" id="ssVerdictEvidence"></div>
+    <details class="ss-det"><summary>How she reached it — every discipline's read</summary><div id="ssDisciplines"></div></details>
+    <details class="ss-det"><summary>Hypothesis ledger</summary><div id="ssHypotheses"></div></details>
+    <div class="ss-meta muted" id="ssVerdictMeta"></div>
+  </div>
+  <div class="ss-scene">
+    <div class="ss-grid">
+      <div class="ss-hero">
+        <img src="sasha.webp" alt="Sasha working at her chalkboard" id="ssHeroImg">
+        <span class="ss-sparkle" aria-hidden="true"></span>
+        <div class="ss-bubble" id="ssBubble"><span id="ssBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Sasha's findings <span class="lm-live" id="ssLiveDot"></span></div>
+        <div class="lm-line" id="ssBias">warming up…</div>
+        <div class="lm-line" id="ssZLine"></div>
+        <div class="lm-line" id="ssPostsLine"></div>
+        <div class="lm-line lm-verdict" id="ssVerdictLine"></div>
+        <svg id="ssSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="ssSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="ssSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="ssLogCount" class="muted"></span></div>
+    <div id="ssLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Sasha ever finds real out-of-sample evidence, it will get wired into the forecast. Her charter says HOLD is the likely long-run answer — and that a held-out 'no' is good science.</p>
+  <h3 class="sschats-title">CHAT WITH SASHA</h3>
+  <div class="sschats" id="sschats">
+    <div class="sschats-head">
+      <img src="sasha-headshot.webp" alt="Sasha">
+      <div class="sschats-who"><b>Sasha</b><span class="sschats-online"><i></i>online — ask me about crowd mood</span></div>
+    </div>
+    <div class="sschats-log" id="ssChatLog" aria-live="polite"></div>
+    <div class="sschats-chips" id="ssChatChips"></div>
+    <div class="sschats-input">
+      <input id="ssChatText" type="text" placeholder="Ask Sasha about crowd mood…" maxlength="300" autocomplete="off">
+      <button id="ssChatSend" type="button">Send</button>
+    </div>
+    <div class="sschats-note muted">Sasha answers from her public lab notes — her equations, weights, tuning, and word list stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Seasonality — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0b10; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #f3e4e6;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #fb7185; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #a8939a; max-width: 340px; }
+  #title a { color: #fb7185; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(16, 12, 15, 0.72);
+    border: 1px solid rgba(251, 113, 133, 0.22); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 250px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #a8939a; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .up { color: #fb7185; } #stats .down { color: #8fa3bd; } #stats .quiet { color: #a8939a; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #6f5d63; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #f3e4e6; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(251, 113, 133, 0.35); border-radius: 999px;
+    background: rgba(16, 12, 15, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #fb7185; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 11, 16, 0.55); color: #f3c8d0; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>SESSION SEASONALITY</h1>
+  <p>Live 24-hour wheel, watched by Sophie. Each wedge is one UTC hour, colored by its historical tilt: coral runs warm, slate runs cool. The glowing ring marks the current hour.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#sophie">SOPHIE'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { bias, session, hourlyMeans, targetHours, bestHour, warmingUp, degraded, verdict, computedAt }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const so = s.session || {};
+    let verdict = null;
+    try {
+      const vr = await fetch(DATA_BASE + 'sophie_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+      if (vr.ok) verdict = (await vr.json()).verdict || null;
+    } catch { /* best-effort */ }
+    live = {
+      bias: so.bias ?? 0,
+      session: so.session ?? '—',
+      hourlyMeans: Array.isArray(so.hourlyMeans) ? so.hourlyMeans : new Array(24).fill(null),
+      targetHours: Array.isArray(so.targetHours) ? so.targetHours : [],
+      bestHour: so.bestHour ?? null,
+      warmingUp: !!so.warmingUp,
+      degraded: !!so.degraded,
+      verdict,
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshWheel();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+function fmtHour(h) { return String(h).padStart(2, '0') + ':00'; }
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const b = live.bias;
+  const dir = b > 0.001 ? 'warm tilt' : b < -0.001 ? 'cool tilt' : 'quiet';
+  const cls = b > 0.001 ? 'up' : b < -0.001 ? 'down' : 'quiet';
+  const status = live.degraded ? '<span class="down">unreadable</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${dir}</span>`;
+  const vLabel = live.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated' : (live.verdict || '—');
+  el.innerHTML =
+    `<div><span class="k">session</span> <span class="v">${live.session}</span> <span class="k">· UTC hour ${new Date().getUTCHours()}</span></div>` +
+    `<div><span class="k">current tilt</span> <span class="v ${cls}">${b >= 0 ? '+' : ''}${b.toFixed(4)}</span> <span class="${cls}">${dir}</span></div>` +
+    `<div><span class="k">best hour</span> <span class="v">${live.bestHour != null ? fmtHour(live.bestHour) + ' UTC' : '—'}</span></div>` +
+    `<div><span class="k">verdict</span> <span class="v">${vLabel}</span></div>` +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0b10, 0.024);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 15, 25);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0xbfb4c0, 0.5));
+const key = new THREE.DirectionalLight(0xffe4e8, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+const CORAL = 0xfb7185, SLATE = 0x64748b, DIM = 0x2a2830;
+const R_IN = 6.2, R_OUT = 9.4, WEDGE_H = 0.55;
+const hourAngle = (h) => (h / 24) * Math.PI * 2; // 0h at +Z
+const wedgeAngle = () => (Math.PI * 2) / 24;
+
+// center: the session node (coral)
+const soMat = new THREE.MeshStandardMaterial({ color: CORAL, emissive: 0xa33444, emissiveIntensity: 1.3, roughness: 0.3 });
+const soNode = new THREE.Mesh(new THREE.SphereGeometry(1.7, 48, 32), soMat);
+scene.add(soNode);
+const soGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(2.5, 32, 24),
+  new THREE.MeshBasicMaterial({ color: CORAL, transparent: true, opacity: 0.13 })
+);
+scene.add(soGlow);
+
+// 24 hour wedges
+const wedges = [];
+for (let h = 0; h < 24; h++) {
+  const a = hourAngle(h), len = wedgeAngle();
+  const geo = new THREE.CylinderGeometry(R_OUT, R_OUT, WEDGE_H, 6, 1, false, a - len / 2, len);
+  const mat = new THREE.MeshStandardMaterial({ color: DIM, emissive: DIM, emissiveIntensity: 0.6, roughness: 0.5 });
+  const m = new THREE.Mesh(geo, mat);
+  m.userData.hour = h;
+  scene.add(m); wedges.push(m);
+}
+// faint inner guide ring
+const guide = new THREE.Mesh(
+  new THREE.TorusGeometry(R_IN, 0.03, 8, 128),
+  new THREE.MeshBasicMaterial({ color: 0x3a3339, transparent: true, opacity: 0.6 })
+);
+guide.rotation.x = Math.PI / 2; scene.add(guide);
+
+// marker: glowing ring above the current UTC hour
+const marker = new THREE.Mesh(
+  new THREE.TorusGeometry(1.55, 0.12, 12, 48),
+  new THREE.MeshBasicMaterial({ color: CORAL, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
+);
+marker.rotation.x = Math.PI / 2;
+scene.add(marker);
+
+// tilt motes: coral/slate particles drifting above warm/cool wedges
+const P_COUNT = 500;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({ hour: i % 24, t: Math.random(), speed: 0.1 + Math.random() * 0.3, r: R_IN + Math.random() * (R_OUT - R_IN) });
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: CORAL, size: 0.2, transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+function wedgeColor(mean) {
+  if (mean == null || !isFinite(mean)) return { c: DIM, e: 0.25 };
+  const strong = Math.min(Math.abs(mean) / 0.0015, 1); // conceptual: relative strength
+  return mean > 0
+    ? { c: CORAL, e: 0.35 + strong * 1.3 }
+    : { c: SLATE, e: 0.35 + strong * 1.3 };
+}
+
+function refreshWheel() {
+  if (!live) return;
+  const means = live.hourlyMeans;
+  const targets = new Set(live.targetHours || []);
+  wedges.forEach((w) => {
+    const h = w.userData.hour;
+    const m = means[h];
+    const { c, e } = wedgeColor(m);
+    w.material.color.setHex(c);
+    w.material.emissive.setHex(c);
+    w.material.emissiveIntensity = e * (targets.has(h) ? 1.35 : 1);
+  });
+  // marker tracks the current UTC hour
+  const ch = new Date().getUTCHours();
+  const a = hourAngle(ch);
+  const r = (R_IN + R_OUT) / 2;
+  marker.position.set(Math.sin(a) * r, 1.6, Math.cos(a) * r);
+}
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  soNode.position.y = Math.sin(t * 0.8) * 0.25;
+  soGlow.position.copy(soNode.position);
+  // center breathes with the seasonal tilt's strength
+  const strength = live ? Math.min(Math.abs(live.bias) / 0.01, 1) : 0;
+  soMat.emissiveIntensity = 1.0 + 0.4 * Math.sin(t * 1.6) + strength * 0.9;
+
+  // marker pulses; follows the live hour (checked each frame, cheap)
+  if (live) {
+    const ch = new Date().getUTCHours();
+    const a = hourAngle(ch), r = (R_IN + R_OUT) / 2;
+    marker.position.x = Math.sin(a) * r;
+    marker.position.z = Math.cos(a) * r;
+  }
+  marker.scale.setScalar(1 + 0.08 * Math.sin(t * 3.2));
+  marker.material.opacity = 0.65 + 0.3 * Math.sin(t * 3.2);
+
+  // motes drift upward, colored by the live tilt direction
+  const bias = live ? live.bias : 0;
+  pMat.color.setHex(bias > 0.001 ? CORAL : bias < -0.001 ? SLATE : 0x8a7d84);
+  pMat.opacity = 0.3 + strength * 0.5;
+  const pos = pGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed;
+    if (s.t > 1) s.t -= 1;
+    const a = hourAngle(s.hour);
+    pos[i * 3] = Math.sin(a) * s.r;
+    pos[i * 3 + 1] = 0.6 + s.t * 4.5;
+    pos[i * 3 + 2] = Math.cos(a) * s.r;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+setInterval(fetchSummary, 30000);
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* ---------------- Sophie's lab theme: coral (#fb7185) ---------------- */
+.sophie-lab-wrap {
+  border: 3px solid #fb7185; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.sophie-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #fb7185; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.sophie-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #fb7185; flex: 0 0 auto;
+}
+.sophie-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(251,113,133,0.06);
+}
+.sophie-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #fb7185; letter-spacing: 1px; }
+.sophie-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+.sophie-scene { margin: 6px 0 14px; position: relative; }
+
+/* Sophie verdict panel: same wv-* skeleton, coral accents */
+#soPanel { border-color: #fb7185; background: rgba(251,113,133,0.05); }
+#soPanel .wv-head { color: #fb7185; }
+#soPanel .wv-ev b { color: #ffa4b4; }
+#soPanel .wv-det summary { color: #fb7185; }
+#soPanel .wv-det .wv-d { color: #ffa4b4; }
+
+/* Sophie DM chat: coral-tinted wchat */
+.sophie-chat-title { color: #fb7185; }
+.sophie-chat .wchat-head { background: rgba(251,113,133,0.10); }
+.sophie-chat .wchat-head img { border-color: #fb7185; }
+.sophie-chat .wchat-online { color: #ffa4b4; }
+.sophie-chat .wchat-online i { background: #fb7185; }
+.sophie-chat .wchat-log::-webkit-scrollbar-thumb { background: rgba(251,113,133,0.35); }
+.sophie-chat .wchat-row.sophie img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #fb7185; flex: 0 0 auto; }
+.sophie-chat .wchat-row.sophie .wchat-bubble { background: #2a2a2e; border-bottom-left-radius: 4px; color: #ffa4b4; }
+.sophie-chat .wchat-row.me .wchat-bubble { background: #fb7185; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.sophie-chat .wchat-typing span { background: #fb7185; }
+.sophie-chat .wchat-chip { border-color: #fb7185; color: #ffa4b4; }
+.sophie-chat .wchat-chip:hover { background: rgba(251,113,133,0.12); }
+.sophie-chat .wchat-input input:focus { border-color: #fb7185; }
+.sophie-chat .wchat-input button { background: #fb7185; color: #1a1a1a; }
+
+@media (max-width: 640px) { .sophie-lab-title { font-size: 17px; letter-spacing: 1px; } .sophie-lab-headshot { width: 48px; height: 48px; } }

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volatility Regime — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070510; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #dfe8f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #a855f7; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 340px; }
+  #title a { color: #a855f7; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(14, 10, 24, 0.72);
+    border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 240px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #8fa0bd; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .calm { color: #a855f7; } #stats .norm { color: #7fb8f5; } #stats .wild { color: #ff5a5a; } #stats .quiet { color: #8fa0bd; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 999px;
+    background: rgba(14, 10, 24, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #a855f7; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(7, 5, 16, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>VOLATILITY REGIME</h1>
+  <p>Live realized volatility, watched by Violet. The ribbon is the rolling volatility over time — purple is calm, blue is normal, red is wild. The glowing marker rides the latest reading.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#violet">VIOLET'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { regime, volNow, volMedian, warmingUp, degraded, series: [{vol, regime}], verdict }
+
+const REGIME_COLOR = { calm: 0xa855f7, normal: 0x7fb8f5, wild: 0xff5a5a, unknown: 0x8fa0bd };
+
+function noteToPoint(c) {
+  if (!c || c.vol_now == null || !Number.isFinite(c.vol_now)) return null;
+  return { vol: c.vol_now, regime: c.regime || 'unknown' };
+}
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const vv = s.volatility || {};
+    let series = [];
+    if (Array.isArray(vv.history) && vv.history.length) {
+      series = vv.history.map((h) => (h && Number.isFinite(h.vol) ? { vol: h.vol, regime: h.regime || 'unknown' } : null)).filter(Boolean);
+    } else {
+      const log = (s.violet && Array.isArray(s.violet.log)) ? s.violet.log : [];
+      series = log.map((n) => noteToPoint(n && n.computed)).filter(Boolean).slice(-120);
+    }
+    live = {
+      regime: vv.regime || 'unknown',
+      volNow: Number.isFinite(vv.volNow) ? vv.volNow : null,
+      volMedian: Number.isFinite(vv.volMedian) ? vv.volMedian : null,
+      warmingUp: !!vv.warmingUp,
+      degraded: !!vv.degraded,
+      series: series.slice(-120),
+      verdict: null,
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    rebuildRibbon();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+async function fetchVerdict() {
+  try {
+    const r = await fetch(DATA_BASE + 'violet_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    const doc = await r.json();
+    if (live && doc && doc.verdict) { live.verdict = doc.verdict; refreshHud(); }
+  } catch { /* verdict is optional chrome */ }
+}
+
+function fmtVol(x) {
+  if (x == null || !Number.isFinite(x)) return '—';
+  return x.toFixed(4);
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const rg = live.regime || 'unknown';
+  const cls = rg === 'wild' ? 'wild' : rg === 'calm' ? 'calm' : rg === 'normal' ? 'norm' : 'quiet';
+  const status = live.degraded ? '<span class="quiet">blind (feed down)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${rg}</span> regime`;
+  el.innerHTML =
+    `<div><span class="k">regime</span> <span class="v ${cls}">${rg}</span></div>` +
+    `<div><span class="k">vol now</span> <span class="v">${fmtVol(live.volNow)}</span> <span class="k">vs baseline</span> <span class="v">${fmtVol(live.volMedian)}</span></div>` +
+    `<div><span class="k">status</span> ${status}</div>` +
+    `<div><span class="k">standing verdict</span> <span class="v">${live.verdict ? live.verdict : '—'}</span></div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x070510, 0.022);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 300);
+camera.position.set(0, 16, 34);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 80; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0x99aacc, 0.55));
+const key = new THREE.DirectionalLight(0xe8d8ff, 1.1); key.position.set(12, 20, 10); scene.add(key);
+
+// ground grid (subtle)
+const grid = new THREE.GridHelper(80, 40, 0x3a2a55, 0x1a1430);
+grid.position.y = -0.05; scene.add(grid);
+
+// the rolling-vol ribbon (rebuilt from live series)
+const RIB_W = 48, RIB_H = 10, RIB_HALF_W = 1.6;
+let ribbon = null;
+function rebuildRibbon() {
+  if (ribbon) { scene.remove(ribbon); ribbon.geometry.dispose(); ribbon.material.dispose(); ribbon = null; }
+  if (!live || !live.series.length) return;
+  const pts = live.series;
+  const n = pts.length;
+  const med = live.volMedian && live.volMedian > 0 ? live.volMedian : null;
+  const maxV = Math.max.apply(null, pts.map((p) => p.vol));
+  const positions = new Float32Array(n * 2 * 3);
+  const colors = new Float32Array(n * 2 * 3);
+  const idx = [];
+  const c = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const x = (i / Math.max(n - 1, 1)) * RIB_W - RIB_W / 2;
+    const ref = med || maxV || 1;
+    const h = Math.max(0.06, Math.min(pts[i].vol / (2.5 * ref), 1)) * RIB_H;
+    positions[(i * 2) * 3] = x;     positions[(i * 2) * 3 + 1] = h; positions[(i * 2) * 3 + 2] = -RIB_HALF_W;
+    positions[(i * 2 + 1) * 3] = x; positions[(i * 2 + 1) * 3 + 1] = h; positions[(i * 2 + 1) * 3 + 2] = RIB_HALF_W;
+    c.setHex(REGIME_COLOR[pts[i].regime] || REGIME_COLOR.unknown);
+    colors[(i * 2) * 3] = c.r; colors[(i * 2) * 3 + 1] = c.g; colors[(i * 2) * 3 + 2] = c.b;
+    colors[(i * 2 + 1) * 3] = c.r; colors[(i * 2 + 1) * 3 + 1] = c.g; colors[(i * 2 + 1) * 3 + 2] = c.b;
+    if (i < n - 1) {
+      const a = i * 2, b = i * 2 + 1, d = i * 2 + 2, e = i * 2 + 3;
+      idx.push(a, d, b, b, d, e);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1, side: THREE.DoubleSide });
+  ribbon = new THREE.Mesh(geo, mat);
+  scene.add(ribbon);
+  // move the regime marker to the latest point
+  const lx = RIB_W / 2;
+  const ref2 = med || maxV || 1;
+  const lh = Math.max(0.06, Math.min(pts[n - 1].vol / (2.5 * ref2), 1)) * RIB_H;
+  marker.position.set(lx, lh + 0.9, 0);
+  markerMat.color.setHex(REGIME_COLOR[pts[n - 1].regime] || REGIME_COLOR.unknown);
+  markerGlow.material.color.setHex(REGIME_COLOR[pts[n - 1].regime] || REGIME_COLOR.unknown);
+}
+
+// regime marker: glowing orb riding the latest reading
+const markerMat = new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0xa855f7, emissiveIntensity: 1.6, roughness: 0.3 });
+const marker = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 24), markerMat);
+marker.position.set(RIB_W / 2, 3, 0);
+scene.add(marker);
+const markerGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(1.5, 24, 18),
+  new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.18 })
+);
+markerGlow.position.copy(marker.position);
+scene.add(markerGlow);
+
+// drifting motes (ambient)
+const M_COUNT = 220;
+const mGeo = new THREE.BufferGeometry();
+const mPos = new Float32Array(M_COUNT * 3);
+for (let i = 0; i < M_COUNT; i++) {
+  mPos[i * 3] = (Math.random() - 0.5) * 70;
+  mPos[i * 3 + 1] = Math.random() * 16;
+  mPos[i * 3 + 2] = (Math.random() - 0.5) * 40;
+}
+mGeo.setAttribute('position', new THREE.BufferAttribute(mPos, 3));
+const mMat = new THREE.PointsMaterial({ color: 0xa855f7, size: 0.16, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending });
+scene.add(new THREE.Points(mGeo, mMat));
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  // marker breathes; wild regimes throb faster
+  const wild = live && live.regime === 'wild';
+  markerMat.emissiveIntensity = 1.2 + 0.6 * Math.sin(t * (wild ? 4.2 : 1.8));
+  marker.position.y += Math.sin(t * 1.4) * 0.004;
+  markerGlow.position.copy(marker.position);
+  markerGlow.material.opacity = 0.12 + 0.08 * Math.sin(t * 2.1);
+
+  // motes drift
+  const pos = mGeo.attributes.position.array;
+  for (let i = 0; i < M_COUNT; i++) {
+    pos[i * 3 + 1] += dt * 0.25;
+    if (pos[i * 3 + 1] > 16) pos[i * 3 + 1] = 0;
+  }
+  mGeo.attributes.position.needsUpdate = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+fetchVerdict();
+setInterval(fetchSummary, 30000);
+setInterval(fetchVerdict, 60000);
+animate();
+</script>
+</body>
+</html>

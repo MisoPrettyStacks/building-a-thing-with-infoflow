@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-Asset Momentum — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070d; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #dfe8f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #38bdf8; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 360px; }
+  #title a { color: #38bdf8; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(10, 16, 28, 0.72);
+    border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 240px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #8fa0bd; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .up { color: #7dffb0; } #stats .down { color: #ff9d6b; } #stats .quiet { color: #8fa0bd; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 999px;
+    background: rgba(10, 16, 28, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #38bdf8; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(5, 7, 13, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>CROSS-ASSET MOMENTUM</h1>
+  <p>Live momentum spillover, watched by Cora. The sky-blue streams carry ETH and SOL price drift toward XRP — brighter, faster streams mean stronger momentum.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#cora">CORA'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { momETH, momSOL, zETH, zSOL, bias, warmingUp, degraded, weight, verdict, computedAt }
+
+async function fetchSummary() {
+  try {
+    const bust = '?m=' + Math.floor(Date.now() / 60000);
+    const r = await fetch(DATA_BASE + 'summary.json' + bust, { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const xa = s.xasset || {};
+    let verdict = null;
+    try {
+      const rv = await fetch(DATA_BASE + 'cora_supervisor.json' + bust, { cache: 'no-store' });
+      if (rv.ok) { const sv = await rv.json(); verdict = sv.verdict || null; }
+    } catch { /* supervisor file optional; keep last good verdict */ }
+    live = {
+      momETH: xa.momETH ?? null,
+      momSOL: xa.momSOL ?? null,
+      zETH: xa.zETH ?? null,
+      zSOL: xa.zSOL ?? null,
+      bias: xa.bias ?? 0,
+      warmingUp: !!xa.warmingUp,
+      degraded: !!xa.degraded,
+      weight: xa.weight || 0,
+      verdict: verdict || live?.verdict || null,
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+function fmtMom(m) {
+  if (m == null || !isFinite(m)) return '—';
+  const bp = m * 1e4;
+  return (bp >= 0 ? '+' : '') + bp.toFixed(1) + ' bp/bar';
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const dir = live.bias > 0.0005 ? 'tailwind' : live.bias < -0.0005 ? 'headwind' : 'quiet';
+  const cls = live.bias > 0.0005 ? 'up' : live.bias < -0.0005 ? 'down' : 'quiet';
+  const status = live.degraded ? '<span class="down">blind (feed down)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${dir}</span>`;
+  const momCls = (m) => m == null ? 'quiet' : m > 0 ? 'up' : m < 0 ? 'down' : 'quiet';
+  el.innerHTML =
+    `<div><span class="k">ETH momentum</span> <span class="v ${momCls(live.momETH)}">${fmtMom(live.momETH)}</span></div>` +
+    `<div><span class="k">SOL momentum</span> <span class="v ${momCls(live.momSOL)}">${fmtMom(live.momSOL)}</span></div>` +
+    `<div><span class="k">cross-asset tilt</span> <span class="v ${cls}">${live.bias >= 0 ? '+' : ''}${live.bias.toFixed(4)}</span> <span class="${cls}">${dir}</span></div>` +
+    `<div><span class="k">verdict</span> <span class="v">${live.verdict || '—'}</span></div>` +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x05070d, 0.028);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 13, 26);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0x8899bb, 0.5));
+const key = new THREE.DirectionalLight(0xe8f4ff, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+function labelSprite(text, color) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  g.font = '600 34px ui-sans-serif, system-ui, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = color; g.fillText(text, 128, 32);
+  const tex = new THREE.CanvasTexture(c);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  sp.scale.set(4.4, 1.1, 1);
+  return sp;
+}
+
+// center: XRP golden node
+const xrpMat = new THREE.MeshStandardMaterial({ color: 0xf2d060, emissive: 0xa87f1a, emissiveIntensity: 1.4, roughness: 0.3 });
+const xrp = new THREE.Mesh(new THREE.SphereGeometry(1.6, 48, 32), xrpMat);
+scene.add(xrp);
+const xrpGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(2.4, 32, 24),
+  new THREE.MeshBasicMaterial({ color: 0xf2d060, transparent: true, opacity: 0.14 })
+);
+scene.add(xrpGlow);
+const xrpLabel = labelSprite('XRP', '#f2d060'); xrpLabel.position.set(0, -2.9, 0); scene.add(xrpLabel);
+
+// ETH (left, sky blue) and SOL (right, teal) nodes
+function assetNode(x, colorHex, glowHex, label, labelColor) {
+  const mat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 0.7, roughness: 0.35 });
+  const m = new THREE.Mesh(new THREE.SphereGeometry(1.15, 40, 28), mat);
+  m.position.set(x, 1.5, 0); scene.add(m);
+  const glow = new THREE.Mesh(
+    new THREE.SphereGeometry(1.8, 32, 24),
+    new THREE.MeshBasicMaterial({ color: glowHex, transparent: true, opacity: 0.12 })
+  );
+  glow.position.copy(m.position); scene.add(glow);
+  const lb = labelSprite(label, labelColor); lb.position.set(x, -0.6, 0); scene.add(lb);
+  return { mesh: m, glow, label: lb, baseY: 1.5, phase: Math.random() * Math.PI * 2 };
+}
+const ethNode = assetNode(-10, 0x38bdf8, 0x38bdf8, 'ETH', '#7fd4ff');
+const solNode = assetNode(10, 0x14f195, 0x14f195, 'SOL', '#5ff2b8');
+
+// momentum streams: arcs from each asset node to XRP, flowing with the momentum sign
+function makeStream(fromX) {
+  const a = new THREE.Vector3(fromX, 1.5, 0);
+  const b = new THREE.Vector3(0, 0, 0);
+  const mid = a.clone().add(b).multiplyScalar(0.5); mid.y += 4.2;
+  const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+  const N = 260;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(N * 3);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.24, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending });
+  const pts = new THREE.Points(geo, mat);
+  scene.add(pts);
+  const seeds = [];
+  for (let i = 0; i < N; i++) seeds.push({ t: Math.random(), speed: 0.18 + Math.random() * 0.4 });
+  return { curve, geo, mat, seeds, N };
+}
+const ethStream = makeStream(-10);
+const solStream = makeStream(10);
+
+// faint constellation guides
+for (const s of [ethStream, solStream]) {
+  const g = new THREE.TubeGeometry(s.curve, 48, 0.025, 6, false);
+  scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x1d3a52, transparent: true, opacity: 0.6 })));
+}
+
+/** stream intensity = momentum: |z| scale when available, |mom| fallback */
+function strengthOf(mom, z) {
+  if (z != null && isFinite(z)) return Math.min(Math.abs(z) / 2.5, 1);
+  if (mom != null && isFinite(mom)) return Math.min(Math.abs(mom) * 6000, 1);
+  return 0;
+}
+
+function driveStream(stream, mom, z, dt) {
+  const strength = live && !live.degraded && !live.warmingUp ? strengthOf(mom, z) : 0;
+  const dir = (mom != null && mom < 0) ? -1 : 1; // negative momentum: spillover flows outward (headwind)
+  stream.mat.opacity = 0.12 + strength * 0.75;
+  const pos = stream.geo.attributes.position.array;
+  for (let i = 0; i < stream.N; i++) {
+    const sd = stream.seeds[i];
+    sd.t += dt * sd.speed * (0.35 + strength * 1.8);
+    if (sd.t > 1) sd.t -= 1;
+    const tt = dir > 0 ? sd.t : 1 - sd.t; // positive momentum: asset -> XRP
+    const p = stream.curve.getPoint(tt);
+    pos[i * 3] = p.x; pos[i * 3 + 1] = p.y; pos[i * 3 + 2] = p.z;
+  }
+  stream.geo.attributes.position.needsUpdate = true;
+  return strength;
+}
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  // gentle float
+  xrp.position.y = Math.sin(t * 0.8) * 0.25;
+  xrpGlow.position.copy(xrp.position);
+  for (const nd of [ethNode, solNode]) {
+    nd.mesh.position.y = nd.baseY + Math.sin(t * 0.9 + nd.phase) * 0.3;
+    nd.glow.position.copy(nd.mesh.position);
+  }
+
+  // streams breathe with live momentum
+  const sE = driveStream(ethStream, live?.momETH ?? null, live?.zETH ?? null, dt);
+  const sS = driveStream(solStream, live?.momSOL ?? null, live?.zSOL ?? null, dt);
+
+  // XRP node breathes with the combined tilt
+  const bias = live ? Math.abs(live.bias) : 0;
+  const excite = 1 + Math.min(bias / 0.01, 1) * 0.9;
+  xrpMat.emissiveIntensity = 1.1 + 0.4 * Math.sin(t * 1.6) + (excite - 1) * 0.8;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+setInterval(fetchSummary, 30000);
+animate();
+</script>
+</body>
+</html>

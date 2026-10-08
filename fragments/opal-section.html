@@ -1,0 +1,88 @@
+<div class="opal-lab-wrap">
+<h2 class="opal-lab-title"><img src="opal-headshot.webp" alt="Opal" class="opal-lab-headshot"> OPAL'S LAB - ORDER-BOOK DEPTH</h2>
+<div class="opal-agent-intro">
+  <h3>Meet Opal — an agentic agent, not a mascot</h3>
+  <p>Opal doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: reading the live XRP order book for imbalance, spread, and depth, researching the science of market microstructure, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Order-Book Depth Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> market microstructure · statistics · quantitative finance · data engineering · risk management — with real market-trading experience and knowledge. She is the expert in her area of study: how the resting buy and sell interest in the order book relates to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live order-book measurements, guard book and data quality, and keep the lab notebook. Analyze how the book behaves: when imbalance builds or drains, when spreads widen, how deep usable liquidity runs. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the book's measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether the order book earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+</div>
+<section id="orderbook" class="card">
+  <h2>Order-book depth — live microstructure signal <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Opal reads the live Coinbase XRP-USD order book every cycle. When resting buy interest outweighs resting sell interest, that's demand pressure; when sell interest outweighs buy interest, that's supply pressure. The spread tells her how healthy the book is, and usable depth tells her how much pressure the book can absorb. The member emits a small tilt when the book genuinely takes a side — currently at weight zero, so it is scored but never affects the forecast until Opal finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Flow tilt</div><div class="v" id="opFlowTilt" style="font-size:15px">—</div><div class="s" id="opFlowTiltSub">—</div></div>
+    <div class="stat"><div class="k">Book imbalance</div><div class="v" id="opImb" style="font-size:15px">—</div><div class="s" id="opImbSub">—</div></div>
+    <div class="stat"><div class="k">Spread</div><div class="v" id="opSpread" style="font-size:15px">—</div><div class="s" id="opSpreadSub">best bid ↔ best ask</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="opStatus" style="font-size:15px">—</div><div class="s" id="opStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Bid / ask depth</div><div class="v" id="opDepth" style="font-size:15px">—</div><div class="s" id="opDepthSub">resting notional within 1% of mid</div></div>
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="opBrier">—</div><div class="s" id="opBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="opSkill">—</div><div class="s" id="opSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="opWeight" style="font-size:15px">—</div><div class="s" id="opWeightNote">scored only, not used</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="opSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">small scaled tilt per cycle</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner pulls one live snapshot of the XRP-USD level-2 book from Coinbase's public API (no keys) and measures mid, spread, notional imbalance across the visible levels, and usable depth. The tilt is deliberately small and slow — it speaks only when the book genuinely takes a side. Honest caveat: displayed depth is an advertisement — traders can cancel in milliseconds, and a giant one-sided read may be spoofed interest that vanishes on approach. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="opal3d" class="card">
+  <h2>Reading the book in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Opal's live view of the order book. The <b>teal wall</b> is resting bids (demand), the <b>pale wall</b> is resting asks (supply) — bar heights come from the real aggregate resting notional, evenly divided across the bars. The glowing line between them is the mid-price. Streams drift in from the heavier side, and the whole scene leans toward whichever side is pressing. So you're literally watching supply and demand face off right now. <a href="opal3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="opal3d.html?embed=1&v=1" title="Live 3D order-book rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="opal" class="card">
+  <h2>Opal's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Opal</b> — she spends every 5-minute cycle reading whether the XRP order book can actually help the forecast. She writes down <i>everything</i>: what the book showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="op-panel" id="opPanel" hidden>
+    <div class="op-head">OPAL'S STANDING VERDICT <span class="op-badge" id="opBadge"></span></div>
+    <p class="op-plain" id="opPlain"></p>
+    <div class="op-ev" id="opEvidence"></div>
+    <details class="op-det"><summary>How she reached it — every discipline's read</summary><div id="opDisciplines"></div></details>
+    <details class="op-det"><summary>Hypothesis ledger</summary><div id="opHypotheses"></div></details>
+    <div class="op-meta muted" id="opMeta"></div>
+  </div>
+  <div class="op-scene">
+    <div class="op-grid">
+      <div class="op-hero">
+        <img src="opal.webp" alt="Opal working at her chalkboard" id="opHeroImg">
+        <span class="op-sparkle" aria-hidden="true"></span>
+        <div class="op-bubble" id="opBubble"><span id="opBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Opal's findings <span class="lm-live" id="opLiveDot"></span></div>
+        <div class="lm-line" id="opBoardBias">warming up…</div>
+        <div class="lm-line" id="opBoardImb"></div>
+        <div class="lm-line" id="opBoardSpread"></div>
+        <div class="lm-line lm-verdict" id="opBoardVerdict"></div>
+        <svg id="opBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="opBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="opBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="opLogCount" class="muted"></span></div>
+    <div id="opLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Opal ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="ochat-title">CHAT WITH OPAL</h3>
+  <div class="ochat" id="ochat">
+    <div class="ochat-head">
+      <img src="opal-headshot.webp" alt="Opal">
+      <div class="ochat-who"><b>Opal</b><span class="ochat-online"><i></i>online — ask me about the order book</span></div>
+    </div>
+    <div class="ochat-log" id="opChatLog" aria-live="polite"></div>
+    <div class="ochat-chips" id="opChatChips"></div>
+    <div class="ochat-input">
+      <input id="opChatText" type="text" placeholder="Ask Opal about the order book…" maxlength="300" autocomplete="off">
+      <button id="opChatSend" type="button">Send</button>
+    </div>
+    <div class="ochat-note muted">Opal answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

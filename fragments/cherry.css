@@ -1,0 +1,46 @@
+/* ---------------- Cherry's lab theme: crimson (#dc2645) ---------------- */
+.cherry-lab-wrap {
+  border: 3px solid #dc2645; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.cherry-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #dc2645; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.cherry-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #dc2645; flex: 0 0 auto;
+}
+.cherry-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(220,38,69,0.06);
+}
+.cherry-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #dc2645; letter-spacing: 1px; }
+.cherry-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+.cherry-scene { margin: 6px 0 14px; position: relative; }
+
+/* Cherry verdict panel: same wv-* skeleton, crimson accents */
+#chPanel { border-color: #dc2645; background: rgba(220,38,69,0.05); }
+#chPanel .wv-head { color: #dc2645; }
+#chPanel .wv-ev b { color: #ff7d99; }
+#chPanel .wv-det summary { color: #dc2645; }
+#chPanel .wv-det .wv-d { color: #ff7d99; }
+
+/* Cherry DM chat: crimson-tinted wchat */
+.cherry-chat-title { color: #dc2645; }
+.cherry-chat .wchat-head { background: rgba(220,38,69,0.10); }
+.cherry-chat .wchat-head img { border-color: #dc2645; }
+.cherry-chat .wchat-online { color: #ff7d99; }
+.cherry-chat .wchat-online i { background: #dc2645; }
+.cherry-chat .wchat-log::-webkit-scrollbar-thumb { background: rgba(220,38,69,0.35); }
+.cherry-chat .wchat-row.cherry img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #dc2645; flex: 0 0 auto; }
+.cherry-chat .wchat-row.cherry .wchat-bubble { background: #2a2a2e; border-bottom-left-radius: 4px; color: #ff7d99; }
+.cherry-chat .wchat-row.me .wchat-bubble { background: #dc2645; color: #fff; border-bottom-right-radius: 4px; }
+.cherry-chat .wchat-typing span { background: #dc2645; }
+.cherry-chat .wchat-chip { border-color: #dc2645; color: #ff7d99; }
+.cherry-chat .wchat-chip:hover { background: rgba(220,38,69,0.12); }
+.cherry-chat .wchat-input input:focus { border-color: #dc2645; }
+.cherry-chat .wchat-input button { background: #dc2645; color: #fff; }
+
+@media (max-width: 640px) { .cherry-lab-title { font-size: 17px; letter-spacing: 1px; } .cherry-lab-headshot { width: 48px; height: 48px; } }

@@ -4,11 +4,12 @@
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { readFileSync, existsSync, appendFileSync, writeFileSync } from 'node:fs';
-import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
+import { fetchBars, mergeBars, coinbaseCandles, referencePrices, getJson } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
 import { buildLabNote, LAB_PAGE_WINDOW, parseLogLines, formatLogLine } from '../lib/labnote.js';
 import { buildWendyNote, WENDY_PAGE_WINDOW, parseWendyLogLines, formatWendyLogLine } from '../lib/wendynote.js';
+import { AGENT_DEFS, normalizeScoreboard } from '../lib/agent-registry.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
@@ -140,6 +141,23 @@ function loadWendyLog() {
       log(`wendy log migrated: ${wendyLog.length} notes -> permanent notebook`);
     }
   } catch { /* first run: start a fresh notebook */ }
+}
+// --- Second-generation lab notebooks (Opal → Nia) ---
+// One permanent per-agent notebook each: every note is appended to <name>-log.jsonl
+// on the data branch and kept forever — no cap, no trimming. summary.json embeds
+// only the latest page-window notes so the page stays fast. Each PI keeps working
+// until Angelica explicitly decides otherwise.
+const agentLogs = new Map(); // name -> note array
+function loadAgentLog(def) {
+  try {
+    const p = path.join(DIR, def.logFile);
+    if (existsSync(p)) {
+      agentLogs.set(def.name, def.parseLogLines(readFileSync(p, 'utf8')));
+      log(`${def.name} log restored: ${agentLogs.get(def.name).length} notes (permanent notebook)`);
+    } else {
+      agentLogs.set(def.name, []);
+    }
+  } catch { agentLogs.set(def.name, []); /* first run: start a fresh notebook */ }
 }
 const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false, lastTopology: null };
 
@@ -329,6 +347,33 @@ async function cycle() {
         oc = await updateOnchain(t);
         stats.lastOnchain = oc.diag;
       } catch (e) { log('onchain hiccup:', String(e.message || e).slice(0, 120)); }
+      // Second-generation labs (Opal → Nia): best-effort per-agent signal fetch.
+      // Each fetcher never throws; on failure the member abstains (bias 0).
+      const labSignals = {};
+      try {
+        const xrpl = { recentTx: ocState.recentTx || [], txCount: chain.seq || 0 };
+        for (const def of AGENT_DEFS) {
+          try {
+            labSignals[def.key] = await def.fetchSignal({ t, bars, btcBars, dir: DIR, getJson, xrpl });
+          } catch (e) {
+            log(`${def.name} signal hiccup:`, String(e.message || e).slice(0, 120));
+            labSignals[def.key] = { bias: 0, degraded: true, warmingUp: false };
+          }
+          if (!labSignals[def.key] || typeof labSignals[def.key] !== 'object') {
+            labSignals[def.key] = { bias: 0, degraded: true, warmingUp: false };
+          }
+        }
+        stats.lastLab = labSignals;
+      } catch (e) { log('lab signals hiccup:', String(e.message || e).slice(0, 120)); }
+      // Engine opts for the new members: bias members + Violet's dampener.
+      const memberOpts = {};
+      for (const def of AGENT_DEFS) {
+        if (def.dampener) continue;
+        const s = labSignals[def.key] || {};
+        memberOpts[def.key] = { bias: Number.isFinite(s.bias) ? s.bias : 0 };
+      }
+      const volSignal = labSignals.volatility || {};
+      const volOpts = { active: !!volSignal.active };
       // topology experiment: Takens embedding + Rips persistent homology (best-effort;
       // never breaks the run). One Rips computation per cycle (~3s); the previous
       // window's diagram comes from the persisted state file.
@@ -373,6 +418,8 @@ async function cycle() {
         macroCal,
         onchain: { bias: oc.bias },
         ...(topoOpts ? { topology: topoOpts } : {}),
+        members: memberOpts,
+        volatility: volOpts,
       });
       const rec = append({
         type: 'forecast', id: lastClosedStart, bar_t: lastClosedStart, t_issue: lastClosedStart + STEP,
@@ -390,6 +437,27 @@ async function cycle() {
         topo_active: step.topoActive ? 1 : 0,
         topo_pe: stats.lastTopology && stats.lastTopology.pe != null ? stats.lastTopology.pe : null,
         topo_dist: stats.lastTopology && stats.lastTopology.diagram_distance != null ? stats.lastTopology.diagram_distance : null,
+        // Second-generation lab members: what-if series + bias per member (OOS scoring).
+        p_orderbook: step.pOrderbook == null ? null : +step.pOrderbook.toFixed(6),
+        orderbook_bias: +(+step.orderbookBias || 0).toFixed(6),
+        p_deriv: step.pDeriv == null ? null : +step.pDeriv.toFixed(6),
+        deriv_bias: +(+step.derivBias || 0).toFixed(6),
+        p_network: step.pNetwork == null ? null : +step.pNetwork.toFixed(6),
+        network_bias: +(+step.networkBias || 0).toFixed(6),
+        p_session: step.pSession == null ? null : +step.pSession.toFixed(6),
+        session_bias: +(+step.sessionBias || 0).toFixed(6),
+        p_xasset: step.pXasset == null ? null : +step.pXasset.toFixed(6),
+        xasset_bias: +(+step.xassetBias || 0).toFixed(6),
+        p_corr: step.pCorr == null ? null : +step.pCorr.toFixed(6),
+        corr_bias: +(+step.corrBias || 0).toFixed(6),
+        p_stable: step.pStable == null ? null : +step.pStable.toFixed(6),
+        stable_bias: +(+step.stableBias || 0).toFixed(6),
+        p_sentiment: step.pSentiment == null ? null : +step.pSentiment.toFixed(6),
+        sentiment_bias: +(+step.sentimentBias || 0).toFixed(6),
+        p_news: step.pNews == null ? null : +step.pNews.toFixed(6),
+        news_bias: +(+step.newsBias || 0).toFixed(6),
+        p_volatility: step.pVolatility == null ? null : +step.pVolatility.toFixed(6),
+        vol_active: step.volActive ? 1 : 0,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,
         cfg_version: config.champion.version, cfg_hash: cfgHash(),
         input_digest: sha256(canonical(bars.slice(-48).map((b) => [b.t, b.c, b.v]))).slice(0, 16),
@@ -443,7 +511,19 @@ async function cycle() {
     const wv = JSON.parse(readFileSync(path.join(DIR, 'wendy_supervisor.json'), 'utf8'));
     if (wv && (wv.verdict === 'HOLD' || wv.verdict === 'APPLY_CANDIDATE' || wv.verdict === 'WITHDRAW')) wendyVerdict = wv.verdict;
   } catch { /* HOLD */ }
-  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal, mashaVerdict, wendyVerdict });
+  // Second-generation PIs' standing scientific verdicts gate their labs' parameters:
+  // without APPLY_CANDIDATE a member can never gain weight; WITHDRAW steps an
+  // adopted weight back to 0. Missing/invalid file => HOLD (safe default).
+  const agentVerdicts = {};
+  for (const def of AGENT_DEFS) {
+    let v = 'HOLD';
+    try {
+      const sv = JSON.parse(readFileSync(path.join(DIR, def.supFile), 'utf8'));
+      if (sv && (sv.verdict === 'HOLD' || sv.verdict === 'APPLY_CANDIDATE' || sv.verdict === 'WITHDRAW')) v = sv.verdict;
+    } catch { /* HOLD */ }
+    agentVerdicts[def.name] = v;
+  }
+  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal, mashaVerdict, wendyVerdict, agentVerdicts });
   config = out.config;
   for (const ev of out.events) { append({ type: 'agent', ...ev }); log('agent:', ev.type, ev.decision || ev.action || ''); }
   if (canonical(config) !== before) saveConfig();
@@ -517,8 +597,22 @@ function writeSummary() {
       } : null,
     },
   });
+  // Second-generation lab signal panels: summary.<key> carries the live signal
+  // fields plus the member's gated weight (mirrors summary.onchain).
+  if (stats.lastLab) {
+    for (const def of AGENT_DEFS) {
+      const s = stats.lastLab[def.key];
+      if (!s) continue;
+      summary[def.key] = {
+        ...s,
+        weight: config.champion[def.weightKey] || 0,
+        enabled: (config.champion[def.weightKey] || 0) > 0,
+      };
+    }
+  }
   writeLabNote(summary);
   writeWendyNote(summary);
+  writeAgentNotes(summary);
   writeJson(path.join(DIR, 'summary.json'), summary);
 }
 
@@ -562,6 +656,32 @@ function writeWendyNote(summary) {
   } catch (e) { log('wendy note hiccup:', String(e.message || e).slice(0, 120)); }
 }
 
+function writeAgentNotes(summary) {
+  // One honest notebook entry per cycle for each of the ten labs (Opal → Nia):
+  // what was collected, what was computed, what she found, and whether it
+  // mattered mathematically. Saved whether or not the member is used.
+  // summary.<name> mirrors summary.wendy: { latest, log, updated_at, total_notes }.
+  const windowsAll = summary.windows && summary.windows.all ? summary.windows.all : null;
+  for (const def of AGENT_DEFS) {
+    try {
+      const signal = summary[def.key] || null;
+      const sbRaw = windowsAll ? windowsAll[def.key] : null;
+      const note = def.buildNote({
+        signal,
+        scoreboard: normalizeScoreboard(sbRaw, def.brierKey),
+        cycle: stats.cycles,
+        barT: lastClosedStart,
+      });
+      const arr = agentLogs.get(def.name) || [];
+      arr.push(note);
+      agentLogs.set(def.name, arr);
+      try { appendFileSync(path.join(DIR, def.logFile), def.formatLogLine(note) + '\n'); }
+      catch (e) { log(`${def.name} log append hiccup:`, String(e.message || e).slice(0, 120)); }
+      summary[def.name] = { latest: note, log: arr.slice(-def.pageWindow), updated_at: new Date().toISOString(), total_notes: arr.length };
+    } catch (e) { log(`${def.name} note hiccup:`, String(e.message || e).slice(0, 120)); }
+  }
+}
+
 async function main() {
   log(`runner start: dir=${DIR} minutes=${MINUTES} push=${PUSH} ledger_seq=${chain.seq || 0}`);
   raw = await fetchBars(HIST_BARS);
@@ -572,6 +692,7 @@ async function main() {
   } catch (e) { log('btc history failed (infoflow degraded):', String(e.message || e).slice(0, 150)); }
   loadLabLog(); // restore Masha's notebook from the data branch
   loadWendyLog(); // restore Wendy's notebook from the data branch
+  for (const def of AGENT_DEFS) loadAgentLog(def); // restore the ten labs' notebooks
   const deadline = MINUTES > 0 ? startedAt + MINUTES * 60000 : 0;
   for (;;) {
     try {

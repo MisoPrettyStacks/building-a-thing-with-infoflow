@@ -1,0 +1,86 @@
+<div class="sage-lab-wrap">
+<h2 class="sage-lab-title"><img src="sage-headshot.webp" alt="Sage" class="sage-lab-headshot"> SAGE'S LAB - STABLECOIN FLOW</h2>
+<div class="sage-agent-intro">
+  <h3>Meet Sage — an agentic agent, not a mascot</h3>
+  <p>Sage doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the supply of USDT and USDC for the liquidity tide moving through crypto, researching the economics of stablecoin flows, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Stablecoin Flow Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> on-chain analysis · monetary economics · network science · statistics · data engineering · risk management — with real market-trading experience and knowledge. She is the expert in her area of study: how the tide of stablecoin liquidity relates to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live stablecoin-supply measurements, guard feed and cache quality, and keep the lab notebook. Analyze how the liquidity tide behaves: when supply expands or contracts, whether expansions cluster with risk-on regimes, whether the read is stable or decaying. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every cycle she records the stablecoin supply measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether stablecoin flow earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+  <p><strong>Her honesty rule:</strong> stablecoin market-cap data moves in days, not minutes — it is a <em>liquidity</em> read, not a <em>timing</em> read. Its link to 15-minute XRP direction is thin, and she says so plainly. She is a slow-liquidity lab, not a timing lab, and she would rather report "no link found" than pretend a tide explains a wave.</p>
+</div>
+<section id="stableflow" class="card">
+  <h2>Stablecoin flow — slow liquidity tide <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Sage reads the 24-hour market-cap change of USDT and USDC from the free CoinGecko API, adds them together, and turns the combined change into a gentle liquidity tilt. Rising supply means fresh fiat parked on-chain where it can buy (liquidity entering — mild bullish); falling supply means fiat leaving (mild bearish). The read refreshes at most once an hour and rests on the cache between fetches. The member emits a slow liquidity tilt — currently at weight zero, so it is scored but never affects the forecast until Sage finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Liquidity tilt</div><div class="v" id="sgTilt" style="font-size:15px">—</div><div class="s" id="sgTiltSub">—</div></div>
+    <div class="stat"><div class="k">USDT 24h mcap Δ</div><div class="v" id="sgUsdt" style="font-size:15px">—</div><div class="s" id="sgUsdtSub">—</div></div>
+    <div class="stat"><div class="k">USDC 24h mcap Δ</div><div class="v" id="sgUsdc" style="font-size:15px">—</div><div class="s" id="sgUsdcSub">—</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="sgStatus" style="font-size:15px">—</div><div class="s" id="sgStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="sgSkill">—</div><div class="s" id="sgSkillSub">—</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="sgVerdict" style="font-size:15px">—</div><div class="s" id="sgVerdictSub">scored only, not used</div></div>
+    <div class="stat"><div class="k">Tilt history</div><div class="v" style="font-size:12px"><canvas id="sgSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">slow liquidity tilt</div></div>
+    <div class="stat"><div class="k">Decisive reads</div><div class="v" id="sgDecisive" style="font-size:15px">—</div><div class="s" id="sgDecisiveSub">—</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner reads USDT and USDC 24h market-cap change from the CoinGecko free API (no keys), refetching at most once an hour and reusing the cached read between fetches. The tilt is deliberately gentle and slow — it hangs in there across many windows until the liquidity regime genuinely changes. Honest caveat: stablecoin supply moves in days while the forecast moves in 15 minutes — this is a background liquidity condition, not a timing signal, which is why the page scores it at the 24h horizon too. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="sage3d" class="card">
+  <h2>Watching the liquidity tide in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Sage's live view of the liquidity pool. The basin's water level rises and falls with the combined USDT + USDC 24-hour supply change — the tide made visible. The two green streams pouring in are the live USDT and USDC inflows; they flow faster when their changes are larger. When the tilt is decisive, the pool glows brighter and the hovering liquidity orb burns sage green. So you're literally watching the ecosystem's liquidity breathe right now. <a href="sage3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="sage3d.html?embed=1&v=1" title="Live 3D stablecoin-flow rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="sage" class="card">
+  <h2>Sage's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Sage</b> — she spends every cycle watching whether the stablecoin liquidity tide can actually help the forecast. She writes down <i>everything</i>: what the market showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used. And because her data is slow, she keeps her claims modest: a liquidity lab, not a timing lab.</p>
+  <div class="wv-panel" id="sgVerdictPanel" hidden>
+    <div class="wv-head">SAGE'S STANDING VERDICT <span class="wv-badge" id="sgVerdictBadge"></span></div>
+    <p class="wv-plain" id="sgVerdictPlain"></p>
+    <div class="wv-ev" id="sgVerdictEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="sgDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="sgHypotheses"></div></details>
+    <div class="wv-meta muted" id="sgVerdictMeta"></div>
+  </div>
+  <div class="sg-scene">
+    <div class="sg-grid">
+      <div class="sg-hero">
+        <img src="sage.webp" alt="Sage working at her chalkboard" id="sgHeroImg">
+        <span class="sg-sparkle" aria-hidden="true"></span>
+        <div class="sg-bubble" id="sgBubble"><span id="sgBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Sage's findings <span class="lm-live" id="sgLiveDot"></span></div>
+        <div class="lm-line" id="sgBias">warming up…</div>
+        <div class="lm-line" id="sgLiquidity"></div>
+        <div class="lm-line" id="sgChange"></div>
+        <div class="lm-line lm-verdict" id="sgBoardVerdict"></div>
+        <svg id="sgBoardSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="sgBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="sgBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="sgLogCount" class="muted"></span></div>
+    <div id="sgLog"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Sage ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="schat-title">CHAT WITH SAGE</h3>
+  <div class="schat" id="schat">
+    <div class="schat-head">
+      <img src="sage-headshot.webp" alt="Sage">
+      <div class="schat-who"><b>Sage</b><span class="schat-online"><i></i>online — ask me about stablecoin tides</span></div>
+    </div>
+    <div class="schat-log" id="sgChatLog" aria-live="polite"></div>
+    <div class="schat-chips" id="sgChatChips"></div>
+    <div class="schat-input">
+      <input id="sgChatText" type="text" placeholder="Ask Sage about stablecoin tides…" maxlength="300" autocomplete="off">
+      <button id="sgChatSend" type="button">Send</button>
+    </div>
+    <div class="schat-note muted">Sage answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
