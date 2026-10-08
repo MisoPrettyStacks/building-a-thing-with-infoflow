@@ -81,6 +81,7 @@ let raw = [];
 let bars = [];
 let btcRaw = [];
 let btcBars = [];
+let lastClosedStart = 0; // set each cycle(); writeSummary() reads it for the calendar extras
 const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false, lastTopology: null };
 
 /**
@@ -162,7 +163,7 @@ function append(payload) {
 
 async function cycle() {
   const t = now();
-  const lastClosedStart = Math.floor(t / STEP) * STEP - STEP;
+  lastClosedStart = Math.floor(t / STEP) * STEP - STEP;
   const fresh = await coinbaseCandles(t - 30 * STEP, t);
   raw = mergeBars(raw, fresh, t).slice(-(HIST_BARS + 600));
   bars = gridBars(raw, STEP, lastClosedStart);

@@ -47,7 +47,7 @@ async function loadSummary() {
 /* ---------------- information flow (experimental) ---------------- */
 function renderInfoflow() {
   if (!$('ifBx')) return;
-  const d = summary && summary.extras && summary.extras.infoflow;
+  const d = summary && summary.infoflow;
   if (!d) {
     ['ifBx','ifXb','ifNet','ifPe','ifBrier','ifEnsBrier','ifWeight'].forEach((id) => { $(id).textContent = '—'; });
     $('ifBxZ').textContent = 'waiting for runner…'; $('ifXbZ').textContent = 'waiting for runner…';
@@ -82,7 +82,7 @@ function renderInfoflow() {
 /* ---------------- topological features (experimental) ---------------- */
 function renderTopology() {
   if (!$('topoPE')) return;
-  const t = summary && summary.extras && summary.extras.topology;
+  const t = summary && summary.topology;
   if (!t) {
     ['topoPE','topoMaxL','topoDist','topoState'].forEach((id) => { $(id).textContent = '—'; });
     $('topoThr').textContent = 'waiting for runner…'; $('topoBrierN').textContent = '—';
@@ -111,7 +111,7 @@ function renderTopology() {
 /* ---------------- calendar effects (experimental) ---------------- */
 function renderCalendar() {
   if (!$('calDays')) return;
-  const c = summary && summary.extras && summary.extras.calendar;
+  const c = summary && summary.calendar;
   if (!c) {
     ['calDays','calTilt','calRelock','calVerdict'].forEach((id) => { $(id).textContent = '—'; });
     $('calTiltNote').textContent = 'waiting for runner…'; $('calN').textContent = '—';
@@ -143,7 +143,7 @@ function fmtCountdown(min) {
 }
 function renderMacro() {
   if (!$('macNext')) return;
-  const m = summary && summary.extras && summary.extras.macro;
+  const m = summary && summary.macro;
   const banner = $('macBanner');
   if (!m) {
     ['macNext', 'macCount', 'macDamp', 'macVerdict'].forEach((id) => { $(id).textContent = '—'; });
@@ -185,7 +185,7 @@ function renderMacro() {
 /* ---------------- on-chain flows (experimental) ---------------- */
 function renderOnchain() {
   if (!$('ocFlow24')) return;
-  const o = summary && summary.extras && summary.extras.onchain;
+  const o = summary && summary.onchain;
   if (!o) {
     ['ocFlow24', 'ocFlow7', 'ocBias', 'ocWhale', 'ocBrier', 'ocSkill', 'ocStatus'].forEach((id) => { $(id).textContent = '—'; });
     $('ocBiasNote').textContent = 'waiting for runner…'; $('ocWhaleNote').textContent = '—';

@@ -13,7 +13,11 @@ permissions:
 
 concurrency:
   group: forecast-runner
-  cancel-in-progress: false
+  # If a run hangs silently (no output, no push), the next scheduled run or a
+  # manual/watchdog dispatch must be able to take over instead of queueing
+  # behind the hung run indefinitely. A fresh run re-clones the data branch and
+  # resumes the loop, so cancelling a stuck predecessor is safe.
+  cancel-in-progress: true
 
 jobs:
   run:

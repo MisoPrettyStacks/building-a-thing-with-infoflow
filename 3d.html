@@ -83,10 +83,10 @@ async function fetchSummary() {
     const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
     if (!r.ok) throw 0;
     const s = await r.json();
-    const inf = (s.extras || {}).infoflow || {};
-    const cal = (s.extras || {}).calendar || {};
-    const mac = (s.extras || {}).macro || {};
-    const oc = (s.extras || {}).onchain || {};
+    const inf = s.infoflow || {};
+    const cal = s.calendar || {};
+    const mac = s.macro || {};
+    const oc = s.onchain || {};
     live = {
       teBx: inf.te_btc_xrp ?? 0, teXb: inf.te_xrp_btc ?? 0,
       zBx: inf.z_btc_xrp ?? 0, zXb: inf.z_xrp_btc ?? 0,
