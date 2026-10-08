@@ -36,6 +36,9 @@
   #waiting.hidden { display: none; }
   .pulse { animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
 </style>
 <script type="importmap">
 {
@@ -424,6 +427,7 @@ addEventListener('resize', () => {
 
 /* boot */
 (async function boot() {
+  if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
   await fetchSummary();
   await fetchCandles();
   refreshHud();

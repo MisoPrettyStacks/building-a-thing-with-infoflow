@@ -7,6 +7,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/data.js';
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
+import { buildLabNote, LAB_LOG_CAP } from '../lib/labnote.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
@@ -88,6 +89,18 @@ let bars = [];
 let btcRaw = [];
 let btcBars = [];
 let lastClosedStart = 0; // set each cycle(); writeSummary() reads it for the calendar extras
+
+// --- Little Marlowe's lab log (persisted on the data branch via summary.json) ---
+let labLog = [];
+function loadLabLog() {
+  try {
+    const prev = readJson(path.join(DIR, 'summary.json'), null);
+    if (prev && prev.littleMarlowe && Array.isArray(prev.littleMarlowe.log)) {
+      labLog = prev.littleMarlowe.log.slice(-LAB_LOG_CAP);
+      log(`lab log restored: ${labLog.length} notes`);
+    }
+  } catch { /* first run: start a fresh notebook */ }
+}
 const stats = { cycles: 0, errors: 0, lastRef: null, lastError: null, lastInfoflow: null, regimeWasNoisy: false, lastMacro: null, lastOnchain: null, macroWasActive: false, ocDegraded: false, lastTopology: null };
 
 /**
@@ -395,7 +408,26 @@ function writeSummary() {
       } : null,
     },
   });
+  writeLabNote(summary);
   writeJson(path.join(DIR, 'summary.json'), summary);
+}
+
+function writeLabNote(summary) {
+  // One honest notebook entry per cycle: what was collected, computed, found,
+  // and whether it mattered mathematically. Saved whether or not the member is used.
+  try {
+    const note = buildLabNote({
+      infoflow: summary.infoflow || null,
+      windowsAll: summary.windows && summary.windows.all ? summary.windows.all : null,
+      cycle: stats.cycles,
+      barT: lastClosedStart,
+      xrpBars: bars.length,
+      btcBars: btcBars.length,
+    });
+    labLog.push(note);
+    while (labLog.length > LAB_LOG_CAP) labLog.shift();
+    summary.littleMarlowe = { latest: note, log: labLog.slice(), updated_at: new Date().toISOString() };
+  } catch (e) { log('lab note hiccup:', String(e.message || e).slice(0, 120)); }
 }
 
 async function main() {
@@ -406,6 +438,7 @@ async function main() {
     btcRaw = await fetchBars(HIST_BARS, { product: 'BTC-USD' });
     log(`btc history loaded: ${btcRaw.length} closed 5-min bars (infoflow experiment)`);
   } catch (e) { log('btc history failed (infoflow degraded):', String(e.message || e).slice(0, 150)); }
+  loadLabLog(); // restore Little Marlowe's notebook from the data branch
   const deadline = MINUTES > 0 ? startedAt + MINUTES * 60000 : 0;
   for (;;) {
     try {

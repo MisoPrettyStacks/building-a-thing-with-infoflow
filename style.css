@@ -69,3 +69,57 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .zoomctl button { min-width: 30px; height: 30px; padding: 0 8px; border-radius: 8px; background: var(--panel2); color: var(--ink); border: 1px solid var(--line); font-size: 15px; line-height: 1; cursor: pointer; }
 .zoomctl button:hover { filter: brightness(1.08); }
 #zfit { font-size: 11px; color: var(--muted); }
+/* 15-minute window card: P(up) and P(down) side by side at the top */
+.wpair { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+
+/* ---------------- Little Marlowe's lab ---------------- */
+.lm-scene { margin: 6px 0 14px; }
+.lm-scene svg { width: 100%; height: auto; display: block; border-radius: 10px; }
+/* arm writing on the chalkboard */
+#lmArm { transform-origin: 168px 250px; animation: lmWrite 2.4s ease-in-out infinite; }
+@keyframes lmWrite { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
+/* blinking eyes */
+.lm-eye { transform-box: fill-box; transform-origin: center; animation: lmBlink 4.6s infinite; }
+@keyframes lmBlink { 0%,93%,100% { transform: scaleY(1); } 96% { transform: scaleY(0.12); } }
+/* gentle bob while he works */
+#lmBody { animation: lmBob 3.2s ease-in-out infinite; }
+@keyframes lmBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+/* the black notebook: deliberately distinct = experimental, not in the forecast */
+.lm-logbox { background: #0b0b0d; color: #f2f2f2; border-radius: 10px; padding: 12px 14px; margin: 0 0 10px; }
+.lm-loghead { font-size: 11px; letter-spacing: 1.5px; color: #9a9a9a; margin-bottom: 8px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+#lmLogRows { max-height: 320px; overflow-y: auto; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.45; }
+.lm-empty { color: #9a9a9a; padding: 8px 0; }
+.lm-row { border-bottom: 1px solid #232326; }
+.lm-rowhead { display: flex; gap: 10px; align-items: baseline; width: 100%; background: none; border: none; color: inherit; font: inherit; text-align: left; padding: 7px 2px; cursor: pointer; }
+.lm-rowhead:hover { background: #141416; }
+.lm-t { color: #8f8f96; flex: 0 0 auto; }
+.lm-v { flex: 0 0 auto; font-size: 10.5px; padding: 1px 8px; border-radius: 999px; letter-spacing: 0.5px; }
+.lm-v-useful { background: #1d3a24; color: #8fe3a8; }
+.lm-v-not { background: #3a2f16; color: #f2c879; }
+.lm-v-insuf { background: #2a2a2e; color: #b9b9c0; }
+.lm-f { color: #e8e8e8; }
+.lm-detail { padding: 2px 2px 10px 0; color: #cfcfd4; font-size: 12px; }
+.lm-detail .lm-sec { margin: 6px 0; }
+.lm-detail .lm-k { color: #8f8f96; font-size: 10.5px; letter-spacing: 1px; }
+.lm-check-pass { color: #8fe3a8; }
+.lm-check-fail { color: #f08a8a; }
+
+/* ---------------- 3D intro popup + embedded flow field ---------------- */
+#intro3d { position: fixed; inset: 0; z-index: 1000; background: #05070d; }
+#intro3d[hidden] { display: none; }
+#intro3d iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.intro3d-ui { position: absolute; inset: auto 0 26px 0; display: flex; justify-content: center; pointer-events: none; }
+#intro3dEnter {
+  pointer-events: auto; font-size: 17px; font-weight: 700; padding: 13px 34px; border-radius: 999px;
+  border: 1px solid rgba(127,212,255,.5); background: rgba(10,20,36,.85); color: #dfe8f5; cursor: pointer;
+  backdrop-filter: blur(4px); animation: lmBob 2.6s ease-in-out infinite;
+}
+#intro3dEnter:hover { background: rgba(20,36,60,.92); }
+#intro3dClose {
+  position: absolute; top: 14px; right: 16px; width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(10,16,28,.7); color: #dfe8f5; font-size: 16px; cursor: pointer; z-index: 2;
+}
+#intro3dClose:hover { background: rgba(30,40,60,.85); }
+.flow3d-embed { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.flow3d-embed iframe { display: block; width: 100%; height: 460px; border: 0; background: #05070d; }
+@media (max-width: 640px) { .flow3d-embed iframe { height: 320px; } }

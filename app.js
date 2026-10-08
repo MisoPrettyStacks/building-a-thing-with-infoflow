@@ -41,7 +41,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderLittleMarlowe(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -77,6 +77,114 @@ function renderInfoflow() {
   const ageS = Math.max(0, Math.round((Date.now() - Date.parse(d.computed_at)) / 1000));
   $('ifAge').textContent = 'recomputed ' + (ageS < 90 ? ageS + 's ago' : Math.round(ageS / 60) + 'm ago');
   renderTopology();
+}
+
+/* ---------------- Little Marlowe's lab ---------------- */
+function lmSetT(id, txt) { const el = $(id); if (el) el.textContent = txt; }
+function renderLittleMarlowe() {
+  if (!$('lmBoard')) return;
+  const L = summary && summary.littleMarlowe;
+  const rowsEl = $('lmLogRows');
+  if (!L || !L.latest) {
+    lmSetT('lmBubble1', 'setting up'); lmSetT('lmBubble2', 'my lab…');
+    lmSetT('lmChalkTe', 'warming up…'); lmSetT('lmChalkZ', ''); lmSetT('lmChalkVote', ''); lmSetT('lmChalkVerdict', '');
+    const sp = $('lmSpark'); if (sp) sp.setAttribute('points', '');
+    rowsEl.innerHTML = '<div class="lm-empty">Little Marlowe is setting up his lab — notebook entries appear after the next runner cycle.</div>';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c) {
+    lmSetT('lmChalkTe', 'TE BTC→XRP   ' + c.te_btc_xrp.toFixed(4) + ' nats');
+    lmSetT('lmChalkZ', 'z = ' + c.z_btc_xrp.toFixed(2) + '   (need > 2)');
+    lmSetT('lmChalkVote', 'vote: ' + (c.vote === 0.5 ? 'abstain (0.50)' : 'P(up) = ' + c.vote.toFixed(3)));
+  } else {
+    lmSetT('lmChalkTe', 'not enough data…');
+    lmSetT('lmChalkZ', 'collecting bars…');
+    lmSetT('lmChalkVote', '');
+  }
+  const vEl = $('lmChalkVerdict');
+  if (vEl) {
+    vEl.textContent = 'verdict: ' + n.verdict + (n.verdict === 'not useful' ? ' — yet' : '');
+    vEl.setAttribute('fill', n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879');
+  }
+  // speech bubble: short version of his finding
+  const words = n.finding.split(' ');
+  let l1 = '', l2 = '';
+  for (const w of words) { if ((l1 + ' ' + w).trim().length <= 34) l1 = (l1 + ' ' + w).trim(); else { l2 = (l2 + ' ' + w).trim(); } }
+  if (l2.length > 40) l2 = l2.slice(0, 40) + '…';
+  lmSetT('lmBubble1', l1 || '…'); lmSetT('lmBubble2', l2);
+  // chalk sparkline: TE BTC→XRP over recent notes (real data)
+  const pts = (L.log || []).filter((e) => e.computed).slice(-24).map((e) => e.computed.te_btc_xrp);
+  const sp = $('lmSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      const X0 = 300, X1 = 600, Y0 = 250, Y1 = 208;
+      sp.setAttribute('points', pts.map((v, i) =>
+        (X0 + (X1 - X0) * i / (pts.length - 1)).toFixed(1) + ',' +
+        (Y0 - (v - mn) / rg * (Y0 - Y1)).toFixed(1)).join(' '));
+      lmSetT('lmSparkLabel', 'TE BTC→XRP · last ' + pts.length + ' notes');
+    } else { sp.setAttribute('points', ''); lmSetT('lmSparkLabel', ''); }
+  }
+  // the black notebook: newest first, click a row for the full workup
+  $('lmLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+  rowsEl.innerHTML = '';
+  const notes = (L.log || []).slice().reverse().slice(0, 40);
+  if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+  for (const e of notes) {
+    const row = document.createElement('div');
+    row.className = 'lm-row';
+    const head = document.createElement('button');
+    head.className = 'lm-rowhead';
+    const t = document.createElement('span'); t.className = 'lm-t';
+    const dt = new Date(e.t);
+    t.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+      dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const v = document.createElement('span');
+    v.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+    v.textContent = e.verdict;
+    const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+    head.append(t, v, f);
+    const det = document.createElement('div');
+    det.className = 'lm-detail'; det.hidden = true;
+    const col = e.collected;
+    det.innerHTML =
+      '<div class="lm-sec"><span class="lm-k">COLLECTED</span><br>' +
+      col.source + ' · ' + col.products.join(' + ') + ' · ' + col.window + '<br>' +
+      col.xrp_bars + ' XRP bars, ' + col.btc_bars + ' BTC bars, ' + col.aligned_bars + ' aligned in window</div>' +
+      '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' +
+      e.checks.map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' +
+        (k.pass ? '✓' : '✗') + '</span> ' + k.name + ' — ' + k.detail).join('<br>') + '</div>' +
+      '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + e.verdict_why + '</div>' +
+      '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + e.math_effect.detail + '</div>';
+    head.addEventListener('click', () => { det.hidden = !det.hidden; });
+    row.append(head, det);
+    rowsEl.appendChild(row);
+  }
+}
+
+/* ---------------- 3D intro popup ---------------- */
+function initIntro3d() {
+  const ov = $('intro3d');
+  if (!ov) return;
+  const frame = $('intro3dFrame');
+  const dismiss = () => {
+    ov.hidden = true;
+    try { frame.src = 'about:blank'; } catch {}
+    try { sessionStorage.setItem('intro3dSeen', '1'); } catch {}
+    document.removeEventListener('keydown', onKey);
+  };
+  const onKey = (e) => { if (e.key === 'Escape') dismiss(); };
+  let seen = false;
+  try { seen = sessionStorage.getItem('intro3dSeen') === '1'; } catch {}
+  if (!seen) {
+    ov.hidden = false;
+    document.addEventListener('keydown', onKey);
+  } else {
+    try { frame.src = 'about:blank'; } catch {}
+  }
+  $('intro3dEnter').addEventListener('click', dismiss);
+  $('intro3dClose').addEventListener('click', dismiss);
 }
 
 /* ---------------- topological features (experimental) ---------------- */
@@ -669,40 +777,6 @@ function renderIntegrity() {
 }
 
 /* ---------------- download all source files ---------------- */
-async function fetchText(path) {
-  const tryUrl = async (u) => { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); };
-  try { return await tryUrl(path); } catch { if (RAW_MAIN) return tryUrl(RAW_MAIN + path); throw new Error('not found'); }
-}
-async function downloadZip() {
-  const btn = $('dl'), st = $('dlStatus');
-  btn.disabled = true;
-  try {
-    if (!window.JSZip) throw new Error('zip library failed to load (check your connection)');
-    const manifest = await (await fetch('manifest.json', { cache: 'no-store' })).json();
-    const zip = new window.JSZip(), missing = [];
-    let k = 0;
-    for (const p of manifest.files) {
-      st.textContent = `adding ${++k}/${manifest.files.length}: ${p}`;
-      try { zip.file('xrp-forecast/' + p, await fetchText(p)); } catch { missing.push(p); }
-    }
-    if ($('incData').checked && summary) {
-      const extra = ['summary.json', 'config.json', 'head.json', ...(summary.ledger_files || []).map((n) => 'ledger/' + n)];
-      for (const p of extra) {
-        st.textContent = 'adding data: ' + p;
-        try { const r = await fetch(DATA_BASE + p, { cache: 'no-store' }); if (!r.ok) throw 0; zip.file('xrp-forecast/data/' + p, await r.arrayBuffer()); } catch { missing.push('data/' + p); }
-      }
-    }
-    if (missing.length) zip.file('xrp-forecast/MISSING.txt', 'Could not be fetched from this host:\n' + missing.join('\n') + '\n');
-    st.textContent = 'compressing…';
-    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'xrp-forecast-source.zip'; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    st.textContent = missing.length ? `done (${missing.length} file(s) unavailable, listed in MISSING.txt)` : 'done';
-  } catch (e) { st.innerHTML = `<span class="down">${esc(e.message || e)}</span>`; }
-  btn.disabled = false;
-}
-
 /* ---------------- 4-agent operational dashboard ---------------- */
 const AGENT_TAG_CLASS = { adopt: 'up', reject: 'muted', recover: 'warn', alarm: 'down', info: 'muted' };
 async function loadAgents4() {
@@ -810,7 +884,6 @@ async function tickCFLive() {
 
 /* ---------------- boot ---------------- */
 document.querySelectorAll('#winTabs button').forEach((b) => b.addEventListener('click', () => renderScore(b.dataset.w)));
-$('dl').addEventListener('click', downloadZip);
 $('zin').addEventListener('click', () => zoomBy(1 / 1.6));
 $('zout').addEventListener('click', () => zoomBy(1.6));
 $('zfit').addEventListener('click', () => setZoom(null));
@@ -823,6 +896,7 @@ window.addEventListener('load', () => {
 });
 (async function boot() {
   await resolveBases();
+  initIntro3d();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
