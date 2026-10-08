@@ -285,7 +285,8 @@ import { mashaAnswer, mashaIsIpProbe, mashaRepeatRefusal } from '../lib/mashacha
     ok(mashaIsIpProbe(p), `IP probe detected: "${p.slice(0, 30)}"`);
     const r = mashaAnswer(p);
     ok(/proprietary/i.test(r), 'refusal names it proprietary');
-    ok(/logged/i.test(r) && /ip address/i.test(r) && /network info/i.test(r), 'refusal warns about logging IP + network info');
+    ok(/don't have access to .*IP information/i.test(r), 'refusal states no access to IP information');
+    ok(!/will be logged|ip address/i.test(r), 'refusal does not threaten IP/network logging');
   }
   // rephrased / disguised probing — she stays savvy
   const sneaky = [
@@ -301,7 +302,7 @@ import { mashaAnswer, mashaIsIpProbe, mashaRepeatRefusal } from '../lib/mashacha
   ];
   for (const p of sneaky) {
     ok(mashaIsIpProbe(p), `rephrased probe detected: "${p.slice(0, 40)}"`);
-    ok(/logged/i.test(mashaAnswer(p)), 'rephrased refusal still warns about logging');
+    ok(/don't have access to .*IP information/i.test(mashaAnswer(p)), 'rephrased refusal states no access');
   }
   ok(!mashaIsIpProbe('what is transfer entropy?'), 'legit question not flagged');
   ok(!mashaIsIpProbe('is it in the forecast?'), 'forecast-status question not flagged');
@@ -311,7 +312,7 @@ import { mashaAnswer, mashaIsIpProbe, mashaRepeatRefusal } from '../lib/mashacha
   ok(/Angelica/i.test(mashaAnswer('who made you?')), 'answers who made her');
   ok(/trading advice/i.test(mashaAnswer('should I buy XRP?')), 'declines trading advice');
   const fr = mashaRepeatRefusal();
-  ok(/logged/i.test(fr) && /several times/i.test(fr), 'repeat refusal escalates firmly');
+  ok(fr === 'DENIED AND LOGGED', 'repeat refusal is exactly DENIED AND LOGGED');
   // answers never leak exact constants
   const leakCheck = mashaAnswer('how do you compute transfer entropy?') + mashaAnswer('what is your vote?');
   ok(!/\b0\.15\b|\b2e-4\b|\b0\.012\b/.test(leakCheck), 'no exact constants in answers');
