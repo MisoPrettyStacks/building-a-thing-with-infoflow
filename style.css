@@ -141,8 +141,8 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 }
 /* Live lab super-banner (above + outside Masha's outlined section) */
 .live-lab-banner {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap; margin: 28px 0 14px;
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: 16px; margin: 28px 0 14px;
 }
 .live-lab-title {
   color: #f4a6c1; font-size: 22px; font-weight: 700; letter-spacing: 2px; margin: 0;
@@ -150,9 +150,13 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .live-lab-notice {
   font-size: 11px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.5;
   color: #d8a7b8; border: 1px solid rgba(244,166,193,0.4); border-radius: 8px;
-  padding: 8px 12px; margin: 0; max-width: 360px;
+  padding: 8px 12px; margin: 0; max-width: 360px; justify-self: end; text-align: right;
 }
-@media (max-width: 640px) { .live-lab-title { font-size: 17px; letter-spacing: 1px; } }
+@media (max-width: 640px) {
+  .live-lab-banner { grid-template-columns: 1fr; }
+  .live-lab-title { font-size: 17px; letter-spacing: 1px; }
+  .live-lab-notice { justify-self: start; text-align: left; }
+}
 .masha-lab-title {
   display: flex; align-items: center; justify-content: center; gap: 14px;
   text-align: center; color: #f4a6c1; font-size: 22px; font-weight: 700;
