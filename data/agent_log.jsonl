@@ -19,3 +19,4 @@
 {"ts": "2026-10-08T17:47:52+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3363666666666667, 'valid_partitions': 12, 'venues_used': 4, 'trades': 6155, 'official_rr': 1.40287}", "tag": "info"}
 {"ts": "2026-10-08T17:50:07+00:00", "agent": "scorer", "decision": "ledger healthy", "detail": "summary 4m old, chain_ok=True, forecasts=64", "tag": "info"}
 {"ts": "2026-10-08T17:55:41+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3320091666666667, 'valid_partitions': 12, 'venues_used': 4, 'trades': 5135, 'official_rr': 1.40287}", "tag": "info"}
+{"ts": "2026-10-08T17:59:30Z", "agent": "watchdog", "decision": "triggered cf-rate.yml", "detail": "raw CDN copy of cf-rate.json showed computed_at 17:16:58Z (37min old, >20min); run 37820234439 completed, data-branch cf-rate.json now 2026-10-08T17:55:38Z; system healthy", "tag": "recover"}
