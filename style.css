@@ -144,7 +144,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .live-lab-title {
   display: inline-block; margin: 0; padding: 10px 28px; border-radius: 12px;
   background: #f7f9fc; color: #000;
-  font-size: 22px; font-weight: 700; letter-spacing: 2px;
+  font-size: 26px; font-weight: 700; letter-spacing: 2px;
 }
 .live-lab-notice {
   font-size: 11px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.5;
@@ -152,7 +152,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
   padding: 8px 12px; margin: 10px 0 0 auto; max-width: 360px; text-align: right;
 }
 @media (max-width: 640px) {
-  .live-lab-title { font-size: 17px; letter-spacing: 1px; padding: 8px 18px; }
+  .live-lab-title { font-size: 20px; letter-spacing: 1px; padding: 8px 18px; }
   .live-lab-notice { margin-left: 0; text-align: left; }
 }
 .masha-lab-title {
