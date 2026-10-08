@@ -40,3 +40,4 @@
 {"ts": "2026-10-08T21:55:08+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.37713, 'valid_partitions': 12, 'venues_used': 4, 'trades': 3030, 'official_rr': 1.40287}", "tag": "info"}
 {"ts":"2026-10-08T21:55:28Z","agent":"watchdog","decision":"dispatched cf-rate.yml proactively","detail":"last successful run 21:33:49Z, no success in last 12 min (GitHub scheduler drops ~90%); run 37850049243","tag":"info"}
 {"ts": "2026-10-08T22:15:29+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.377420833333333, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2968, 'official_rr': 1.40287}", "tag": "info"}
+{"ts":"2026-10-08T22:16:37Z","agent":"watchdog","decision":"dispatched cf-rate.yml proactively","detail":"last successful run 21:54:59Z, no success in last 12 min (GitHub scheduler drops ~90%); run 37852297265","tag":"info"}
