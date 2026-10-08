@@ -192,6 +192,92 @@
 
 </div>
 
+<div class="wendy-lab-wrap">
+<h2 class="wendy-lab-title"><img src="wendy.webp" alt="Wendy" class="wendy-lab-headshot"> WENDY'S LAB - WHALE WATCH - ON-CHAIN FLOWS</h2>
+<div class="wendy-agent-intro">
+  <h3>Meet Wendy — an agentic agent, not a mascot</h3>
+  <p>Wendy doesn't just sit in this lab — she <strong>runs</strong> it. She acts on her own initiative: watching the XRP Ledger for whale movements, researching the science of on-chain behavior, learning from the evidence, and making real decisions that control what enters the forecast model.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Whale Watch Lab · Intelligence Analyst · Research Scientist.</p>
+  <p><strong>Trained in:</strong> on-chain analysis · mathematics · market microstructure · network science · statistics · risk management · data engineering — with real market-trading experience and knowledge. She is the expert in her area of study: how whale flows on the XRP Ledger relate to where XRP goes next.</p>
+  <p><strong>Duties:</strong> Supervise the lab — watch the live whale-flow measurements, guard watchlist and data quality, and keep the lab notebook. Analyze how flows behave: when exchange balances build or drain, when whale pulses cluster, which regimes the signal favors. Research the science — she has internet access and studies the literature and market evidence to deepen the lab's understanding.</p>
+  <p><strong>What she does:</strong> Every five minutes she records the ledger's measurements and writes a lab note. On her research cycles she reviews the accumulated evidence, forms hypotheses, learns from what worked and what didn't, and issues a verdict — <em>HOLD</em>, <em>APPLY</em>, or <em>WITHDRAW</em> — deciding, based on evidence, whether whale flow earns a place in the live forecast model. Her APPLY verdicts send the signal to formal out-of-sample testing: nothing gets model weight without passing.</p>
+</div>
+<section id="whaleflow" class="card">
+  <h2>Whale flow — on-chain regime signal <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <p class="muted" style="margin-top:0">Wendy watches a watchlist of verified exchange wallets on the public XRP Ledger. When balances pile up on exchanges, coins are moving where they can be sold (distribution). When balances drain away, coins are moving into custody (accumulation). Very large single transfers trigger whale pulses that echo for about two days. The member emits a slow regime tilt — currently at weight zero, so it is scored but never affects the forecast until Wendy finds out-of-sample evidence.</p>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Flow tilt</div><div class="v" id="wBias" style="font-size:15px">—</div><div class="s" id="wBiasSub">—</div></div>
+    <div class="stat"><div class="k">Whale pulses active</div><div class="v" id="wPulses">—</div><div class="s" id="wPulsesSub">—</div></div>
+    <div class="stat"><div class="k">24h net exchange flow</div><div class="v" id="wNet24" style="font-size:15px">—</div><div class="s" id="wNet24Sub">XRP across tracked wallets</div></div>
+    <div class="stat"><div class="k">Feed status</div><div class="v" id="wFeed" style="font-size:15px">—</div><div class="s" id="wFeedSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="wBrier">—</div><div class="s" id="wBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="wSkill">—</div><div class="s" id="wSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="wWeight" style="font-size:15px">—</div><div class="s" id="wWeightNote">scored only, not used</div></div>
+    <div class="stat"><div class="k">Snapshots</div><div class="v" id="wSnaps" style="font-size:15px">—</div><div class="s" id="wSnapsSub">balance history</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: every cycle the runner reads balances for the watchlist from the public XRPL cluster (no keys) and compares them against recent history to measure net exchange flow; large payments touching the watchlist raise whale pulses. The tilt is deliberately slow — it hangs in there across many windows until the flow regime genuinely changes. Honest caveat: by the time a giant transfer confirms on-ledger, the market has often already priced it — the edge, if any, is in quiet accumulation, not the splash. The live scoreboard above is the verdict, not the theory.</p>
+</section>
+
+<section id="wendy3d" class="card">
+  <h2>Watching the whales in 3D</h2>
+  <p class="muted" style="margin-top:0">This is Wendy's live view of the ledger. The glowing golden node at the center is XRP; the ring of nodes around it are the tracked exchange wallets. Arcs between them are real whale transfers Wendy has detected — their thickness and glow scale with the size of the transfer. Streams flowing <em>into</em> the exchange ring mean distribution (coins arriving where they can be sold); streams flowing <em>out</em> mean accumulation (coins leaving for custody). The whole scene breathes with her live measurements: when her flow tilt is decisive, the dominant direction burns brighter. So you're literally watching what the whales are doing right now. <a href="wendy3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="wendy3d.html?embed=1&v=1" title="Live 3D whale-flow rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="wendy" class="card">
+  <h2>Wendy's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <p class="muted" style="margin-top:0">Meet <b>Wendy</b> — she spends every 5-minute cycle watching whether whale movements on the XRP Ledger can actually help the forecast. She writes down <i>everything</i>: what the ledger showed, what she computed, what she found, and her honest verdict on whether it's useful — including the exact mathematical effect on the model. Her notebook is saved to the data feed every cycle, whether or not her signal is ever used.</p>
+  <div class="wv-panel" id="wvPanel" hidden>
+    <div class="wv-head">WENDY'S STANDING VERDICT <span class="wv-badge" id="wvBadge"></span></div>
+    <p class="wv-plain" id="wvPlain"></p>
+    <div class="wv-ev" id="wvEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="wvDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="wvHypotheses"></div></details>
+    <div class="wv-meta muted" id="wvMeta"></div>
+  </div>
+  <div class="ww-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="wendy.webp" alt="Wendy working at her chalkboard" id="wwHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="wwBubble"><span id="wwBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Wendy's findings <span class="lm-live" id="wwLiveDot"></span></div>
+        <div class="lm-line" id="wwBias">warming up…</div>
+        <div class="lm-line" id="wwPulses"></div>
+        <div class="lm-line" id="wwFlow"></div>
+        <div class="lm-line lm-verdict" id="wwVerdict"></div>
+        <svg id="wwSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="wwSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="wwSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead">LAB NOTEBOOK — every cycle, saved <span id="wwLogCount" class="muted"></span></div>
+    <div id="wwLogRows"></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Wendy ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH WENDY</h3>
+  <div class="wchat" id="wchat">
+    <div class="wchat-head">
+      <img src="wendy.webp" alt="Wendy">
+      <div class="wchat-who"><b>Wendy</b><span class="wchat-online"><i></i>online — ask me about whale flows</span></div>
+    </div>
+    <div class="wchat-log" id="wchatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="wchatChips"></div>
+    <div class="wchat-input">
+      <input id="wchatText" type="text" placeholder="Ask Wendy about whale flows…" maxlength="300" autocomplete="off">
+      <button id="wchatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Wendy answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <div class="exp-wrap exp-wrap-yellow">
 <section id="calendar" class="card">
   <h2>Calendar effects <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>

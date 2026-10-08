@@ -4,6 +4,7 @@ import { coinbaseCandles, fetchBars } from './lib/data.js';
 import { walkForward, gridBars, DEFAULT_CONFIG, QLEVELS, STEP } from './lib/engine.js';
 import { binaryScores, quantileScores, dmTest, brier, mean } from './lib/stats.js';
 import { mashaAnswer, mashaIsIpProbe, mashaRepeatRefusal } from './lib/mashachat.js';
+import { wendyAnswer, wendyIsIpProbe, wendyRepeatRefusal } from './lib/wendychat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -42,7 +43,7 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
+  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderMacro(); renderOnchain(); schedDraw();
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -270,6 +271,266 @@ function initMashaAnim() {
   if (!img) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const BASE = 'masha.webp', WRITE = 'masha-write.webp', BLINK = 'masha-blink.webp';
+  let ready = 0;
+  const go = () => { if (++ready >= 2) start(); };
+  const fallback = setTimeout(() => start(), 4000);
+  [WRITE, BLINK].forEach((src) => {
+    const im = new Image();
+    im.onload = go; im.onerror = go;
+    im.src = src;
+  });
+  function start() {
+    if (start.done) return; start.done = true;
+    clearTimeout(fallback);
+    let onScreen = true, pageVisible = !document.hidden;
+    let writing = false, writeTimer = null, blinkTimer = null;
+    const show = (src) => { if (img.getAttribute('src') !== src) img.setAttribute('src', src); };
+    const kick = () => {
+      const active = onScreen && pageVisible;
+      if (active && !writeTimer) {
+        writeTimer = setInterval(() => { writing = !writing; show(writing ? WRITE : BASE); }, 750);
+        blinkTimer = setInterval(() => {
+          show(BLINK);
+          setTimeout(() => show(writing ? WRITE : BASE), 170);
+        }, 4200);
+      } else if (!active && writeTimer) {
+        clearInterval(writeTimer); clearInterval(blinkTimer);
+        writeTimer = blinkTimer = null;
+        show(BASE);
+      }
+    };
+    new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; kick(); }, { threshold: 0.1 }).observe(img);
+    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; kick(); });
+    kick();
+  }
+}
+
+/* ---------------- Wendy's lab ---------------- */
+function fmtXrpShort(x) {
+  if (x == null || !isFinite(x)) return '—';
+  const a = Math.abs(x);
+  if (a >= 1e6) return (x / 1e6).toFixed(1) + 'M';
+  if (a >= 1e3) return (x / 1e3).toFixed(0) + 'K';
+  return String(Math.round(x));
+}
+function renderWendy() {
+  if (!$('wwBias')) return;
+  const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+  const oc = summary && summary.onchain;
+  const sb = summary && summary.windows && summary.windows.all && summary.windows.all.onchain;
+  // live stat cards
+  if (oc) {
+    const b = oc.bias || 0;
+    const dirWord = b > 0.0005 ? 'accumulation' : b < -0.0005 ? 'distribution' : 'quiet';
+    setT('wBias', (b >= 0 ? '+' : '') + b.toFixed(4));
+    setT('wBiasSub', dirWord + (b > 0.0005 ? ' · coins leaving exchanges' : b < -0.0005 ? ' · coins arriving at exchanges' : ''));
+    setT('wPulses', String(oc.activePulses || 0));
+    setT('wPulsesSub', (oc.activePulses || 0) > 0 ? 'echoing (fade ~2 days)' : 'none recently');
+    setT('wNet24', oc.netFlow24h != null ? (oc.netFlow24h >= 0 ? '+' : '−') + fmtXrpShort(oc.netFlow24h) : '—');
+    setT('wNet24Sub', oc.netFlow24h != null ? (oc.netFlow24h >= 0 ? 'inflow to exchanges' : 'outflow to custody') : 'XRP across tracked wallets');
+    setT('wFeed', oc.degraded ? 'Blind' : oc.warmingUp ? 'Warming up' : 'Live');
+    setT('wFeedSub', oc.degraded ? 'XRPL unreachable — abstaining' : (oc.snapshotCount || 0) + ' snapshots');
+    const w = oc.weight || 0;
+    setT('wWeight', w > 0 ? 'Active' : 'Scored only');
+    setT('wWeightNote', w > 0 ? 'blended at weight ' + w.toFixed(2) : 'scored only, not used');
+    setT('wSnaps', String(oc.snapshotCount || 0));
+    setT('wSnapsSub', 'balance history');
+  }
+  if (sb && sb.n >= 30) {
+    setT('wBrier', sb.brierOnchain.toFixed(5));
+    setT('wBrierN', 'n=' + sb.n + ' scored' + (sb.brierOnchain < sb.brierBase ? ' · beats baseline ✓' : ''));
+    if (sb.skill24h && sb.skill24h.n >= 30) {
+      setT('wSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
+      setT('wSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
+    }
+  }
+  // lab panel: board + notebook
+  const L = summary && summary.wendy;
+  const rowsEl = $('wwLogRows');
+  const bubble = $('wwBubbleText');
+  if (!L || !L.latest) {
+    if (bubble) bubble.textContent = 'setting up my lab…';
+    setT('wwBias', 'warming up…'); setT('wwPulses', ''); setT('wwFlow', ''); setT('wwVerdict', '');
+    const sp = $('wwSpark'); if (sp) sp.setAttribute('points', '');
+    setT('wwSparkLabel', '');
+    if (rowsEl) rowsEl.innerHTML = '<div class="lm-empty">Wendy is setting up her lab — notebook entries appear after the next runner cycle.</div>';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c && !c.degraded && !c.warming_up) {
+    const dirWord = c.bias > 0.0005 ? 'accumulation' : c.bias < -0.0005 ? 'distribution' : 'quiet';
+    setT('wwBias', `flow tilt  ${c.bias >= 0 ? '+' : ''}${c.bias.toFixed(4)}  (${dirWord})`);
+    setT('wwPulses', `whale pulses active: ${c.active_pulses || 0}`);
+    setT('wwFlow', `24h net: ${c.net_flow_24h != null ? (c.net_flow_24h >= 0 ? '+' : '−') + fmtXrpShort(c.net_flow_24h) + ' XRP' : '—'}`);
+  } else {
+    setT('wwBias', c && c.degraded ? 'ledger blind…' : 'warming up…');
+    setT('wwPulses', 'collecting history…'); setT('wwFlow', '');
+  }
+  const vEl = $('wwVerdict');
+  if (vEl) {
+    vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`;
+    vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879';
+  }
+  const pts = (L.log || []).filter((e) => e.computed && !e.computed.degraded).slice(-24).map((e) => e.computed.bias);
+  const sp = $('wwSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      sp.setAttribute('points', pts.map((v, i) =>
+        (300 * i / (pts.length - 1)).toFixed(1) + ',' +
+        (60 - ((v - mn) / rg) * 52).toFixed(1)).join(' '));
+      setT('wwSparkLabel', `flow tilt · last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('wwSparkLabel', ''); }
+  }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    if (bubble.textContent !== short) {
+      bubble.textContent = short;
+      const b = $('wwBubble');
+      if (b) { b.classList.remove('ww-talk'); void b.offsetWidth; b.classList.add('ww-talk'); }
+    }
+  }
+  if (rowsEl) {
+    $('wwLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+    rowsEl.innerHTML = '';
+    const notes = (L.log || []).slice().reverse().slice(0, 40);
+    if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+    for (const e of notes) {
+      const row = document.createElement('div');
+      row.className = 'lm-row';
+      const head = document.createElement('button');
+      head.className = 'lm-rowhead';
+      const t = document.createElement('span'); t.className = 'lm-t';
+      const dt = new Date(e.t);
+      t.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+        dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const v = document.createElement('span');
+      v.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+      v.textContent = e.verdict;
+      const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+      head.append(t, v, f);
+      const det = document.createElement('div');
+      det.className = 'lm-detail'; det.hidden = true;
+      const col = e.collected || {};
+      det.innerHTML =
+        '<div class="lm-sec"><span class="lm-k">COLLECTED</span><br>' +
+        (col.source || 'XRP Ledger') + ' · ' + (col.watchlist_wallets || '?') + ' watchlist wallets · ' + (col.window || '') + '<br>' +
+        (col.snapshots || 0) + ' balance snapshots on record</div>' +
+        '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' +
+        (e.checks || []).map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' +
+          (k.pass ? '✓' : '✗') + '</span> ' + k.name + ' — ' + k.detail).join('<br>') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + (e.verdict_why || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + ((e.math_effect || {}).detail || '') + '</div>';
+      head.addEventListener('click', () => { det.hidden = !det.hidden; });
+      row.append(head, det);
+      rowsEl.appendChild(row);
+    }
+  }
+}
+
+/* ---------------- Wendy's standing verdict ---------------- */
+async function loadWendyVerdict() {
+  const panel = $('wvPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'wendy_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('wvBadge');
+  const label = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.textContent = label;
+  badge.className = 'wv-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('wvPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  const pct = (x) => (x != null ? (x * 100).toFixed(1) + '%' : 'n/a');
+  $('wvEvidence').innerHTML =
+    'Evidence she used: <b>' + (ev.n || 0) + '</b> lab notes · decisive flow <b>' + pct(ev.decisive_frac) + '</b> · ' +
+    'whale-pulse cycles <b>' + (ev.whale_pulse_cycles || 0) + '</b> · ' +
+    (ev.member_n >= 200
+      ? 'out-of-sample member Brier <b>' + ev.member_brier.toFixed(5) + '</b> vs baseline <b>' + ev.base_brier.toFixed(5) + '</b> (n=' + ev.member_n + ')'
+      : 'scoreboard warming up (n=' + (ev.member_n || 0) + '/200)');
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('wvDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) =>
+    '<div class="wv-line"><span class="wv-d">' + esc(d.discipline) + ':</span> ' + esc(d.assessment) + '</div>').join('');
+  $('wvHypotheses').innerHTML = (doc.hypotheses || []).map((h) =>
+    '<div class="wv-hyp"><b>' + esc(h.id) + '</b> — ' + esc(h.claim) + '<br>' +
+    'status: <span class="st ' + esc(h.status) + '">' + esc(h.status) + '</span>' +
+    (h.status_why ? ' <span class="muted">(' + esc(h.status_why) + ')</span>' : '') + '</div>').join('') ||
+    '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('wvMeta').innerHTML = 'Charter v' + esc(doc.charter_version) + ' · updated ' +
+    esc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((p) =>
+      '<a href="' + esc(p.id) + '" target="_blank" rel="noopener">' + esc(p.title.length > 60 ? p.title.slice(0, 60) + '…' : p.title) + '</a>').join(' · ') : '');
+}
+
+/* ---------------- Wendy DM chat ---------------- */
+function initWendyChat() {
+  const log = $('wchatLog'), input = $('wchatText'), send = $('wchatSend'), chips = $('wchatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'wchat-row ' + who;
+    if (who === 'wendy') {
+      const av = document.createElement('img');
+      av.src = 'wendy.webp'; av.alt = 'Wendy';
+      row.appendChild(av);
+    }
+    const b = document.createElement('div');
+    b.className = 'wchat-bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    log.appendChild(row);
+    scroll();
+  };
+  const CHIP_QS = ['What is a whale pulse?', "What's your verdict?", 'Is it in the forecast?', 'What do you do?'];
+  if (chips) {
+    chips.innerHTML = '';
+    for (const q of CHIP_QS) {
+      const c = document.createElement('button');
+      c.type = 'button'; c.className = 'wchat-chip'; c.textContent = q;
+      c.addEventListener('click', () => { input.value = q; doSend(); });
+      chips.appendChild(c);
+    }
+  }
+  // repeat IP probers are counted (per browser) and get a firmer refusal
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('wchatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'wchat-row wendy';
+    typing.innerHTML = '<img src="wendy.webp" alt="Wendy"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (wendyIsIpProbe(text)) {
+      ipCount++;
+      try { localStorage.setItem('wchatIpCount', String(ipCount)); } catch { /* private mode */ }
+      reply = ipCount >= 3 ? wendyRepeatRefusal() : wendyAnswer(text);
+    } else {
+      reply = wendyAnswer(text);
+    }
+    setTimeout(() => { typing.remove(); bubble('wendy', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('wendy', "Hi! I'm Wendy 🐋 Ask me anything about whale flows — my verdicts, how I read the ledger, or how I decide what enters the forecast!"), 800);
+}
+
+/* ---------------- Wendy flipbook animation ---------------- */
+function initWendyAnim() {
+  const img = $('wwHeroImg');
+  if (!img) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const BASE = 'wendy.webp', WRITE = 'wendy-write.webp', BLINK = 'wendy-blink.webp';
   let ready = 0;
   const go = () => { if (++ready >= 2) start(); };
   const fallback = setTimeout(() => start(), 4000);
@@ -1044,12 +1305,15 @@ window.addEventListener('load', () => {
 (async function boot() {
   await resolveBases();
   initMashaAnim();
+  initWendyAnim();
   loadCandles(); connectWS();
   await loadSummary();
   runBacktest();
   loadAgents4();
   loadMashaVerdict();
   initMashaChat();
+  loadWendyVerdict();
+  initWendyChat();
   loadCFRate();
   tickCountdown();
   setInterval(tickCountdown, 1000);

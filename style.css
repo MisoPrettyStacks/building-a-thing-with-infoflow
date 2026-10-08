@@ -244,6 +244,125 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .mchat-note { font-size: 11px; padding: 8px 14px 10px; }
 @media (max-width: 640px) { .masha-lab-title { font-size: 17px; letter-spacing: 1px; } .masha-lab-headshot { width: 48px; height: 48px; } }
 
+/* ============ Wendy's lab (yellow) ============ */
+.wendy-lab-wrap {
+  border: 2px solid #f2d060; border-radius: 14px;
+  padding: 20px 18px; margin: 20px 0;
+}
+.wendy-lab-title {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; color: #f2d060; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; margin: 28px 0 14px;
+}
+.wendy-lab-headshot {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #f2d060; flex: 0 0 auto;
+}
+.wendy-agent-intro {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin: 4px 0 18px; background: rgba(242,208,96,0.06);
+}
+.wendy-agent-intro h3 { margin: 0 0 10px; font-size: 16px; color: #f2d060; letter-spacing: 1px; }
+.wendy-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+/* Wendy's standing verdict panel */
+.wv-panel {
+  border: 1px solid #f2d060; border-radius: 10px;
+  padding: 16px 18px; margin: 0 0 18px; background: rgba(242,208,96,0.05);
+}
+.wv-head { font-size: 13px; letter-spacing: 2px; color: #f2d060; font-weight: 700; margin-bottom: 8px; }
+.wv-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; letter-spacing: 1px; vertical-align: middle;
+}
+.wv-badge.hold { background: #3a3a3a; color: #f2c879; border: 1px solid #f2c879; }
+.wv-badge.apply { background: #1e3a24; color: #b5e6a2; border: 1px solid #b5e6a2; }
+.wv-badge.withdraw { background: #3a2222; color: #f09797; border: 1px solid #f09797; }
+.wv-plain { font-size: 14px; line-height: 1.55; margin: 8px 0; }
+.wv-ev { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.wv-ev b { color: #f2d060; }
+.wv-det { margin: 8px 0; font-size: 13px; }
+.wv-det summary { cursor: pointer; color: #f2d060; }
+.wv-det .wv-line { margin: 6px 0; line-height: 1.5; }
+.wv-det .wv-d { color: #f2d060; font-weight: 600; text-transform: capitalize; }
+.wv-hyp { margin: 6px 0; line-height: 1.5; }
+.wv-hyp .st { font-weight: 700; }
+.wv-hyp .st.open { color: #f2c879; } .wv-hyp .st.supported { color: #b5e6a2; } .wv-hyp .st.refuted { color: #f09797; } .wv-hyp .st.proposed { color: #9ecfff; }
+.wv-meta { font-size: 12px; margin-top: 10px; }
+/* Wendy scene: portrait + chalkboard (board/log styles reused from lm-*) */
+.ww-scene { margin: 6px 0 14px; position: relative; }
+.ww-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .ww-grid { grid-template-columns: 1fr; } }
+.ww-hero { position: relative; border-radius: 10px; overflow: hidden; }
+.ww-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ww-sparkle {
+  position: absolute; left: 62%; top: 23%; width: 26px; height: 26px;
+  background: #ffe9a8; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 6px #ffe9a8); opacity: 0; animation: wwTwinkle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes wwTwinkle { 0%,100% { opacity: 0; transform: scale(0.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1) rotate(25deg); } }
+.ww-bubble.ww-talk { animation: wwTalk 1.2s ease-in-out; }
+@keyframes wwTalk { 0%,100% { transform: scale(1); } 30% { transform: scale(1.05); } 60% { transform: scale(1.02); } }
+.ww-bubble {
+  position: absolute; top: 12px; left: 12px; max-width: 280px;
+  background: #fffdf5; border: 1px solid #d8cfb8; border-radius: 12px;
+  padding: 10px 14px; font-family: Georgia, serif; font-size: 13px; color: #4a4a4a;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.4;
+}
+.ww-bubble::after {
+  content: ''; position: absolute; bottom: -9px; left: 34px;
+  border: 9px solid transparent; border-top-color: #fffdf5; border-bottom: 0;
+}
+/* Wendy DM chat */
+.wchat-title {
+  color: #f2d060; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+.wchat {
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  margin: 0 0 18px; background: rgba(255,255,255,0.02); max-width: 560px;
+}
+.wchat-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: rgba(242,208,96,0.10); border-bottom: 1px solid var(--line);
+}
+.wchat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #f2d060; }
+.wchat-who b { display: block; font-size: 15px; }
+.wchat-online { font-size: 12px; color: #f2d060; display: flex; align-items: center; gap: 5px; }
+.wchat-online i { width: 8px; height: 8px; border-radius: 50%; background: #f2d060; display: inline-block; }
+.wchat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.wchat-row { display: flex; gap: 8px; align-items: flex-end; }
+.wchat-row.me { justify-content: flex-end; }
+.wchat-row.wendy img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #f2d060; flex: 0 0 auto; }
+.wchat-bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 16px;
+  font-size: 14px; line-height: 1.45;
+}
+.wchat-row.wendy .wchat-bubble { background: #2a2a2e; border-bottom-left-radius: 4px; color: #f2d060; }
+.wchat-row.me .wchat-bubble { background: #f2d060; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.wchat-typing { display: inline-block; }
+.wchat-typing span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #f2d060; animation: wtick 1s infinite; }
+.wchat-typing span:nth-child(2) { animation-delay: 0.15s; } .wchat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes wtick { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+.wchat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 10px; }
+.wchat-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #f2d060; color: #f2d060; background: transparent;
+}
+.wchat-chip:hover { background: rgba(242,208,96,0.12); }
+.wchat-input { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+.wchat-input input {
+  flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: #1e1e22; color: inherit; font-size: 14px; outline: none;
+}
+.wchat-input input:focus { border-color: #f2d060; }
+.wchat-input button {
+  padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+  background: #f2d060; color: #1a1a1a; font-weight: 700; font-size: 14px;
+}
+.wchat-note { font-size: 11px; padding: 8px 14px 10px; }
+@media (max-width: 640px) { .wendy-lab-title { font-size: 17px; letter-spacing: 1px; } .wendy-lab-headshot { width: 48px; height: 48px; } }
+
 /* ---------------- experimental section outlines ---------------- */
 .exp-wrap { border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
 .exp-wrap-yellow { border: 2px solid #f2d060; }

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whale Watch — live 3D on-chain rendering</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070d; }
+  #scene { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; z-index: 10; color: #dfe8f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #f2d060; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 340px; }
+  #title a { color: #f2d060; text-decoration: none; pointer-events: auto; }
+  #stats {
+    top: 14px; right: 16px; background: rgba(10, 16, 28, 0.72);
+    border: 1px solid rgba(242, 208, 96, 0.22); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 240px;
+    backdrop-filter: blur(4px);
+  }
+  #stats .k { color: #8fa0bd; }
+  #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .acc { color: #7dffb0; } #stats .dist { color: #ff9d6b; } #stats .quiet { color: #8fa0bd; }
+  #hint {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap;
+  }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink {
+    color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600;
+    padding: 10px 24px 10px 30px; border: 1px solid rgba(242, 208, 96, 0.35); border-radius: 999px;
+    background: rgba(10, 16, 28, 0.6); backdrop-filter: blur(4px);
+  }
+  #enterLink:hover { border-color: #f2d060; color: #fff; }
+  #waiting {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(5, 7, 13, 0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  /* embed mode: slim chrome for iframes on the main page */
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>WHALE WATCH</h1>
+  <p>Live on-chain XRP flows, watched by Wendy. Golden arcs are whale transfers; the streams show the flow regime.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#wendy">WENDY'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- data ---------------- */
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null; // { bias, whalePulse, activePulses, net24h, warmingUp, degraded, snapshotCount, signals, computedAt }
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const oc = s.onchain || {};
+    live = {
+      bias: oc.bias ?? 0,
+      whalePulse: oc.whalePulse ?? 0,
+      activePulses: oc.activePulses ?? 0,
+      net24h: oc.netFlow24h ?? null,
+      warmingUp: !!oc.warmingUp,
+      degraded: !!oc.degraded,
+      snapshotCount: oc.snapshotCount ?? 0,
+      signals: Array.isArray(oc.signals) ? oc.signals.filter((x) => x.kind === 'whale pulse' && x.status === 'active').slice(-8) : [],
+      computedAt: s.generated_at,
+    };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+    refreshWhales();
+  } catch { /* keep last good state; overlay stays if never loaded */ }
+}
+
+function fmtXrp(x) {
+  if (x == null) return '—';
+  const a = Math.abs(x);
+  if (a >= 1e6) return (x / 1e6).toFixed(1) + 'M';
+  if (a >= 1e3) return (x / 1e3).toFixed(0) + 'K';
+  return String(Math.round(x));
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const dir = live.bias > 0.0005 ? 'accumulation' : live.bias < -0.0005 ? 'distribution' : 'quiet';
+  const cls = live.bias > 0.0005 ? 'acc' : live.bias < -0.0005 ? 'dist' : 'quiet';
+  const status = live.degraded ? '<span class="dist">blind (feed down)</span>'
+    : live.warmingUp ? '<span class="quiet">warming up</span>'
+    : `<span class="${cls}">${dir}</span>`;
+  el.innerHTML =
+    `<div><span class="k">flow tilt</span> <span class="v ${cls}">${live.bias >= 0 ? '+' : ''}${live.bias.toFixed(4)}</span> <span class="${cls}">${dir}</span></div>` +
+    `<div><span class="k">whale pulses</span> <span class="v">${live.activePulses}</span></div>` +
+    `<div><span class="k">24h net flow</span> <span class="v">${live.net24h != null ? (live.net24h >= 0 ? '+' : '−') + fmtXrp(live.net24h) + ' XRP' : '—'}</span></div>` +
+    `<div><span class="k">status</span> ${status}</div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x05070d, 0.028);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 14, 26);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxDistance = 60; controls.minDistance = 8;
+
+scene.add(new THREE.AmbientLight(0x8899bb, 0.5));
+const key = new THREE.DirectionalLight(0xfff2cc, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+// center: XRP golden node
+const xrpMat = new THREE.MeshStandardMaterial({ color: 0xf2d060, emissive: 0xa87f1a, emissiveIntensity: 1.4, roughness: 0.3 });
+const xrp = new THREE.Mesh(new THREE.SphereGeometry(1.6, 48, 32), xrpMat);
+scene.add(xrp);
+const xrpGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(2.4, 32, 24),
+  new THREE.MeshBasicMaterial({ color: 0xf2d060, transparent: true, opacity: 0.14 })
+);
+scene.add(xrpGlow);
+
+// ring: exchange-wallet nodes
+const NODES = 8, RING_R = 11;
+const nodeMat = new THREE.MeshStandardMaterial({ color: 0x3d6a8f, emissive: 0x1a3a55, emissiveIntensity: 0.9, roughness: 0.4 });
+const ringNodes = [];
+for (let i = 0; i < NODES; i++) {
+  const a = (i / NODES) * Math.PI * 2;
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 18), nodeMat.clone());
+  m.position.set(Math.cos(a) * RING_R, (Math.sin(i * 2.3) * 1.5), Math.sin(a) * RING_R);
+  m.userData.angle = a;
+  scene.add(m); ringNodes.push(m);
+}
+// faint ring guide
+const ringGeo = new THREE.TorusGeometry(RING_R, 0.03, 8, 128);
+const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x2a3d55, transparent: true, opacity: 0.5 }));
+ring.rotation.x = Math.PI / 2; scene.add(ring);
+
+// flow particles: ring <-> center streams
+const P_COUNT = 700;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(P_COUNT * 3);
+const pSeed = [];
+for (let i = 0; i < P_COUNT; i++) {
+  pSeed.push({ node: i % NODES, t: Math.random(), speed: 0.15 + Math.random() * 0.35, lane: (Math.random() - 0.5) * 1.6 });
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0xf2d060, size: 0.22, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+// whale arcs (rebuilt from live signals)
+const whaleGroup = new THREE.Group(); scene.add(whaleGroup);
+function whaleAmount(sig) {
+  const m = String(sig.text || '').match(/([\d.]+)\s*M\s*XRP/i);
+  return m ? parseFloat(m[1]) : 5;
+}
+function refreshWhales() {
+  while (whaleGroup.children.length) {
+    const c = whaleGroup.children.pop();
+    c.geometry.dispose(); c.material.dispose();
+  }
+  if (!live) return;
+  live.signals.forEach((sig, i) => {
+    const amt = whaleAmount(sig); // millions of XRP
+    const node = ringNodes[i % NODES];
+    const a = node.position.clone(), b = new THREE.Vector3(0, 0, 0);
+    const mid = a.clone().add(b).multiplyScalar(0.5); mid.y += 4 + Math.min(amt / 4, 6);
+    const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+    const width = Math.min(0.12 + amt / 60, 0.5);
+    const geo = new THREE.TubeGeometry(curve, 40, width, 8, false);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffd76a, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false });
+    const tube = new THREE.Mesh(geo, mat);
+    tube.userData.phase = Math.random() * Math.PI * 2;
+    whaleGroup.add(tube);
+  });
+}
+
+/* ---------------- animation ---------------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.elapsedTime;
+
+  // gentle float
+  xrp.position.y = Math.sin(t * 0.8) * 0.25;
+  xrpGlow.position.copy(xrp.position);
+  ringNodes.forEach((m, i) => { m.position.y += Math.sin(t * 0.9 + i * 1.7) * 0.002; });
+
+  // flow regime drives the streams
+  const bias = live ? live.bias : 0;
+  const strength = live ? Math.min(Math.abs(bias) / 0.01, 1) : 0;
+  const dirIn = bias > 0; // accumulation: streams flow inward to custody... visually: toward center = leaving exchanges
+  // bias > 0 means outflow from exchanges (accumulation): particles travel ring -> center
+  // bias < 0 means inflow to exchanges (distribution): particles travel center -> ring
+  pMat.color.setHex(bias > 0.0005 ? 0x7dffb0 : bias < -0.0005 ? 0xff9d6b : 0xf2d060);
+  pMat.opacity = 0.25 + strength * 0.65;
+  const pos = pGeo.attributes.position.array;
+  for (let i = 0; i < P_COUNT; i++) {
+    const s = pSeed[i];
+    s.t += dt * s.speed * (0.4 + strength * 1.6);
+    if (s.t > 1) s.t -= 1;
+    const tt = dirIn ? 1 - s.t : s.t; // direction of travel
+    const n = ringNodes[s.node].position;
+    const x = n.x * tt, z = n.z * tt;
+    const y = n.y * tt + Math.sin(tt * Math.PI) * 2.2 + s.lane * Math.sin(tt * Math.PI);
+    pos[i * 3] = x + s.lane * 0.3; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+
+  // whale arcs shimmer
+  whaleGroup.children.forEach((c) => {
+    c.material.opacity = 0.55 + 0.3 * Math.sin(t * 2.2 + c.userData.phase);
+  });
+  // XRP node breathes with pulse activity
+  const excite = live ? Math.min(1 + live.activePulses * 0.35 + strength * 0.5, 2.2) : 1;
+  xrpMat.emissiveIntensity = 1.1 + 0.5 * Math.sin(t * 1.6) * excite * 0.5 + (excite - 1) * 0.8;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
+await fetchSummary();
+setInterval(fetchSummary, 30000);
+animate();
+</script>
+</body>
+</html>

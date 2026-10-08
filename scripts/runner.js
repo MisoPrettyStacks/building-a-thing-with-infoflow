@@ -8,6 +8,7 @@ import { fetchBars, mergeBars, coinbaseCandles, referencePrices } from '../lib/d
 import { gridBars, forecastLatest, STEP, QLEVELS } from '../lib/engine.js';
 import { computeInfoflow } from '../lib/infoflow.js';
 import { buildLabNote, LAB_PAGE_WINDOW, parseLogLines, formatLogLine } from '../lib/labnote.js';
+import { buildWendyNote, WENDY_PAGE_WINDOW, parseWendyLogLines, formatWendyLogLine } from '../lib/wendynote.js';
 import { escrowTilt, daysSinceEscrow, ESCROW_HISTORICAL_RELOCK } from '../lib/calendar.js';
 import { parseCalendar, macroProximity, nextEvents } from '../lib/macro.js';
 import { accountBalanceXrp, recentPayments, latestLedgerTxCount } from '../lib/xrpl.js';
@@ -113,6 +114,30 @@ function loadLabLog() {
       labLog = prevLog.slice();
       writeFileSync(LABLOG_PATH, labLog.map(formatLogLine).join('\n') + '\n');
       log(`lab log migrated: ${labLog.length} notes -> permanent notebook`);
+    }
+  } catch { /* first run: start a fresh notebook */ }
+}
+
+// --- Wendy's permanent lab notebook ---
+// Every note is appended to wendy-log.jsonl on the data branch and kept
+// forever — no cap, no trimming. summary.json embeds only the latest
+// WENDY_PAGE_WINDOW notes so the page stays fast. Wendy keeps working until
+// Angelica explicitly decides otherwise.
+const WENDYLOG_PATH = path.join(DIR, 'wendy-log.jsonl');
+let wendyLog = [];
+function loadWendyLog() {
+  try {
+    if (existsSync(WENDYLOG_PATH)) {
+      wendyLog = parseWendyLogLines(readFileSync(WENDYLOG_PATH, 'utf8'));
+      log(`wendy log restored: ${wendyLog.length} notes (permanent notebook)`);
+      return;
+    }
+    const prev = readJson(path.join(DIR, 'summary.json'), null);
+    const prevLog = (prev && prev.wendy && Array.isArray(prev.wendy.log)) ? prev.wendy.log : null;
+    if (prevLog) {
+      wendyLog = prevLog.slice();
+      writeFileSync(WENDYLOG_PATH, wendyLog.map(formatWendyLogLine).join('\n') + '\n');
+      log(`wendy log migrated: ${wendyLog.length} notes -> permanent notebook`);
     }
   } catch { /* first run: start a fresh notebook */ }
 }
@@ -410,7 +435,15 @@ async function cycle() {
     const mv = JSON.parse(readFileSync(path.join(DIR, 'masha_supervisor.json'), 'utf8'));
     if (mv && (mv.verdict === 'HOLD' || mv.verdict === 'APPLY_CANDIDATE' || mv.verdict === 'WITHDRAW')) mashaVerdict = mv.verdict;
   } catch { /* HOLD */ }
-  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal, mashaVerdict });
+  // Wendy's standing scientific verdict gates her lab's parameter: without
+  // APPLY_CANDIDATE the whale-flow member can never gain weight; WITHDRAW
+  // steps an adopted weight back to 0. Missing/invalid file => HOLD (safe default).
+  let wendyVerdict = 'HOLD';
+  try {
+    const wv = JSON.parse(readFileSync(path.join(DIR, 'wendy_supervisor.json'), 'utf8'));
+    if (wv && (wv.verdict === 'HOLD' || wv.verdict === 'APPLY_CANDIDATE' || wv.verdict === 'WITHDRAW')) wendyVerdict = wv.verdict;
+  } catch { /* HOLD */ }
+  const out = runAgent({ nowSec: t, resolved, bars, btcBars, config, macroCal, mashaVerdict, wendyVerdict });
   config = out.config;
   for (const ev of out.events) { append({ type: 'agent', ...ev }); log('agent:', ev.type, ev.decision || ev.action || ''); }
   if (canonical(config) !== before) saveConfig();
@@ -485,6 +518,7 @@ function writeSummary() {
     },
   });
   writeLabNote(summary);
+  writeWendyNote(summary);
   writeJson(path.join(DIR, 'summary.json'), summary);
 }
 
@@ -507,6 +541,27 @@ function writeLabNote(summary) {
   } catch (e) { log('lab note hiccup:', String(e.message || e).slice(0, 120)); }
 }
 
+function writeWendyNote(summary) {
+  // One honest notebook entry per cycle for the whale-watch lab: what was
+  // collected from the ledger, what was computed, what she found, and whether
+  // it mattered mathematically. Saved whether or not the member is used.
+  try {
+    const oc = summary.onchain ? summary.onchain : null;
+    const sbOc = summary.windows && summary.windows.all && summary.windows.all.onchain ? summary.windows.all.onchain : null;
+    const note = buildWendyNote({
+      onchain: oc,
+      scoreboardOnchain: sbOc,
+      cycle: stats.cycles,
+      barT: lastClosedStart,
+      watchlistSize: watchlist.length,
+    });
+    wendyLog.push(note);
+    try { appendFileSync(WENDYLOG_PATH, formatWendyLogLine(note) + '\n'); }
+    catch (e) { log('wendy log append hiccup:', String(e.message || e).slice(0, 120)); }
+    summary.wendy = { latest: note, log: wendyLog.slice(-WENDY_PAGE_WINDOW), updated_at: new Date().toISOString(), total_notes: wendyLog.length };
+  } catch (e) { log('wendy note hiccup:', String(e.message || e).slice(0, 120)); }
+}
+
 async function main() {
   log(`runner start: dir=${DIR} minutes=${MINUTES} push=${PUSH} ledger_seq=${chain.seq || 0}`);
   raw = await fetchBars(HIST_BARS);
@@ -516,6 +571,7 @@ async function main() {
     log(`btc history loaded: ${btcRaw.length} closed 5-min bars (infoflow experiment)`);
   } catch (e) { log('btc history failed (infoflow degraded):', String(e.message || e).slice(0, 150)); }
   loadLabLog(); // restore Masha's notebook from the data branch
+  loadWendyLog(); // restore Wendy's notebook from the data branch
   const deadline = MINUTES > 0 ? startedAt + MINUTES * 60000 : 0;
   for (;;) {
     try {
