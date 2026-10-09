@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T12:04:57.091Z",
- "live_rate": 1.3907058333333335,
+ "computed_at": "2026-10-09T12:24:46.466Z",
+ "live_rate": 1.3953258333333334,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(1000)",
-  "bitstamp:ok(702)",
-  "gemini:ok(217)"
+  "kraken:ok(626)",
+  "bitstamp:ok(662)",
+  "gemini:ok(145)"
  ],
  "partitions": [
-  {
-   "t0": 1791543600000,
-   "t1": 1791543900000,
-   "vwm": 1.38364,
-   "trades": 403,
-   "volume_xrp": 255275.53
-  },
-  {
-   "t0": 1791543900000,
-   "t1": 1791544200000,
-   "vwm": 1.38642,
-   "trades": 183,
-   "volume_xrp": 174797.36
-  },
-  {
-   "t0": 1791544200000,
-   "t1": 1791544500000,
-   "vwm": 1.38554,
-   "trades": 286,
-   "volume_xrp": 472935.28
-  },
-  {
-   "t0": 1791544500000,
-   "t1": 1791544800000,
-   "vwm": 1.38413,
-   "trades": 199,
-   "volume_xrp": 252508.58
-  },
   {
    "t0": 1791544800000,
    "t1": 1791545100000,
@@ -101,9 +73,37 @@
    "vwm": 1.40044,
    "trades": 254,
    "volume_xrp": 135180.07
+  },
+  {
+   "t0": 1791547200000,
+   "t1": 1791547500000,
+   "vwm": 1.39946,
+   "trades": 340,
+   "volume_xrp": 142251.24
+  },
+  {
+   "t0": 1791547500000,
+   "t1": 1791547800000,
+   "vwm": 1.39927,
+   "trades": 233,
+   "volume_xrp": 127842.21
+  },
+  {
+   "t0": 1791547800000,
+   "t1": 1791548100000,
+   "vwm": 1.3989,
+   "trades": 322,
+   "volume_xrp": 117952.05
+  },
+  {
+   "t0": 1791548100000,
+   "t1": 1791548400000,
+   "vwm": 1.39754,
+   "trades": 174,
+   "volume_xrp": 55391.65
   }
  ],
- "trade_count": 3457,
+ "trade_count": 3651,
  "official_rr": {
   "value": 1.40287,
   "change_pct": -1.89,
