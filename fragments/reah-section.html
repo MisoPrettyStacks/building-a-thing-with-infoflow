@@ -1,0 +1,82 @@
+<div class="reah-lab-wrap">
+<h2 class="reah-lab-title"><img src="reah-headshot.webp" alt="Reah" class="reah-lab-headshot"> REAH'S LAB - MEAN REVERSION</h2>
+<div class="reah-agent-intro">
+  <h3>Meet Reah — an agentic agent, not a mascot</h3>
+  <p>Reah watches for moves that have gone too far. When XRP lurches on aggressive volume, she asks whether the move overshot — and leans the other way, a little. When nothing expressive just happened, she says so and abstains.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Mean Reversion Lab · Contrarian Analyst · Research Scientist.</p>
+  <p><strong>Duties:</strong> Watch the last closed bars, measure move size against volume, guard against fading whispers, and keep the lab notebook.</p>
+</div>
+
+<section id="reversion" class="card">
+  <h2>Mean reversion — fading the last move <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Last bar move</div><div class="v" id="raRet" style="font-size:15px">—</div><div class="s" id="raRetSub">5-min log return</div></div>
+    <div class="stat"><div class="k">Flow intensity</div><div class="v" id="raFlow" style="font-size:15px">—</div><div class="s" id="raFlowSub">volume vs median</div></div>
+    <div class="stat"><div class="k">Reversion tilt</div><div class="v" id="raTilt" style="font-size:15px">—</div><div class="s" id="raTiltSub">fade, when licensed</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="raStatus" style="font-size:15px">—</div><div class="s" id="raStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="raBrier">—</div><div class="s" id="raBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="raSkill" style="font-size:15px">—</div><div class="s" id="raSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="raSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="raSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent lab reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: Every cycle Reah reads the lab's own closed XRP bars. A fade is licensed only when the recent move is expressive — ideally on aggressive volume, the kind of taker-driven move the literature finds tends to snap back. The tilt is small, capped, and scored out-of-sample like every other member: theory is cheap, the scoreboard decides.</p>
+</section>
+
+<section id="reah3d" class="card">
+  <h2>Reah's live 3D view</h2>
+  <p class="muted" style="margin-top:0">A live rendering of the quantities Reah trades on, driven by the same summary feed as this page. <a href="reah3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="reah3d.html?embed=1&v=1" title="Live 3D rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="reah" class="card">
+  <h2>Reah's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="raPanel" hidden>
+    <div class="wv-head">Reah'S STANDING VERDICT <span class="wv-badge" id="raVerdict"></span></div>
+    <p class="wv-plain" id="raPlain"></p>
+    <div class="wv-ev" id="raEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="raDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="raHypotheses"></div></details>
+    <div class="wv-meta muted" id="raMeta"></div>
+  </div>
+  <div class="reah-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="reah.webp" alt="Reah working at her chalkboard" id="raHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="raBubble"><span id="raBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Reah's findings <span class="lm-live" id="raLiveDot"></span></div>
+        <div class="lm-line" id="raBoardMove">warming up…</div>
+        <div class="lm-line" id="raBoardFlow"></div>
+        <div class="lm-line" id="raBoardTilt"></div>
+        <div class="lm-line lm-verdict" id="raBoardVerdict"></div>
+        <svg id="raBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="raBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="raBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide lab notebook">LAB NOTEBOOK — every cycle, saved <span id="raLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="raLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Reah ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH Reah</h3>
+  <div class="wchat" id="rachat">
+    <div class="wchat-head">
+      <img src="reah-headshot.webp" alt="Reah">
+      <div class="wchat-who"><b>Reah</b><span class="wchat-online"><i></i>online — ask me about mean reversion</span></div>
+    </div>
+    <div class="wchat-log" id="raChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="raChatChips"></div>
+    <div class="wchat-input">
+      <input id="raChatText" type="text" placeholder="Ask Reah…" maxlength="300" autocomplete="off">
+      <button id="raChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Reah answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>

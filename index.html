@@ -1436,6 +1436,255 @@
 
 </div>
 
+<div class="reah-lab-wrap">
+<h2 class="reah-lab-title"><img src="reah-headshot.webp" alt="Reah" class="reah-lab-headshot"> REAH'S LAB - MEAN REVERSION</h2>
+<div class="reah-agent-intro">
+  <h3>Meet Reah — an agentic agent, not a mascot</h3>
+  <p>Reah watches for moves that have gone too far. When XRP lurches on aggressive volume, she asks whether the move overshot — and leans the other way, a little. When nothing expressive just happened, she says so and abstains.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Mean Reversion Lab · Contrarian Analyst · Research Scientist.</p>
+  <p><strong>Duties:</strong> Watch the last closed bars, measure move size against volume, guard against fading whispers, and keep the lab notebook.</p>
+</div>
+
+<section id="reversion" class="card">
+  <h2>Mean reversion — fading the last move <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Last bar move</div><div class="v" id="raRet" style="font-size:15px">—</div><div class="s" id="raRetSub">5-min log return</div></div>
+    <div class="stat"><div class="k">Flow intensity</div><div class="v" id="raFlow" style="font-size:15px">—</div><div class="s" id="raFlowSub">volume vs median</div></div>
+    <div class="stat"><div class="k">Reversion tilt</div><div class="v" id="raTilt" style="font-size:15px">—</div><div class="s" id="raTiltSub">fade, when licensed</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="raStatus" style="font-size:15px">—</div><div class="s" id="raStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="raBrier">—</div><div class="s" id="raBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="raSkill" style="font-size:15px">—</div><div class="s" id="raSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="raSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="raSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent lab reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: Every cycle Reah reads the lab's own closed XRP bars. A fade is licensed only when the recent move is expressive — ideally on aggressive volume, the kind of taker-driven move the literature finds tends to snap back. The tilt is small, capped, and scored out-of-sample like every other member: theory is cheap, the scoreboard decides.</p>
+</section>
+
+<section id="reah3d" class="card">
+  <h2>Reah's live 3D view</h2>
+  <p class="muted" style="margin-top:0">A live rendering of the quantities Reah trades on, driven by the same summary feed as this page. <a href="reah3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="reah3d.html?embed=1&v=1" title="Live 3D rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="reah" class="card">
+  <h2>Reah's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="raPanel" hidden>
+    <div class="wv-head">Reah'S STANDING VERDICT <span class="wv-badge" id="raVerdict"></span></div>
+    <p class="wv-plain" id="raPlain"></p>
+    <div class="wv-ev" id="raEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="raDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="raHypotheses"></div></details>
+    <div class="wv-meta muted" id="raMeta"></div>
+  </div>
+  <div class="reah-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="reah.webp" alt="Reah working at her chalkboard" id="raHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="raBubble"><span id="raBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Reah's findings <span class="lm-live" id="raLiveDot"></span></div>
+        <div class="lm-line" id="raBoardMove">warming up…</div>
+        <div class="lm-line" id="raBoardFlow"></div>
+        <div class="lm-line" id="raBoardTilt"></div>
+        <div class="lm-line lm-verdict" id="raBoardVerdict"></div>
+        <svg id="raBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="raBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="raBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide lab notebook">LAB NOTEBOOK — every cycle, saved <span id="raLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="raLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Reah ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH Reah</h3>
+  <div class="wchat" id="rachat">
+    <div class="wchat-head">
+      <img src="reah-headshot.webp" alt="Reah">
+      <div class="wchat-who"><b>Reah</b><span class="wchat-online"><i></i>online — ask me about mean reversion</span></div>
+    </div>
+    <div class="wchat-log" id="raChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="raChatChips"></div>
+    <div class="wchat-input">
+      <input id="raChatText" type="text" placeholder="Ask Reah…" maxlength="300" autocomplete="off">
+      <button id="raChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Reah answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
+<div class="clara-lab-wrap">
+<h2 class="clara-lab-title"><img src="clara-headshot.webp" alt="Clara" class="clara-lab-headshot"> CLARA'S LAB - QUARTER-HOUR BOUNDARY</h2>
+<div class="clara-agent-intro">
+  <h3>Meet Clara — an agentic agent, not a mascot</h3>
+  <p>Clara watches the clock grid. Trading bursts on the :00/:15/:30/:45 boundaries, and she tests whether XRP's boundary bars carry a readable footprint — a burst of volume with boundary bars agreeing in sign.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Quarter-Hour Boundary Lab · Clock-Phase Analyst · Research Scientist.</p>
+  <p><strong>Duties:</strong> Measure boundary-bar returns, volume bursts and sign persistence on the quarter-hour grid; abstain when the grid is quiet or scattered; keep the lab notebook.</p>
+</div>
+
+<section id="boundary" class="card">
+  <h2>Quarter-hour boundary — the clock grid <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Clock phase</div><div class="v" id="clPhase" style="font-size:15px">—</div><div class="s" id="clPhaseSub">minutes into the quarter</div></div>
+    <div class="stat"><div class="k">Boundary burst</div><div class="v" id="clBurst" style="font-size:15px">—</div><div class="s" id="clBurstSub">boundary volume vs off-grid</div></div>
+    <div class="stat"><div class="k">Boundary tilt</div><div class="v" id="clTilt" style="font-size:15px">—</div><div class="s" id="clTiltSub">when the grid speaks</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="clStatus" style="font-size:15px">—</div><div class="s" id="clStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="clBrier">—</div><div class="s" id="clBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="clSkill" style="font-size:15px">—</div><div class="s" id="clSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="clSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="clSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent lab reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: Every cycle Clara separates boundary bars (:00/:15/:30/:45 starts) from off-grid bars. A read is licensed only when the last boundary bar arrived with a volume burst and recent boundary bars agree in sign — the configuration periodic algorithmic flow would leave behind. Scored out-of-sample; a quiet grid earns an abstention, not a story.</p>
+</section>
+
+<section id="clara3d" class="card">
+  <h2>Clara's live 3D view</h2>
+  <p class="muted" style="margin-top:0">A live rendering of the quantities Clara trades on, driven by the same summary feed as this page. <a href="clara3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="clara3d.html?embed=1&v=1" title="Live 3D rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="clara" class="card">
+  <h2>Clara's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="clPanel" hidden>
+    <div class="wv-head">Clara'S STANDING VERDICT <span class="wv-badge" id="clVerdict"></span></div>
+    <p class="wv-plain" id="clPlain"></p>
+    <div class="wv-ev" id="clEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="clDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="clHypotheses"></div></details>
+    <div class="wv-meta muted" id="clMeta"></div>
+  </div>
+  <div class="clara-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="clara.webp" alt="Clara working at her chalkboard" id="clHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="clBubble"><span id="clBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Clara's findings <span class="lm-live" id="clLiveDot"></span></div>
+        <div class="lm-line" id="clBoardRet">warming up…</div>
+        <div class="lm-line" id="clBoardBurst"></div>
+        <div class="lm-line" id="clBoardTilt"></div>
+        <div class="lm-line lm-verdict" id="clBoardVerdict"></div>
+        <svg id="clBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="clBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="clBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide lab notebook">LAB NOTEBOOK — every cycle, saved <span id="clLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="clLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Clara ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH Clara</h3>
+  <div class="wchat" id="clchat">
+    <div class="wchat-head">
+      <img src="clara-headshot.webp" alt="Clara">
+      <div class="wchat-who"><b>Clara</b><span class="wchat-online"><i></i>online — ask me about the quarter-hour grid</span></div>
+    </div>
+    <div class="wchat-log" id="clChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="clChatChips"></div>
+    <div class="wchat-input">
+      <input id="clChatText" type="text" placeholder="Ask Clara…" maxlength="300" autocomplete="off">
+      <button id="clChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Clara answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
+<div class="lena-lab-wrap">
+<h2 class="lena-lab-title"><img src="lena-headshot.webp" alt="Lena" class="lena-lab-headshot"> LENA'S LAB - VENUE LEAD-LAG</h2>
+<div class="lena-agent-intro">
+  <h3>Meet Lena — an agentic agent, not a mascot</h3>
+  <p>Lena watches two venues at once. When Binance XRP moves first and Coinbase hasn't caught up, she measures the gap and the lead — and tests whether that propagation is worth anything at 15 minutes.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Venue Lead-Lag Lab · Cross-Venue Analyst · Research Scientist.</p>
+  <p><strong>Duties:</strong> Align Binance and Coinbase XRP bars by timestamp, measure the live gap and who's drifting first, abstain when the venues are in step, and keep the lab notebook.</p>
+</div>
+
+<section id="leadlag" class="card">
+  <h2>Venue lead-lag — Binance vs Coinbase <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Venue gap</div><div class="v" id="lnGap" style="font-size:15px">—</div><div class="s" id="lnGapSub">Binance vs Coinbase, bps</div></div>
+    <div class="stat"><div class="k">Lead drift</div><div class="v" id="lnLead" style="font-size:15px">—</div><div class="s" id="lnLeadSub">Binance minus Coinbase, 15m</div></div>
+    <div class="stat"><div class="k">Lead-lag tilt</div><div class="v" id="lnTilt" style="font-size:15px">—</div><div class="s" id="lnTiltSub">follow the leader, when ahead</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="lnStatus" style="font-size:15px">—</div><div class="s" id="lnStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="lnBrier">—</div><div class="s" id="lnBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="lnSkill" style="font-size:15px">—</div><div class="s" id="lnSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="lnSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="lnSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent lab reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: Every cycle Lena aligns Binance XRPUSDT and Coinbase XRP-USD 5-minute bars by exact timestamp. A tilt is licensed only when Binance is expressively ahead — a real gap plus leading drift — because that's the propagation her lab exists to catch. When the venues move together, there's no lead to follow and she abstains. Scored out-of-sample like everyone.</p>
+</section>
+
+<section id="lena3d" class="card">
+  <h2>Lena's live 3D view</h2>
+  <p class="muted" style="margin-top:0">A live rendering of the quantities Lena trades on, driven by the same summary feed as this page. <a href="lena3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="lena3d.html?embed=1&v=1" title="Live 3D rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="lena" class="card">
+  <h2>Lena's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="lnPanel" hidden>
+    <div class="wv-head">Lena'S STANDING VERDICT <span class="wv-badge" id="lnVerdict"></span></div>
+    <p class="wv-plain" id="lnPlain"></p>
+    <div class="wv-ev" id="lnEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="lnDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="lnHypotheses"></div></details>
+    <div class="wv-meta muted" id="lnMeta"></div>
+  </div>
+  <div class="lena-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="lena.webp" alt="Lena working at her chalkboard" id="lnHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="lnBubble"><span id="lnBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Lena's findings <span class="lm-live" id="lnLiveDot"></span></div>
+        <div class="lm-line" id="lnBoardGap">warming up…</div>
+        <div class="lm-line" id="lnBoardLead"></div>
+        <div class="lm-line" id="lnBoardTilt"></div>
+        <div class="lm-line lm-verdict" id="lnBoardVerdict"></div>
+        <svg id="lnBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="lnBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="lnBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide lab notebook">LAB NOTEBOOK — every cycle, saved <span id="lnLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="lnLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Lena ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH Lena</h3>
+  <div class="wchat" id="lnchat">
+    <div class="wchat-head">
+      <img src="lena-headshot.webp" alt="Lena">
+      <div class="wchat-who"><b>Lena</b><span class="wchat-online"><i></i>online — ask me about venue lead-lag</span></div>
+    </div>
+    <div class="wchat-log" id="lnChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="lnChatChips"></div>
+    <div class="wchat-input">
+      <input id="lnChatText" type="text" placeholder="Ask Lena…" maxlength="300" autocomplete="off">
+      <button id="lnChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Lena answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
+
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 
 <section id="score" class="card">
