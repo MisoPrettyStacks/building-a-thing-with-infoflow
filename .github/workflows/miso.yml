@@ -1,0 +1,59 @@
+name: miso-supervisor
+
+# Miso's supervisor cycle: every Saturday it audits ONLY her public
+# record — the guesses log and the scoreboard — and issues her standing
+# verdict (HOLD / APPLY_CANDIDATE / WITHDRAW) per MISO_CHARTER.md. Her
+# method is never audited and never published. The verdict is published
+# to the data branch, where the runner reads it every cycle to gate
+# the guesses weight. Read-only with respect to the model: this job
+# never changes parameters.
+on:
+  schedule:
+    - cron: "33 9 * * 6"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: miso-supervisor
+  cancel-in-progress: false
+
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare data-branch worktree
+        run: |
+          git fetch -q origin data
+          git branch -f data-tmp origin/data
+          git worktree add ./data-branch data-tmp
+      - name: Run Miso's supervisor cycle
+        run: |
+          node scripts/miso-supervisor.js --data ./data-branch
+      - name: Publish verdict to data branch
+        run: |
+          cd ./data-branch
+          git config user.name "miso-supervisor"
+          git config user.email "noreply@github.com"
+          git add miso_supervisor.json
+          if git diff --cached --quiet; then
+            echo "no changes to publish"
+          else
+            git commit -q -m "miso: supervisor cycle $(date -u +%F)"
+            for attempt in 1 2 3 4 5; do
+              git fetch -q origin data
+              if git rebase -q origin/data && git push -q origin HEAD:data; then
+                break
+              fi
+              git rebase --abort 2>/dev/null || true
+              sleep $((attempt * 3))
+            done
+          fi
+      - name: Clean up worktree
+        if: always()
+        run: git worktree remove --force ./data-branch || true
