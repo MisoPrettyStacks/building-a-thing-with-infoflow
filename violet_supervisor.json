@@ -1,0 +1,102 @@
+{
+ "agent": "violet",
+ "title": "Principal Investigator, Volatility Regime Lab",
+ "charter_version": "1.0.0",
+ "charter": "VIOLET_CHARTER.md",
+ "updated_at": "2026-10-09T06:59:48.301Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=83/200); wild-regime cycles 0.0% — below the 40% bar. I keep the watch open and keep gathering evidence.",
+ "verdict_plain": "Violet's verdict: hold and keep watching. The volatility evidence so far is neither strong enough to arm the dampener nor weak enough to retire it — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.03296703296703297,
+  "warming_frac": 0,
+  "decisive_frac": 0,
+  "wild_cycles": 0,
+  "member_brier": 0.25150527584453003,
+  "base_brier": 0.25150527584453003,
+  "member_n": 83,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends volDamp 0. The dampener shrinks confidence toward 0.5 in wild regimes; it can never move the forecast in a direction. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "VI1",
+   "claim": "Wild volatility regimes coincide with forecast misses: the issued forecast scores worse (Brier) in wild-regime windows than on average.",
+   "prediction": "Brier in wild-regime windows exceeds the overall baseline",
+   "test": "Brier split by regime from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "VI2",
+   "claim": "Shrinking confidence toward 0.5 in wild regimes improves the out-of-sample Brier score.",
+   "prediction": "dampener what-if Brier < baseline Brier over scored forecasts",
+   "test": "live what-if scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "VI3",
+   "claim": "Volatility regimes persist long enough to matter — wild readings cluster into streaks rather than flickering one bar at a time.",
+   "prediction": "consecutive wild-regime cycles are common in the notebook",
+   "test": "regime run-length analysis from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "VI4",
+   "claim": "Calm regimes need no dampening: leaving them alone does not hurt the Brier, and arming the dampener there would just dull good forecasts.",
+   "prediction": "no dampener arming in calm/normal cycles; no Brier harm observed there",
+   "test": "dampener-armed rate by regime + regime-split Brier",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "financial_econometrics",
+   "assessment": "Regimes are mostly quiet (0.0% wild). I do not mistake one violent bar for a regime — the regime needs the window, not the spike."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "wild_frac=0.0% over n=91; scoreboard still warming up (n=83/200). Wild regimes are rare — I size my claims to my sample."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: arming a dampener on noise dulls every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "Realized volatility is defined by its window, its return definition, and its scaling — all three ride with every result. The regime is a relative comparison against the asset’s own recent distribution, so fixed absolute thresholds never enter the lab."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Pipeline healthy: candles readable 96.7% of cycles; bar completeness checked; same candle history reproduces the same regime read."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Volatility tells you how wide the cone is, never which way the coin lands. That is why no verdict of mine ever predicts direction — the dampener shrinks confidence toward 0.5 and that is the entire job."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% wild-regime cycles over 91 notes, 0 wild cycles on record. Unknown: whether the next wild regime behaves like the last one. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
