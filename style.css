@@ -151,6 +151,19 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
   background: #f7f9fc; color: #000;
   font-size: 26px; font-weight: 700; letter-spacing: 2px;
 }
+.lab-nav {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  max-width: 880px; margin: 14px auto 0; padding: 0 8px;
+}
+.lab-nav-btn {
+  display: inline-block; padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.4px; text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.lab-nav-btn:hover { border-color: var(--accent); background: var(--panel2); }
+.lab-nav-btn:active { transform: translateY(1px); }
+section.card { scroll-margin-top: 14px; }
 .live-lab-notice {
   font-size: 11px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.5;
   color: #d8a7b8; border: 1px solid rgba(244,166,193,0.4); border-radius: 8px;
