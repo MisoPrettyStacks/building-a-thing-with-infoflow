@@ -1,0 +1,98 @@
+{
+ "agent": "sophie",
+ "title": "Principal Investigator, Session Seasonality Lab",
+ "charter_version": "1.0.0",
+ "charter": "SOPHIE_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:33.830Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (90/100); scoreboard still warming up (n=83/200); decisive reads 0.0% — below the 40% bar. I keep the watch open and keep gathering evidence.",
+ "verdict_plain": "Sophie's verdict: hold and keep watching. The clock's evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 90,
+  "blind_frac": 0.022222222222222223,
+  "warming_frac": 0,
+  "decisive_frac": 0,
+  "decisive_cycles": 0,
+  "member_brier": 0.2512488753499155,
+  "base_brier": 0.25150527584453003,
+  "member_n": 83,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends sessionWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "SO1",
+   "claim": "Specific UTC hours carry a persistent mean-return tilt in XRP 5-minute candles — the market has a daily heartbeat.",
+   "prediction": "hourly mean log-returns keep their sign across rolling trailing windows",
+   "test": "sign stability of hourly means, out-of-sample windows only",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "SO2",
+   "claim": "The session-seasonality member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "SO3",
+   "claim": "The tilt concentrates in real session hours (Asia/Europe/US) and fades in off-hours — not 24 equal hours.",
+   "prediction": "decisive reads cluster in session hours vs quiet hours",
+   "test": "decisive rate by hour from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "SO4",
+   "claim": "The seasonal rhythm expresses itself often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "market_microstructure",
+   "assessment": "The clock is mostly quiet (0.0% decisive). I do not mistake a few lucky hours for a market rhythm, and I do not narrate silence."
+  },
+  {
+   "discipline": "behavioral_finance",
+   "assessment": "Intraday rhythms are partly psychology — traders anchor on session opens, square up at closes, react to the news their own timezone is awake for. But a behavioral story is never evidence on its own: the pattern has to survive the scoreboard."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "decisive_frac=0.0% over n=90; scoreboard still warming up (n=83/200). Twenty-four hours are twenty-four chances to fool yourself — any hour-by-hour pattern gets multiple-comparison scrutiny before I believe it, and seasonal tilts are tiny by nature."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Pipeline healthy: closed 5-minute bars available 97.8% of cycles; seven-day history gate enforced before any read; same bars reproduce the same numbers."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "A time-of-day pattern is not a trade signal — even a real seasonal tilt is small, noisy, and may already be priced in by the very participants who make it. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% decisive reads over 90 cycles. Unknown: whether the rhythm drifts as volatility regimes change. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
