@@ -551,6 +551,14 @@ function writeSummary() {
   });
   const chk = verifyChain(DIR);
   const J = joinLedger(records);
+  // Preserve the previous summary's experimental blocks across runner
+  // restarts: stats.* are only recomputed when a *new* forecast is issued,
+  // so a fresh process that starts on an already-issued bar would otherwise
+  // publish nulls and blank the page's Infoflow/Macro/On-chain/Topology
+  // panels until the next bar. Fall back to the last published values.
+  let prevSummary = null;
+  try { prevSummary = readJson(path.join(DIR, 'summary.json'), null); } catch { prevSummary = null; }
+  const prevBlock = (k) => (prevSummary && prevSummary[k] != null ? prevSummary[k] : null);
   const summary = buildSummary({
     records, config, agent: { events: agentEvents, state: config.agent, history: config.history.slice(-30).reverse(), previousVersion: config.previous?.version ?? null },
     extras: {
@@ -561,13 +569,13 @@ function writeSummary() {
         commit: process.env.GITHUB_SHA || null, tie_count: J.ties,
       },
       ledger_files: ledgerFiles(DIR),
-      model_state: stats.lastState || null,
+      model_state: stats.lastState || prevBlock('model_state') || null,
       infoflow: stats.lastInfoflow ? {
         ...stats.lastInfoflow,
         weight: config.champion.infoflowWeight || 0,
         enabled: (config.champion.infoflowWeight || 0) > 0,
         computed_at: new Date().toISOString(),
-      } : null,
+      } : prevBlock('infoflow'),
       calendar: {
         days_since_escrow: daysSinceEscrow(lastClosedStart),
         tilt: +escrowTilt(lastClosedStart, config.champion.escrowRelock ?? ESCROW_HISTORICAL_RELOCK).toFixed(6),
@@ -588,21 +596,23 @@ function writeSummary() {
         dampening_applied: stats.lastMacro.active && (config.champion.macroDamp || 0) > 0,
         next: nextEvents(now(), macroCal, 3),
         computed_at: stats.lastMacro.computed_at,
-      } : null,
+      } : prevBlock('macro'),
       onchain: stats.lastOnchain ? {
         ...stats.lastOnchain,
         weight: config.champion.onchainWeight || 0,
         enabled: (config.champion.onchainWeight || 0) > 0,
-      } : null,
+      } : prevBlock('onchain'),
       topology: stats.lastTopology ? {
         ...stats.lastTopology,
         weight: config.champion.topologyWeight || 0,
         enabled: (config.champion.topologyWeight || 0) > 0,
-      } : null,
+      } : prevBlock('topology'),
     },
   });
   // Second-generation lab signal panels: summary.<key> carries the live signal
   // fields plus the member's gated weight (mirrors summary.onchain).
+  // On a restart cycle (stats.lastLab not yet computed) keep the previous
+  // published lab blocks instead of dropping the keys entirely.
   if (stats.lastLab) {
     for (const def of AGENT_DEFS) {
       const s = stats.lastLab[def.key];
@@ -612,6 +622,10 @@ function writeSummary() {
         weight: config.champion[def.weightKey] || 0,
         enabled: (config.champion[def.weightKey] || 0) > 0,
       };
+    }
+  } else if (prevSummary) {
+    for (const def of AGENT_DEFS) {
+      if (prevSummary[def.key] != null) summary[def.key] = prevSummary[def.key];
     }
   }
   writeLabNote(summary);
