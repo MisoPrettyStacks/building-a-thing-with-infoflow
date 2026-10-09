@@ -1,0 +1,113 @@
+{
+ "agent": "molly",
+ "title": "Principal Investigator, Macro Events Lab",
+ "charter_version": "1.0.0",
+ "charter": "MOLLY_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:15.193Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); in-window scoreboard still warming up (event n=0/30); barely any event windows observed (0.0% of cycles — my regime has not shown up enough to judge). I keep the calendar open and keep gathering evidence.",
+ "verdict_plain": "Molly's verdict: hold and keep watching. The event-window evidence so far is neither strong enough to arm the dampener nor weak enough to retire it — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.03296703296703297,
+  "warming_frac": 0,
+  "window_frac": 0,
+  "bias_zero_frac": 1,
+  "vol_in": {
+   "n": 0,
+   "mean": null
+  },
+  "vol_out": {
+   "n": 88,
+   "mean": 0.0010280212159391492
+  },
+  "event_window": null,
+  "event_n": 0,
+  "all_window": {
+   "n": 156,
+   "brierMacro": 0.2537223627318525,
+   "brierBase": 0.2537223627318525
+  },
+  "oos_edge": false
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement above a published bar, positive in both halves, multiplicity-corrected significance, and a minimum gap between adoptions. WITHDRAW recommends macroDamp 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "M1",
+   "claim": "Realized volatility is higher inside macro event windows than outside them: scheduled releases spike volatility in XRP.",
+   "prediction": "mean |15-min return| in-window > out-of-window",
+   "test": "lab-note return comparison (needs >= 30 samples each side)",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "M2",
+   "claim": "The dampened what-if series beats the issued forecast out-of-sample inside event windows.",
+   "prediction": "in-window Brier(p_macro) < Brier(p) over n >= 30 scored in-window forecasts",
+   "test": "live scoreboard event-window block",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "M3",
+   "claim": "Tier-1 releases (FOMC, CPI, payrolls) differ from tier-2 (PPI, retail sales, ISM): the bigger shrink buys a bigger edge.",
+   "prediction": "in-window edge is larger for tier-1 windows than tier-2",
+   "test": "scoreboard split by tier from lab notes",
+   "status": "open",
+   "status_why": "scoreboard does not split by tier — test not runnable",
+   "updated_at": null
+  },
+  {
+   "id": "M4",
+   "claim": "The lab never predicts direction: the surprise direction of a macro release is a coin flip, so the lab only ever dampens confidence.",
+   "prediction": "computed bias is exactly 0 in every lab note",
+   "test": "bias audit over lab-note history",
+   "status": "supported",
+   "status_why": "bias === 0 in 100.0% of 91 notes — the humility doctrine holds",
+   "updated_at": "2026-10-09T06:58:15.193Z"
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "macroeconomics",
+   "assessment": "The calendar was quiet (0.0% of cycles in-window) — scheduled releases are rare by design. Patience is the method; I do not manufacture windows."
+  },
+  {
+   "discipline": "market_microstructure",
+   "assessment": "Volatility comparison still warming up (in-window |return| samples 0/30, out 88/30) — I will not claim the spike until the lab's own tape shows it."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "in-window scoreboard not yet available; sample still small (event n=0/30). Outside windows the what-if equals the forecast by construction, so only the in-window block can judge me."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: a dampener adopted on noise would shrink every honest forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Calendar healthy: parsed 96.7% of cycles; same timestamp reproduces the same window state, always."
+  },
+  {
+   "discipline": "behavioral_finance",
+   "assessment": "Confidence is the liability here. Forecasters are most certain exactly when they should be most humble — pre-release positioning and post-release storytelling are biases, not information. Shrinking toward 0.5 inside a window is the rational response to a known-unknown."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% of cycles in-window over 91 notes; humility doctrine held at 100.0%. Unknown: whether the dampening buys real skill — 0 in-window scored forecasts so far. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; M3 stays open because the scoreboard cannot split by tier yet. Nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
