@@ -1,0 +1,94 @@
+{
+ "agent": "miso",
+ "title": "Miso — guesses, graded in public. Method unpublished.",
+ "charter_version": "1.0.0",
+ "charter": "MISO_CHARTER.md",
+ "updated_at": "2026-10-09T16:56:16.770Z",
+ "verdict": "HOLD",
+ "verdict_why": "Only 2 log entries on record (need >= 50) — not enough history for any verdict. She keeps guessing.",
+ "verdict_plain": "Miso's verdict: hold and keep guessing. Her record so far is neither strong enough to apply nor weak enough to withdraw — the scoreboard keeps grading.",
+ "evidence": {
+  "n": 2,
+  "blind_frac": 1,
+  "warming_frac": 0,
+  "decisive_frac": 0,
+  "guessed_frac": 0,
+  "above_frac": 0,
+  "member_brier": null,
+  "base_brier": null,
+  "member_n": 0,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends misoWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "MI1",
+   "claim": "Miso's guesses beat the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "MI2",
+   "claim": "Her directional record beats chance — when she guesses above or below, she is right more often than a coin.",
+   "prediction": "24h direction hit rate > 0.50 baseline",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "MI3",
+   "claim": "She guesses often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-guess rate from the log",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "statistician",
+   "assessment": "The audit reads only the record: she guessed 0.0% of cycles, decisively 0.0%, above 0.0% of her guesses. A guess is an estimate with error bars — the scoreboard, not the story, decides what it is worth."
+  },
+  {
+   "discipline": "quantitative_finance",
+   "assessment": "No edge to explain — and none will be invented. The record is the claim."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "Brier scoring is proper: it rewards honest probabilities and punishes bluster, above or below. Her grades are computed identically to every other member's — no special arithmetic for a secret method."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt the record votes HOLD: adopting noise corrupts every forecast it touches."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Availability flag: her screen was dark 100.0% of cycles — the record marks those cycles blind rather than letting silence pose as a guess."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "A posted record with a stated price and time, graded in public, is worth more than a published recipe nobody verifies. She posts the calls and the grades; the desk stays hers."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: guessed 0.0% of cycles, decisive 0.0%. Unknown: everything about the method — by design. Confidence in the record: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; the method was never part of the evidence and never needed to be."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the public record below, and I will reverse it the moment the record does."
+  }
+ ]
+}
