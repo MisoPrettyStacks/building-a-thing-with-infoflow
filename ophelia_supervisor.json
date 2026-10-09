@@ -1,0 +1,109 @@
+{
+ "agent": "ophelia",
+ "title": "Principal Investigator, On-Chain Flows Lab",
+ "charter_version": "1.0.0",
+ "charter": "OPHELIA_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:26.130Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=83/200); decisive reads 0.0% — below the 40% bar; snapshots blind 72.5% of cycles — I check the instruments before trusting the readings. I keep the ledger open and keep gathering evidence.",
+ "verdict_plain": "Ophelia's verdict: hold and keep watching. The flow evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.7252747252747253,
+  "warming_frac": 0.27472527472527475,
+  "decisive_frac": 0,
+  "member_brier": 0.25150527584453003,
+  "base_brier": 0.25150527584453003,
+  "member_n": 83,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement above a published bar, positive in both halves, multiplicity-corrected significance, and a minimum gap between adoptions. WITHDRAW recommends flowHealthWeight 0. This file never changes a weight directly and never touches Wendy's onchainWeight or any other agent's weight.",
+ "hypotheses": [
+  {
+   "id": "O1",
+   "claim": "Sustained exchange outflows tilt subsequent XRP moves up; sustained exchange inflows tilt them down.",
+   "prediction": "decisive outflow reads align with 24h up moves, inflow reads with down moves, more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "O2",
+   "claim": "The flow-health member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "O3",
+   "claim": "The edge, if any, concentrates in high breadth+velocity regimes — when many tracked wallets move together and the turnover is fast, the read carries information.",
+   "prediction": "decisive-cycle edge is larger when breadth and velocity are both elevated",
+   "test": "scoreboard split by breadth/velocity regime from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "O4",
+   "claim": "The aggregate flow-health read is distinct from the whale-pulse signal — low correlation with Wendy’s whale pulses.",
+   "prediction": "correlation between flow-health bias and whale-pulse tilt below 0.3 over rolling history once n ≥ 100",
+   "test": "correlation of per-cycle bias vs whale-pulse tilt from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "onchain_analysis",
+   "assessment": "The ledger is mostly quiet (0.0% decisive). A single large transfer is an event, not a trend — that is Wendy's beat, not mine."
+  },
+  {
+   "discipline": "flow_accounting",
+   "assessment": "Velocity and breadth are defined against a fixed 24h window on a fixed watchlist — change the window and you change the number, so every read carries its window. Accounting is an identity, not a model; I give predictive claims built on it extra scrutiny."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "decisive_frac=0.0% over n=91; scoreboard still warming up (n=83/200). Flow health is slow — I size my claims to my sample."
+  },
+  {
+   "discipline": "microstructure",
+   "assessment": "No standalone edge to decompose yet — the portfolio question stays open until the member beats the baseline."
+  },
+  {
+   "discipline": "network_science",
+   "assessment": "I think in graphs: exchanges are hubs, wallets are nodes. Broad drift with high breadth is a regime; a single edge is an anecdote. Hub-to-hub plumbing is filtered by design — internal shuffling is not a flow."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: snapshots unseen 72.5% of cycles — a failed fetch looks like calm balances unless you check, and I check. 72h of history required before any read."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% decisive reads over 91 cycles. Unknown: whether aggregate drift reflects genuine repositioning or rotating exchange plumbing. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "The ledger you see is history — by the time balances visibly drain, the informed money may already be positioned. Flow health is a slow regime read; I never trade it like a fast signal, and no APPLY verdict of mine ever skips out-of-sample proof."
+  }
+ ]
+}
