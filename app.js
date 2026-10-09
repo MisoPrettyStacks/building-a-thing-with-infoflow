@@ -1622,10 +1622,10 @@ function initOpalAnim() {
 }
 
 function initOpal() {
-  initOpalAnim();
-  initOpheliaAnim();
-  initCamilleAnim();
-  initMollyAnim();
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
   if (typeof summary !== 'undefined' && summary) renderOpalPanel(summary);
   loadOpalVerdict();
   initOpalChat();
@@ -1894,7 +1894,7 @@ function initVioletAnim() {
 
 /* ---------------- Violet entry point ---------------- */
 function initViolet() {
-  initVioletAnim();
+  /* static image: flipbook animation disabled */
   renderVioletPanel(typeof summary !== 'undefined' ? summary : null);
   loadVioletVerdict();
   initVioletChat();
@@ -2175,7 +2175,7 @@ function initDaisyAnim() {
 
 /* ---------------- Daisy: wire everything ---------------- */
 function initDaisy() {
-  initDaisyAnim();
+  /* static image: flipbook animation disabled */
   initDaisyChat();
   loadDaisyVerdict();
 }
@@ -2452,7 +2452,7 @@ function renderNoraPanel(summary) {
 
 /* ---------------- Nora init ---------------- */
 function initNora() {
-  initNoraAnim();
+  /* static image: flipbook animation disabled */
   initNoraChat();
   // First paint with whatever summary app.js already holds; the coordinator
   // should also call renderNoraPanel(summary) inside loadSummary() each cycle.
@@ -2747,7 +2747,7 @@ function renderSophiePanel(summary) {
 /* Sophie fragment entry point: called by the boot code the coordinator adds.
    The render loop should also call renderSophiePanel(summary) on each refresh. */
 function initSophie() {
-  initSophieAnim();
+  /* static image: flipbook animation disabled */
   initSophieChat();
   loadSophieVerdict();
 }
@@ -3022,7 +3022,7 @@ function initCoraAnim() {
 
 /* ---------------- Cora boot ---------------- */
 function initCora() {
-  initCoraAnim();
+  /* static image: flipbook animation disabled */
   renderCoraPanel();
   initCoraChat();
 }
@@ -3302,7 +3302,7 @@ function renderCherryPanel(summary) {
 
 /* Cherry fragment entry point: called by the boot code the coordinator adds. */
 function initCherry() {
-  initCherryAnim();
+  /* static image: flipbook animation disabled */
   initCherryChat();
   loadCherryVerdict();
 }
@@ -3596,7 +3596,7 @@ function initSageAnim() {
 
 /* ---------------- Sage entry point ---------------- */
 function initSage() {
-  initSageAnim();
+  /* static image: flipbook animation disabled */
   initSageChat();
 }
 
@@ -3880,7 +3880,7 @@ export function initSashaAnim() {
 
 /* ---------------- entry point: coordinator calls initSasha(summary) ---------------- */
 export function initSasha(summary) {
-  initSashaAnim();
+  /* static image: flipbook animation disabled */
   initSashaChat();
   renderSashaPanel(summary);
   loadSashaVerdict();
@@ -3889,7 +3889,7 @@ export function initSasha(summary) {
 // Nia's lab — frontend fragment.
 //
 // COORDINATOR: merge into app.js:
-//   1. Add to the import block: //   2. Call initNia() in boot() next to initWendyAnim();
+//   1. Add to the import block: //   2. Call initNia() in boot() next to /* static image: flipbook animation disabled */
 //   3. Call renderNiaPanel(summary) in loadSummary() next to renderWendy();
 //
 // Uses the module-level $, DATA_BASE, and summary from app.js.
@@ -4182,7 +4182,7 @@ function initNiaAnim() {
 
 /* ---------------- boot hook ---------------- */
 function initNia() {
-  initNiaAnim();
+  /* static image: flipbook animation disabled */
   loadNiaVerdict();
   initNiaChat();
 }
@@ -4458,9 +4458,9 @@ function initOpheliaAnim() {
 }
 
 function initOphelia() {
-  initOpheliaAnim();
-  initCamilleAnim();
-  initMollyAnim();
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
   loadOpheliaVerdict();
   initOpheliaChat();
   loadCamilleVerdict();
@@ -4723,8 +4723,8 @@ function initCamilleAnim() {
 }
 
 function initCamille() {
-  initCamilleAnim();
-  initMollyAnim();
+  /* static image: flipbook animation disabled */
+  /* static image: flipbook animation disabled */
   loadCamilleVerdict();
   initCamilleChat();
   loadMollyVerdict();
@@ -4975,7 +4975,7 @@ function initMollyAnim() {
 }
 
 function initMolly() {
-  initMollyAnim();
+  /* static image: flipbook animation disabled */
   loadMollyVerdict();
   initMollyChat();
 }
@@ -5007,15 +5007,6 @@ function initNotebookToggles() {
   const step = (fn) => { try { fn(); } catch (e) { console.error('boot step failed:', e); } };
   await resolveBases();
   step(initNotebookToggles);
-  step(initMashaAnim);
-  step(initWendyAnim);
-  step(initOpalAnim);
-  step(initOpheliaAnim);
-  step(initCamilleAnim);
-  step(initMollyAnim);
-  step(initReahAnim);
-  step(initClaraAnim);
-  step(initLenaAnim);
   step(() => { loadCandles(); connectWS(); });
   try { await loadSummary(); } catch (e) { console.error('summary load failed:', e); }
   // Core live panels first — before any lab extras.
