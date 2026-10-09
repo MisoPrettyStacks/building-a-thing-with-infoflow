@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T05:04:38.240Z",
- "live_rate": 1.3941625000000002,
+ "computed_at": "2026-10-09T05:24:45.144Z",
+ "live_rate": 1.3935541666666669,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(199)",
-  "kraken:ok(313)",
-  "bitstamp:ok(221)",
-  "gemini:ok(50)"
+  "kraken:ok(458)",
+  "bitstamp:ok(172)",
+  "gemini:ok(70)"
  ],
  "partitions": [
-  {
-   "t0": 1791518400000,
-   "t1": 1791518700000,
-   "vwm": 1.39514,
-   "trades": 234,
-   "volume_xrp": 66868.6
-  },
-  {
-   "t0": 1791518700000,
-   "t1": 1791519000000,
-   "vwm": 1.39546,
-   "trades": 84,
-   "volume_xrp": 37175.37
-  },
-  {
-   "t0": 1791519000000,
-   "t1": 1791519300000,
-   "vwm": 1.39627,
-   "trades": 102,
-   "volume_xrp": 47510.27
-  },
-  {
-   "t0": 1791519300000,
-   "t1": 1791519600000,
-   "vwm": 1.39659,
-   "trades": 105,
-   "volume_xrp": 79788.19
-  },
   {
    "t0": 1791519600000,
    "t1": 1791519900000,
@@ -101,9 +73,37 @@
    "vwm": 1.39219,
    "trades": 49,
    "volume_xrp": 16865.95
+  },
+  {
+   "t0": 1791522000000,
+   "t1": 1791522300000,
+   "vwm": 1.3918,
+   "trades": 227,
+   "volume_xrp": 108212.88
+  },
+  {
+   "t0": 1791522300000,
+   "t1": 1791522600000,
+   "vwm": 1.39243,
+   "trades": 107,
+   "volume_xrp": 72539.77
+  },
+  {
+   "t0": 1791522600000,
+   "t1": 1791522900000,
+   "vwm": 1.3941,
+   "trades": 77,
+   "volume_xrp": 21660.03
+  },
+  {
+   "t0": 1791522900000,
+   "t1": 1791523200000,
+   "vwm": 1.39783,
+   "trades": 236,
+   "volume_xrp": 560718.89
   }
  ],
- "trade_count": 1498,
+ "trade_count": 1601,
  "official_rr": {
   "value": 1.40287,
   "change_pct": -1.89,
