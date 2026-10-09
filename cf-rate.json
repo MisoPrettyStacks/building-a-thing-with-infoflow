@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T17:25:02.150Z",
- "live_rate": 1.3826241666666668,
+ "computed_at": "2026-10-09T17:46:04.898Z",
+ "live_rate": 1.384248333333333,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(688)",
-  "bitstamp:ok(458)",
-  "gemini:ok(184)"
+  "kraken:ok(934)",
+  "bitstamp:ok(976)",
+  "gemini:ok(222)"
  ],
  "partitions": [
-  {
-   "t0": 1791563100000,
-   "t1": 1791563400000,
-   "vwm": 1.38107,
-   "trades": 325,
-   "volume_xrp": 107976.98
-  },
-  {
-   "t0": 1791563400000,
-   "t1": 1791563700000,
-   "vwm": 1.38257,
-   "trades": 171,
-   "volume_xrp": 25246.19
-  },
-  {
-   "t0": 1791563700000,
-   "t1": 1791564000000,
-   "vwm": 1.38115,
-   "trades": 213,
-   "volume_xrp": 307286.6
-  },
-  {
-   "t0": 1791564000000,
-   "t1": 1791564300000,
-   "vwm": 1.3805,
-   "trades": 229,
-   "volume_xrp": 78466.89
-  },
   {
    "t0": 1791564300000,
    "t1": 1791564600000,
@@ -101,9 +73,37 @@
    "vwm": 1.38286,
    "trades": 402,
    "volume_xrp": 373827.5
+  },
+  {
+   "t0": 1791566700000,
+   "t1": 1791567000000,
+   "vwm": 1.38464,
+   "trades": 293,
+   "volume_xrp": 162947.17
+  },
+  {
+   "t0": 1791567000000,
+   "t1": 1791567300000,
+   "vwm": 1.38473,
+   "trades": 553,
+   "volume_xrp": 227366.19
+  },
+  {
+   "t0": 1791567300000,
+   "t1": 1791567600000,
+   "vwm": 1.38768,
+   "trades": 509,
+   "volume_xrp": 217605.91
+  },
+  {
+   "t0": 1791567600000,
+   "t1": 1791567900000,
+   "vwm": 1.38773,
+   "trades": 201,
+   "volume_xrp": 74663.37
   }
  ],
- "trade_count": 2899,
+ "trade_count": 3628,
  "official_rr": {
   "value": 1.38329,
   "change_pct": -1.4,
