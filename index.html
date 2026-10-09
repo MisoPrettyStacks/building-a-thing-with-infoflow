@@ -1684,6 +1684,82 @@
 </section>
 
 </div>
+<div class="miso-lab-wrap">
+<h2 class="miso-lab-title"><img src="miso-headshot.webp" alt="Miso" class="miso-lab-headshot"> MISO'S GUESSES</h2>
+<div class="miso-agent-intro">
+  <h3>Meet Miso — an agentic agent, not a mascot</h3>
+  <p>Miso sits at her computer and makes her guesses: where XRP will be, called before the fact, at a stated price and time. How she makes them is her secret — it is not published here, in her charter, or anywhere. What is public is every guess she has ever logged and exactly how each one scored.</p>
+  <p><strong>Titles:</strong> Keeper of the Guesses · Most Secretive Bear on the Desk.</p>
+  <p><strong>Duties:</strong> Guess, log it before the fact, take the grade. Nothing else is on the record.</p>
+</div>
+
+<section id="guesses" class="card">
+  <h2>Miso's guesses — the live record <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Latest guess</div><div class="v" id="miGuess" style="font-size:15px">—</div><div class="s" id="miGuessSub">her most recent call</div></div>
+    <div class="stat"><div class="k">About</div><div class="v" id="miAbout" style="font-size:15px">—</div><div class="s" id="miAboutSub">price and time, stated up front</div></div>
+    <div class="stat"><div class="k">Her lean</div><div class="v" id="miTilt" style="font-size:15px">—</div><div class="s" id="miTiltSub">how hard the guess leans</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="miStatus" style="font-size:15px">—</div><div class="s" id="miStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="miBrier">—</div><div class="s" id="miBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="miSkill" style="font-size:15px">—</div><div class="s" id="miSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="miSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="miSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent guesses</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works — the public part: every cycle, Miso writes down a guess before the fact and it is scored out-of-sample like everyone else's. The other part is hers, and it stays hers.</p>
+</section>
+
+<section id="miso" class="card">
+  <h2>Miso's guesses <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="miPanel" hidden>
+    <div class="wv-head">MISO'S STANDING VERDICT <span class="wv-badge" id="miVerdict"></span></div>
+    <p class="wv-plain" id="miPlain"></p>
+    <div class="wv-ev" id="miEvidence"></div>
+    <details class="wv-det"><summary>How the record reached it — every discipline's read</summary><div id="miDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="miHypotheses"></div></details>
+    <div class="wv-meta muted" id="miMeta"></div>
+  </div>
+  <div class="miso-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="miso.webp" alt="Miso working at her computer" id="miHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="miBubble"><span id="miBubbleText">warming up my desk…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Miso's findings <span class="lm-live" id="miLiveDot"></span></div>
+        <div class="lm-line" id="miBoardGuess">warming up…</div>
+        <div class="lm-line" id="miBoardWhen"></div>
+        <div class="lm-line" id="miBoardLean"></div>
+        <div class="lm-line lm-verdict" id="miBoardVerdict"></div>
+        <svg id="miBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="miBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="miBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide guesses log">GUESSES LOG — every cycle, saved <span id="miLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="miLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Miso's record ever earns real out-of-sample evidence, it will get wired into the forecast. Her method will still not be published.</p>
+  <h3 class="wchat-title">CHAT WITH Miso</h3>
+  <div class="wchat" id="michat">
+    <div class="wchat-head">
+      <img src="miso-headshot.webp" alt="Miso">
+      <div class="wchat-who"><b>Miso</b><span class="wchat-online"><i></i>online — ask me about my guesses and my record</span></div>
+    </div>
+    <div class="wchat-log" id="miChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="miChatChips"></div>
+    <div class="wchat-input">
+      <input id="miChatText" type="text" placeholder="Ask Miso…" maxlength="300" autocomplete="off">
+      <button id="miChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Miso talks about her guesses and her grades — how she guesses stays her secret. 🔒</div>
+  </div>
+</section>
+
+</div>
 
 <!-- AGENT-SECTIONS-END: second-generation lab sections (Opal → Nia) are inserted above this marker, one per agent, in build order. -->
 

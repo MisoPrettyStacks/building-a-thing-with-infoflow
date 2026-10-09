@@ -21,6 +21,7 @@ import { mollyAnswer, mollyIsIpProbe, mollyRepeatRefusal } from './lib/mollychat
 import { reahAnswer, reahIsIpProbe, reahRepeatRefusal } from './lib/reahchat.js';
 import { claraAnswer, claraIsIpProbe, claraRepeatRefusal } from './lib/clarachat.js';
 import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from './lib/lenachat.js';
+import { misoAnswer, misoIsIpProbe, misoRepeatRefusal } from './lib/misochat.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -71,7 +72,7 @@ async function loadSummary() {
     () => renderSagePanel(summary), () => renderCherryPanel(summary), () => renderCoraPanel(summary),
     () => renderSophiePanel(summary), () => renderNoraPanel(summary), () => renderDaisyPanel(summary),
     () => renderVioletPanel(summary), () => renderOpalPanel(summary),
-    () => renderReahPanel(summary), () => renderClaraPanel(summary), () => renderLenaPanel(summary),
+    () => renderReahPanel(summary), () => renderClaraPanel(summary), () => renderLenaPanel(summary), () => renderMisoPanel(summary),
   ]) {
     try { fn(); } catch (e) { console.error('panel render failed:', e); }
   }
@@ -5040,6 +5041,7 @@ function initNotebookToggles() {
   step(() => { loadReahVerdict(); initReahChat(); });
   step(() => { loadClaraVerdict(); initClaraChat(); });
   step(() => { loadLenaVerdict(); initLenaChat(); });
+  step(() => { loadMisoVerdict(); initMisoChat(); });
 })();
 
 /* ---------------- Reah: lab (fragment) ---------------- */
@@ -5557,6 +5559,162 @@ function renderLenaPanel(summary) {
     rowsEl.innerHTML = '';
     const notes = (L.log || []).slice().reverse().slice(0, 40);
     if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No notes yet.</div>';
+    for (const e of notes) {
+      const row = document.createElement('div'); row.className = 'lm-row';
+      const head = document.createElement('button'); head.className = 'lm-rowhead';
+      const tt = document.createElement('span'); tt.className = 'lm-t';
+      const dt = new Date(e.t);
+      tt.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const vv = document.createElement('span');
+      vv.className = 'lm-v ' + (e.verdict === 'useful' ? 'lm-v-useful' : e.verdict === 'insufficient data' ? 'lm-v-insuf' : 'lm-v-not');
+      vv.textContent = e.verdict;
+      const f = document.createElement('span'); f.className = 'lm-f'; f.textContent = e.finding;
+      head.append(tt, vv, f);
+      const det = document.createElement('div'); det.className = 'lm-detail'; det.hidden = true;
+      det.innerHTML = '<div class="lm-sec"><span class="lm-k">CHECKS</span><br>' + (e.checks || []).map((k) => '<span class="' + (k.pass ? 'lm-check-pass' : 'lm-check-fail') + '">' + (k.pass ? '✓' : '✗') + '</span> ' + k.name + ' — ' + k.detail).join('<br>') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">WHY</span><br>' + (e.verdict_why || '') + '</div>' +
+        '<div class="lm-sec"><span class="lm-k">MATHEMATICAL EFFECT</span><br>' + (e.math_effect ? e.math_effect.detail : '') + '</div>';
+      head.addEventListener('click', () => { det.hidden = !det.hidden; });
+      row.append(head, det);
+      rowsEl.appendChild(row);
+    }
+  }
+}
+
+/* ---------------- Miso: guesses (fragment) ----------------
+   Public surface: her guesses, her scores, her log. Her method is
+   never rendered, linked, or described here — by design. */
+function initMisoChat() {
+  const log = $('miChatLog'), input = $('miChatText'), send = $('miChatSend'), chips = $('miChatChips');
+  if (!log || !input || !send) return;
+  const scroll = () => { log.scrollTop = log.scrollHeight; };
+  const bubble = (who, text) => {
+    const row = document.createElement('div');
+    row.className = 'wchat-row ' + who;
+    if (who === 'miso') { const av = document.createElement('img'); av.src = 'miso-headshot.webp'; av.alt = 'Miso'; row.appendChild(av); }
+    const b = document.createElement('div'); b.className = 'wchat-bubble'; b.textContent = text;
+    row.appendChild(b); log.appendChild(row); scroll();
+  };
+  const CHIP_QS = ["What's your latest guess?", "What's your verdict?", "What's your Brier score?", "How do you guess?"];
+  if (chips) { chips.innerHTML = ''; for (const q of CHIP_QS) { const c = document.createElement('button'); c.type = 'button'; c.className = 'wchat-chip'; c.textContent = q; c.addEventListener('click', () => { input.value = q; doSend(); }); chips.appendChild(c); } }
+  let ipCount = 0;
+  try { ipCount = parseInt(localStorage.getItem('misoChatIpCount') || '0', 10) || 0; } catch { /* private mode */ }
+  const doSend = () => {
+    const text = input.value.trim().slice(0, 300);
+    if (!text) return;
+    input.value = '';
+    bubble('me', text);
+    const typing = document.createElement('div');
+    typing.className = 'wchat-row miso';
+    typing.innerHTML = '<img src="miso-headshot.webp" alt="Miso"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing); scroll();
+    let reply;
+    if (misoIsIpProbe(text)) { ipCount++; try { localStorage.setItem('misoChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? misoRepeatRefusal() : misoAnswer(text); }
+    else reply = misoAnswer(text);
+    setTimeout(() => { typing.remove(); bubble('miso', reply); }, 600 + Math.random() * 500);
+  };
+  send.addEventListener('click', doSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+  setTimeout(() => bubble('miso', "Hi, I'm Miso 🐻💻 Ask me about my guesses or my record — those are public. How I guess? That's my secret, and it stays that way!"), 800);
+}
+
+async function loadMisoVerdict() {
+  const panel = $('miPanel');
+  if (!panel || typeof DATA_BASE === 'undefined') return;
+  let doc;
+  try {
+    const r = await fetch(DATA_BASE + 'miso_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) return;
+    doc = await r.json();
+  } catch { return; }
+  if (!doc || !doc.verdict) return;
+  panel.hidden = false;
+  const badge = $('miVerdict');
+  badge.textContent = doc.verdict === 'APPLY_CANDIDATE' ? 'APPLY — nominated for testing' : doc.verdict;
+  badge.className = 'wv-badge ' + (doc.verdict === 'APPLY_CANDIDATE' ? 'apply' : doc.verdict === 'WITHDRAW' ? 'withdraw' : 'hold');
+  $('miPlain').textContent = doc.verdict_plain || '';
+  const ev = doc.evidence || {};
+  $('miEvidence').innerHTML = 'Evidence from her public record: <b>' + (ev.n || 0) + '</b> log entries' +
+    (ev.member_n >= 200 ? ' · out-of-sample member Brier <b>' + ev.member_brier.toFixed(5) + '</b> vs baseline <b>' + ev.base_brier.toFixed(5) + '</b> (n=' + ev.member_n + ')'
+      : ' · scoreboard warming up (n=' + (ev.member_n || 0) + '/200)');
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('miDisciplines').innerHTML = (doc.disciplines_applied || []).map((d) => '<div class="wv-line"><span class="wv-d">' + esc(d.discipline) + ':</span> ' + esc(d.assessment) + '</div>').join('');
+  $('miHypotheses').innerHTML = (doc.hypotheses || []).map((h) => '<div class="wv-hyp"><b>' + esc(h.id) + '</b> — ' + esc(h.claim) + '<br>status: <span class="st ' + esc(h.status) + '">' + esc(h.status) + '</span>' + (h.status_why ? ' <span class="muted">(' + esc(h.status_why) + ')</span>' : '') + '</div>').join('') || '<div class="muted">No hypotheses recorded yet.</div>';
+  const lit = (doc.literature || []).slice(-3).reverse();
+  $('miMeta').innerHTML = 'Charter v' + esc(doc.charter_version) + ' · updated ' + esc((doc.updated_at || '').slice(0, 10)) +
+    (lit.length ? ' · recent reading: ' + lit.map((x) => '<a href="' + esc(x.id) + '" target="_blank" rel="noopener">' + esc(x.title.length > 60 ? x.title.slice(0, 60) + '…' : x.title) + '</a>').join(' · ') : '');
+}
+
+function renderMisoPanel(summary) {
+  const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+  const fmtP = (x) => (x != null && isFinite(x) ? '$' + x.toFixed(4) : '—');
+  const fmtT = (ts) => (ts != null && isFinite(ts) ? new Date(ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET' : '—');
+  const sb = summary && summary.windows && summary.windows.all && summary.windows.all.guesses;
+  if (sb && $('miBrier')) {
+    setT('miBrier', sb.brierMiso != null && isFinite(sb.brierMiso) ? sb.brierMiso.toFixed(5) : '—');
+    setT('miBrierN', 'n=' + sb.n + ' scored' + (sb.brierMiso != null && sb.brierBase != null && sb.brierMiso < sb.brierBase ? ' · beats baseline ✓' : ''));
+    if (sb.skill24h && sb.skill24h.n >= 30) { setT('miSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%'); setT('miSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction'); }
+  }
+  const S = summary && summary.guesses;
+  if (S) {
+    const c = S;
+    setT('miGuess', c.guess ? (c.guess === 'above' ? '▲ above' : '▼ below') : '—');
+    setT('miGuessSub', c.degraded ? 'screen dark' : c.warmingUp ? 'settling in' : 'her most recent call');
+    setT('miAbout', fmtP(c.threshold) + ' · ' + fmtT(c.targetT));
+    setT('miTilt', (c.bias >= 0 ? '+' : '') + (c.bias || 0).toFixed(4));
+    setT('miTiltSub', c.degraded ? 'screen dark' : c.warmingUp ? 'settling in' : 'how hard the guess leans');
+    setT('miStatus', c.degraded ? 'Blind' : c.warmingUp ? 'Warming up' : 'Live');
+    setT('miStatusSub', c.degraded ? 'no guess — screen dark' : c.warmingUp ? 'settling in at her desk' : 'guessing');
+    setT('miSignalState', (c.degraded || c.warmingUp) ? 'warming up' : Math.abs(c.bias || 0) >= 0.004 ? 'decisive guess' : 'abstaining');
+  }
+  const spark = $('miSpark');
+  if (spark) {
+    const g = spark.getContext('2d');
+    g.clearRect(0, 0, spark.width, spark.height);
+    const pts = ((summary && summary.miso && summary.miso.log) || []).filter((e) => e.computed && !e.computed.degraded && e.computed.bias != null).slice(-40).map((e) => e.computed.bias);
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      g.strokeStyle = '#4cc9f0'; g.lineWidth = 1.5; g.beginPath();
+      pts.forEach((v, i) => { const x = 4 + (i / (pts.length - 1)) * (spark.width - 8); const y = spark.height - 4 - ((v - mn) / rg) * (spark.height - 8); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+      g.stroke();
+    }
+  }
+  const L = summary && summary.miso;
+  const rowsEl = $('miLogRows');
+  const bubble = $('miBubbleText');
+  if (!L || !L.latest) {
+    if (bubble) bubble.textContent = 'warming up my desk…';
+    return;
+  }
+  const n = L.latest, c = n.computed;
+  if (c && !c.degraded && !c.warming_up && c.guess) {
+    setT('miBoardGuess', `my guess:  ${c.guess} ${fmtP(c.threshold)}`);
+    setT('miBoardWhen', `about ${fmtT(c.target_t)} · one minute before the frame closes`);
+    setT('miBoardLean', `my lean  ${c.bias >= 0 ? '+' : ''}${(c.bias || 0).toFixed(4)}`);
+  } else {
+    setT('miBoardGuess', c && c.degraded ? 'screen dark…' : 'warming up…');
+    setT('miBoardWhen', ''); setT('miBoardLean', '');
+  }
+  const vEl = $('miBoardVerdict');
+  if (vEl) { vEl.textContent = `verdict: ${n.verdict}${n.verdict === 'not useful' ? ' — yet' : ''}`; vEl.style.color = n.verdict === 'useful' ? '#b5e6a2' : n.verdict === 'insufficient data' ? '#c9c9c9' : '#f2c879'; }
+  const pts = (L.log || []).filter((e) => e.computed && !e.computed.degraded && e.computed.bias != null).slice(-24).map((e) => e.computed.bias);
+  const sp = $('miBoardSpark');
+  if (sp) {
+    if (pts.length > 1) {
+      const mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = (mx - mn) || 1;
+      sp.setAttribute('points', pts.map((v, i) => (300 * i / (pts.length - 1)).toFixed(1) + ',' + (60 - ((v - mn) / rg) * 52).toFixed(1)).join(' '));
+      setT('miBoardSparkLabel', `my lean · last ${pts.length} notes`);
+    } else { sp.setAttribute('points', ''); setT('miBoardSparkLabel', ''); }
+  }
+  if (bubble) {
+    const short = n.finding.length > 150 ? n.finding.slice(0, 150) + '…' : n.finding;
+    if (bubble.textContent !== short) { bubble.textContent = short; const b = $('miBubble'); if (b) { b.classList.remove('ww-talk'); void b.offsetWidth; b.classList.add('ww-talk'); } }
+  }
+  if (rowsEl) {
+    $('miLogCount').textContent = '· ' + (L.log || []).length + ' notes saved';
+    rowsEl.innerHTML = '';
+    const notes = (L.log || []).slice().reverse().slice(0, 40);
+    if (!notes.length) rowsEl.innerHTML = '<div class="lm-empty">No guesses yet.</div>';
     for (const e of notes) {
       const row = document.createElement('div'); row.className = 'lm-row';
       const head = document.createElement('button'); head.className = 'lm-rowhead';

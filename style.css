@@ -1793,13 +1793,14 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 .reah-lab-wrap { border: 2px solid #f59e0b; border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
 .clara-lab-wrap { border: 2px solid #818cf8; border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
 .lena-lab-wrap { border: 2px solid #e879f9; border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
-.reah-lab-title, .clara-lab-title, .lena-lab-title {
+.miso-lab-wrap { border: 2px solid #4cc9f0; border-radius: 14px; padding: 20px 18px; margin: 20px 0; }
+.reah-lab-title, .clara-lab-title, .lena-lab-title, .miso-lab-title {
   display: flex; align-items: center; justify-content: center; gap: 14px;
   text-align: center; font-size: 22px; font-weight: 700; letter-spacing: 1px; margin: 4px 0 14px;
 }
-.reah-lab-title { color: #f59e0b; } .clara-lab-title { color: #818cf8; } .lena-lab-title { color: #e879f9; }
-.reah-lab-headshot, .clara-lab-headshot, .lena-lab-headshot { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
-.reah-agent-intro h3 { color: #f59e0b; } .clara-agent-intro h3 { color: #818cf8; } .lena-agent-intro h3 { color: #e879f9; }
-.reah-agent-intro p, .clara-agent-intro p, .lena-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
-.reah-scene, .clara-scene, .lena-scene { margin: 6px 0 14px; position: relative; }
-@media (max-width: 640px) { .reah-lab-title, .clara-lab-title, .lena-lab-title { font-size: 17px; } .reah-lab-headshot, .clara-lab-headshot, .lena-lab-headshot { width: 48px; height: 48px; } }
+.reah-lab-title { color: #f59e0b; } .clara-lab-title { color: #818cf8; } .lena-lab-title { color: #e879f9; } .miso-lab-title { color: #4cc9f0; }
+.reah-lab-headshot, .clara-lab-headshot, .lena-lab-headshot, .miso-lab-headshot { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.reah-agent-intro h3 { color: #f59e0b; } .clara-agent-intro h3 { color: #818cf8; } .lena-agent-intro h3 { color: #e879f9; } .miso-agent-intro h3 { color: #4cc9f0; }
+.reah-agent-intro p, .clara-agent-intro p, .lena-agent-intro p, .miso-agent-intro p { margin: 8px 0; font-size: 14px; line-height: 1.55; }
+.reah-scene, .clara-scene, .lena-scene, .miso-scene { margin: 6px 0 14px; position: relative; }
+@media (max-width: 640px) { .reah-lab-title, .clara-lab-title, .lena-lab-title, .miso-lab-title { font-size: 17px; } .reah-lab-headshot, .clara-lab-headshot, .lena-lab-headshot { width: 48px; height: 48px; } }
