@@ -3,18 +3,18 @@
  "title": "Principal Investigator, On-Chain Flows Lab",
  "charter_version": "1.0.0",
  "charter": "OPHELIA_CHARTER.md",
- "updated_at": "2026-10-09T06:58:26.130Z",
- "verdict": "HOLD",
- "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=83/200); decisive reads 0.0% — below the 40% bar; snapshots blind 72.5% of cycles — I check the instruments before trusting the readings. I keep the ledger open and keep gathering evidence.",
- "verdict_plain": "Ophelia's verdict: hold and keep watching. The flow evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "updated_at": "2026-10-09T23:12:33.784Z",
+ "verdict": "WITHDRAW",
+ "verdict_why": "No out-of-sample edge and the flow read rarely takes a side (decisive only 0.0% of cycles). A slow signal that never speaks and never beats the baseline is not a signal — I recommend weight 0 and the ledger records the refutation.",
+ "verdict_plain": "Ophelia's verdict: the evidence says aggregate exchange flows carry no usable signal. She recommends removing it from the model entirely — a negative result, published honestly.",
  "evidence": {
-  "n": 91,
-  "blind_frac": 0.7252747252747253,
-  "warming_frac": 0.27472527472527475,
+  "n": 200,
+  "blind_frac": 0,
+  "warming_frac": 1,
   "decisive_frac": 0,
-  "member_brier": 0.25150527584453003,
-  "base_brier": 0.25150527584453003,
-  "member_n": 83,
+  "member_brier": 0.24962756258496668,
+  "base_brier": 0.24962756258496668,
+  "member_n": 270,
   "oos_edge": false,
   "skill24h": null
  },
@@ -34,18 +34,18 @@
    "claim": "The flow-health member beats the baseline forecast out-of-sample on Brier score.",
    "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
    "test": "live scoreboard comparison",
-   "status": "open",
-   "status_why": "scoreboard warming up",
-   "updated_at": null
+   "status": "refuted",
+   "status_why": "member 0.24963 vs baseline 0.24963, n=270",
+   "updated_at": "2026-10-09T23:12:33.784Z"
   },
   {
    "id": "O3",
    "claim": "The edge, if any, concentrates in high breadth+velocity regimes — when many tracked wallets move together and the turnover is fast, the read carries information.",
    "prediction": "decisive-cycle edge is larger when breadth and velocity are both elevated",
    "test": "scoreboard split by breadth/velocity regime from lab notes",
-   "status": "open",
-   "status_why": "awaiting history",
-   "updated_at": null
+   "status": "refuted",
+   "status_why": "decisive_frac=0.000 over n=200",
+   "updated_at": "2026-10-09T23:12:33.784Z"
   },
   {
    "id": "O4",
@@ -71,7 +71,7 @@
   },
   {
    "discipline": "statistician",
-   "assessment": "decisive_frac=0.0% over n=91; scoreboard still warming up (n=83/200). Flow health is slow — I size my claims to my sample."
+   "assessment": "decisive_frac=0.0% over n=200; no out-of-sample edge — the scoreboard overrules the flow desk. Flow health is slow — I size my claims to my sample."
   },
   {
    "discipline": "microstructure",
@@ -83,15 +83,15 @@
   },
   {
    "discipline": "data_engineer",
-   "assessment": "Instrument flag: snapshots unseen 72.5% of cycles — a failed fetch looks like calm balances unless you check, and I check. 72h of history required before any read."
+   "assessment": "Pipeline healthy: snapshots present 100.0% of cycles; same ledger state reproduces the same numbers."
   },
   {
    "discipline": "risk_manager",
-   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+   "assessment": "A slow signal that never speaks and never beats the baseline is not a signal — the risk-managed move is to withdraw, not to keep a dead hypothesis on life support."
   },
   {
    "discipline": "intelligence_analyst",
-   "assessment": "Known: 0.0% decisive reads over 91 cycles. Unknown: whether aggregate drift reflects genuine repositioning or rotating exchange plumbing. Confidence: low — the honest answer."
+   "assessment": "Known: 0.0% decisive reads over 200 cycles. Unknown: whether aggregate drift reflects genuine repositioning or rotating exchange plumbing. Confidence: moderate — evidence-backed, still falsifiable."
   },
   {
    "discipline": "research_scientist",
@@ -99,7 +99,7 @@
   },
   {
    "discipline": "principal_investigator",
-   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+   "assessment": "I sign this verdict: WITHDRAW. It is defensible from the record below, and I will reverse it the moment the evidence does."
   },
   {
    "discipline": "trader",
