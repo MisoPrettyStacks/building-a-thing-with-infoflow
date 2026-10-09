@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T19:04:56.658Z",
- "live_rate": 1.3873833333333332,
+ "computed_at": "2026-10-09T19:26:02.399Z",
+ "live_rate": 1.38683,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,46 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(975)",
-  "bitstamp:ok(379)",
-  "gemini:ok(223)"
+  "kraken:ok(703)",
+  "bitstamp:ok(315)",
+  "gemini:ok(240)"
  ],
  "partitions": [
-  {
-   "t0": 1791568800000,
-   "t1": 1791569100000,
-   "vwm": 1.3869,
-   "trades": 287,
-   "volume_xrp": 129784.95
-  },
-  {
-   "t0": 1791569100000,
-   "t1": 1791569400000,
-   "vwm": 1.38881,
-   "trades": 280,
-   "volume_xrp": 132659.97
-  },
-  {
-   "t0": 1791569400000,
-   "t1": 1791569700000,
-   "vwm": 1.38939,
-   "trades": 364,
-   "volume_xrp": 292571.12
-  },
-  {
-   "t0": 1791569700000,
-   "t1": 1791570000000,
-   "vwm": 1.38791,
-   "trades": 242,
-   "volume_xrp": 81310.07
-  },
-  {
-   "t0": 1791570000000,
-   "t1": 1791570300000,
-   "vwm": 1.38776,
-   "trades": 414,
-   "volume_xrp": 211180.92
-  },
   {
    "t0": 1791570300000,
    "t1": 1791570600000,
@@ -101,9 +66,44 @@
    "vwm": 1.38648,
    "trades": 198,
    "volume_xrp": 89812.82
+  },
+  {
+   "t0": 1791572400000,
+   "t1": 1791572700000,
+   "vwm": 1.3877,
+   "trades": 273,
+   "volume_xrp": 169120.58
+  },
+  {
+   "t0": 1791572700000,
+   "t1": 1791573000000,
+   "vwm": 1.38827,
+   "trades": 210,
+   "volume_xrp": 93614.18
+  },
+  {
+   "t0": 1791573000000,
+   "t1": 1791573300000,
+   "vwm": 1.3865,
+   "trades": 197,
+   "volume_xrp": 69030.65
+  },
+  {
+   "t0": 1791573300000,
+   "t1": 1791573600000,
+   "vwm": 1.38543,
+   "trades": 189,
+   "volume_xrp": 82608.2
+  },
+  {
+   "t0": 1791573600000,
+   "t1": 1791573900000,
+   "vwm": 1.38623,
+   "trades": 281,
+   "volume_xrp": 84710.26
   }
  ],
- "trade_count": 3896,
+ "trade_count": 3483,
  "official_rr": {
   "value": 1.38329,
   "change_pct": -1.4,
