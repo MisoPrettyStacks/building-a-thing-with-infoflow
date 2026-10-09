@@ -1,0 +1,103 @@
+{
+ "agent": "daisy",
+ "title": "Principal Investigator, Derivatives Lab",
+ "charter_version": "1.0.0",
+ "charter": "DAISY_CHARTER.md",
+ "updated_at": "2026-10-09T06:59:43.261Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=83/200); decisive reads 22.0% — below the 40% bar; feed blind 78.0% of cycles — I check the instruments before trusting the readings. I keep the watch open and keep gathering evidence.",
+ "verdict_plain": "Daisy's verdict: hold and keep watching. The funding-rate and open-interest evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.7802197802197802,
+  "warming_frac": 0,
+  "decisive_frac": 0.21978021978021978,
+  "crowded_long_cycles": 20,
+  "crowded_short_cycles": 0,
+  "member_brier": 0.2529709793872891,
+  "base_brier": 0.25150527584453003,
+  "member_n": 83,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends derivWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "DA1",
+   "claim": "Persistently positive funding + rising open interest (crowded longs) tilts subsequent XRP moves down; persistently negative funding + rising OI (crowded shorts) tilts them up.",
+   "prediction": "decisive positioning regimes align with 24h direction more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "DA2",
+   "claim": "The derivatives-positioning member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "DA3",
+   "claim": "Crowded positioning regimes are episodic and expressible — not a permanent background hum.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "DA4",
+   "claim": "Crowded-longs regimes precede downward squeezes more reliably than crowded-shorts regimes precede upward squeezes (asymmetry of fear vs greed).",
+   "prediction": "skill24h hit rate higher on crowded-longs cycles than crowded-shorts cycles",
+   "test": "split skill by crowd side once n ≥ 200",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "derivatives_specialist",
+   "assessment": "The derivatives crowd is mostly balanced (22.0% decisive). I read persistent regimes, not single funding prints — one extreme print is an anecdote, a sustained regime is evidence."
+  },
+  {
+   "discipline": "microstructure_economist",
+   "assessment": "No edge to explain — I will not invent a squeeze story for a statistic that is not there."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "decisive_frac=22.0% over n=91; scoreboard still warming up (n=83/200). Crowded regimes are episodic — I size my claims to my sample."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: derivatives feed blind 78.0% of cycles — a down API looks like a calm market unless you check liveness, and I check."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "A flashing funding number is not a trade signal — by the time a crowded regime is obvious on the funding board, the market has often already priced the squeeze. The edge, if any, is in persistent regimes the crowd misreads, not a single extreme print. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 22.0% decisive reads over 91 cycles (20 crowded-longs, 0 crowded-shorts). Unknown: whether the crowd meter changes behavior once everyone watches it. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
