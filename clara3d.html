@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QUARTER-HOUR BOUNDARY — live 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070d; }
+  #scene { position: fixed; inset: 0; }
+  .hud { position: fixed; z-index: 10; color: #dfe8f5; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #title { top: 14px; left: 16px; pointer-events: none; }
+  #title h1 { margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; color: #818cf8; }
+  #title p { margin: 4px 0 0; font-size: 12px; color: #8fa0bd; max-width: 340px; }
+  #stats { top: 14px; right: 16px; background: rgba(10,16,28,0.72); border: 1px solid #818cf844; border-radius: 10px; padding: 10px 14px; font-size: 12px; line-height: 1.7; min-width: 250px; backdrop-filter: blur(4px); }
+  #stats .k { color: #8fa0bd; } #stats .v { color: #fff; font-variant-numeric: tabular-nums; }
+  #stats .up { color: #7ee2a8; } #stats .dn { color: #ff8fa3; } #stats .warm { color: #f2c879; }
+  #hint { bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #5d6f8f; pointer-events: none; white-space: nowrap; }
+  #enterWrap { bottom: 42px; left: 50%; transform: translateX(-50%); }
+  #enterLink { color: #dfe8f5; text-decoration: none; font-size: 15px; letter-spacing: 6px; font-weight: 600; padding: 10px 24px 10px 30px; border: 1px solid #818cf866; border-radius: 999px; background: rgba(10,16,28,0.6); backdrop-filter: blur(4px); }
+  #waiting { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(5,7,13,0.55); color: #cfe0ff; font-size: 15px; letter-spacing: 1px; font-family: ui-sans-serif, system-ui, sans-serif; }
+  #waiting.hidden { display: none; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+  body.embed #title, body.embed #hint { display: none; }
+  body.embed #enterWrap { bottom: 14px; }
+  body.embed #enterLink { font-size: 12px; padding: 7px 18px 7px 23px; }
+  body.embed #stats { top: 8px; right: 8px; font-size: 11px; padding: 8px 10px; min-width: 0; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="title">
+  <h1>QUARTER-HOUR BOUNDARY</h1>
+  <p>Clara's live view of the clock grid: the orb is XRP, the beam is her boundary tilt at the :00/:15/:30/:45 openings — longer when a boundary bar arrives with a burst and its neighbours agree.</p>
+</div>
+<div class="hud" id="stats"></div>
+<div class="hud" id="hint">drag to orbit · scroll to zoom</div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#clara">__NAME__'S LAB</a></div>
+<div id="waiting"><span class="pulse">awaiting live data…</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const REPO = 'MisoPrettyStacks/building-a-thing-with-infoflow';
+const DATA_BASE = `https://raw.githubusercontent.com/${REPO}/data/`;
+let live = null;
+
+async function fetchSummary() {
+  try {
+    const r = await fetch(DATA_BASE + 'summary.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw 0;
+    const s = await r.json();
+    const cc = s.boundary || {};
+    let verdict = null;
+    try {
+      const rv = await fetch(DATA_BASE + 'clara_supervisor.json?m=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+      if (rv.ok) verdict = (await rv.json()).verdict || null;
+    } catch { /* supervisor file optional */ }
+    live = { ...cc, verdict, computedAt: s.generated_at };
+    document.getElementById('waiting').classList.add('hidden');
+    refreshHud();
+  } catch { /* keep last good state */ }
+}
+
+function refreshHud() {
+  const el = document.getElementById('stats');
+  if (!live) { el.innerHTML = '<span class="k">waiting…</span>'; return; }
+  const b = live.bias || 0;
+  const cls = live.degraded ? 'warm' : b > 0.0005 ? 'up' : b < -0.0005 ? 'dn' : '';
+  el.innerHTML =
+    `<div><span class="k">clock phase</span> <span class="v">${live.phaseMin != null ? live.phaseMin + ' min into quarter' : '—'}</span></div>` +
+    `<div><span class="k">boundary burst</span> <span class="v">${live.burst != null ? '×' + live.burst.toFixed(2) : '—'}</span></div>` + +
+    `<div><span class="k">tilt</span> <span class="v ${cls}">${b >= 0 ? '+' : ''}${b.toFixed(4)}</span></div>` +
+    `<div><span class="k">verdict</span> <span class="v">${live.verdict || '—'}</span></div>`;
+}
+
+/* ---------------- scene ---------------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x05070d, 0.022);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 8, 30);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxDistance = 70; controls.minDistance = 10;
+scene.add(new THREE.AmbientLight(0x8899bb, 0.5));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(10, 18, 8); scene.add(key);
+
+// central XRP orb; glow color follows tilt sign, pulse speed follows |tilt|
+const orbMat = new THREE.MeshStandardMaterial({ color: 0x9db8dd, emissive: 0x223a5f, emissiveIntensity: 1.0, roughness: 0.3 });
+const orb = new THREE.Mesh(new THREE.SphereGeometry(2.4, 48, 32), orbMat);
+scene.add(orb);
+// tilt beam: cylinder along +X (up-tilt) or -X (down-tilt), length by |bias|
+const beamMat = new THREE.MeshBasicMaterial({ color: 0x7ee2a8, transparent: true, opacity: 0.75 });
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1, 12), beamMat);
+beam.rotation.z = Math.PI / 2;
+scene.add(beam);
+// particle ring
+const pGeo = new THREE.BufferGeometry();
+const N = 700, pos = new Float32Array(N * 3);
+for (let i = 0; i < N; i++) {
+  const a = Math.random() * Math.PI * 2, rad = 5 + Math.random() * 14;
+  pos[i * 3] = Math.cos(a) * rad; pos[i * 3 + 1] = (Math.random() - 0.5) * 7; pos[i * 3 + 2] = Math.sin(a) * rad;
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x8fa0bd, size: 0.14, transparent: true, opacity: 0.8 }));
+scene.add(pts);
+
+const EMBED = new URLSearchParams(location.search).has('embed');
+if (EMBED) document.body.classList.add('embed');
+fetchSummary();
+setInterval(fetchSummary, 30000);
+
+let t0 = performance.now();
+function animate(now) {
+  requestAnimationFrame(animate);
+  const t = (now - t0) / 1000;
+  const b = live ? (live.bias || 0) : 0;
+  const mag = Math.min(1, Math.abs(b) / 0.02);
+  orbMat.emissive.setHex(live && live.degraded ? 0x5f4a22 : b > 0.0005 ? 0x1d5f38 : b < -0.0005 ? 0x5f1d2e : 0x223a5f);
+  orb.scale.setScalar(1 + 0.05 * Math.sin(t * (1 + mag * 3)));
+  beamMat.color.setHex(b >= 0 ? 0x7ee2a8 : 0xff8fa3);
+  const len = 2 + mag * 14;
+  beam.scale.set(1, len, 1);
+  beam.position.x = (b >= 0 ? 1 : -1) * (2.4 + len / 2);
+  beamMat.opacity = live ? 0.25 + mag * 0.6 : 0.1;
+  pts.rotation.y = t * 0.03 * (1 + mag * 2);
+  orb.rotation.y = t * 0.15;
+  controls.update();
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

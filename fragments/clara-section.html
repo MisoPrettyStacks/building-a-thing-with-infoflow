@@ -1,0 +1,82 @@
+<div class="clara-lab-wrap">
+<h2 class="clara-lab-title"><img src="clara-headshot.webp" alt="Clara" class="clara-lab-headshot"> CLARA'S LAB - QUARTER-HOUR BOUNDARY</h2>
+<div class="clara-agent-intro">
+  <h3>Meet Clara — an agentic agent, not a mascot</h3>
+  <p>Clara watches the clock grid. Trading bursts on the :00/:15/:30/:45 boundaries, and she tests whether XRP's boundary bars carry a readable footprint — a burst of volume with boundary bars agreeing in sign.</p>
+  <p><strong>Titles:</strong> Principal Investigator of the Quarter-Hour Boundary Lab · Clock-Phase Analyst · Research Scientist.</p>
+  <p><strong>Duties:</strong> Measure boundary-bar returns, volume bursts and sign persistence on the quarter-hour grid; abstain when the grid is quiet or scattered; keep the lab notebook.</p>
+</div>
+
+<section id="boundary" class="card">
+  <h2>Quarter-hour boundary — the clock grid <span class="badge" style="font-size:11px;vertical-align:middle">experimental</span></h2>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Clock phase</div><div class="v" id="clPhase" style="font-size:15px">—</div><div class="s" id="clPhaseSub">minutes into the quarter</div></div>
+    <div class="stat"><div class="k">Boundary burst</div><div class="v" id="clBurst" style="font-size:15px">—</div><div class="s" id="clBurstSub">boundary volume vs off-grid</div></div>
+    <div class="stat"><div class="k">Boundary tilt</div><div class="v" id="clTilt" style="font-size:15px">—</div><div class="s" id="clTiltSub">when the grid speaks</div></div>
+    <div class="stat"><div class="k">Data status</div><div class="v" id="clStatus" style="font-size:15px">—</div><div class="s" id="clStatusSub">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="stat"><div class="k">Member OOS Brier</div><div class="v" id="clBrier">—</div><div class="s" id="clBrierN">—</div></div>
+    <div class="stat"><div class="k">24h direction skill</div><div class="v" id="clSkill" style="font-size:15px">—</div><div class="s" id="clSkillSub">vs 50% baseline</div></div>
+    <div class="stat"><div class="k">Signal status</div><div class="v" id="clSignalState" style="font-size:15px">—</div><div class="s">scored only, not used</div></div>
+    <div class="stat"><div class="k">History</div><div class="v" style="font-size:12px"><canvas id="clSpark" width="150" height="36" style="width:150px;height:36px"></canvas></div><div class="s">recent lab reads</div></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">How it works: Every cycle Clara separates boundary bars (:00/:15/:30/:45 starts) from off-grid bars. A read is licensed only when the last boundary bar arrived with a volume burst and recent boundary bars agree in sign — the configuration periodic algorithmic flow would leave behind. Scored out-of-sample; a quiet grid earns an abstention, not a story.</p>
+</section>
+
+<section id="clara3d" class="card">
+  <h2>Clara's live 3D view</h2>
+  <p class="muted" style="margin-top:0">A live rendering of the quantities Clara trades on, driven by the same summary feed as this page. <a href="clara3d.html">Open full-screen →</a></p>
+  <div class="flow3d-embed"><iframe src="clara3d.html?embed=1&v=1" title="Live 3D rendering" loading="lazy"></iframe></div>
+</section>
+
+<section id="clara" class="card">
+  <h2>Clara's lab <span class="badge" style="font-size:11px;vertical-align:middle">experimental — not in the forecast</span></h2>
+  <div class="wv-panel" id="clPanel" hidden>
+    <div class="wv-head">Clara'S STANDING VERDICT <span class="wv-badge" id="clVerdict"></span></div>
+    <p class="wv-plain" id="clPlain"></p>
+    <div class="wv-ev" id="clEvidence"></div>
+    <details class="wv-det"><summary>How she reached it — every discipline's read</summary><div id="clDisciplines"></div></details>
+    <details class="wv-det"><summary>Hypothesis ledger</summary><div id="clHypotheses"></div></details>
+    <div class="wv-meta muted" id="clMeta"></div>
+  </div>
+  <div class="clara-scene">
+    <div class="ww-grid">
+      <div class="ww-hero">
+        <img src="clara.webp" alt="Clara working at her chalkboard" id="clHeroImg">
+        <span class="ww-sparkle" aria-hidden="true"></span>
+        <div class="ww-bubble" id="clBubble"><span id="clBubbleText">setting up my lab…</span></div>
+      </div>
+      <div class="lm-board">
+        <div class="lm-board-title">Clara's findings <span class="lm-live" id="clLiveDot"></span></div>
+        <div class="lm-line" id="clBoardRet">warming up…</div>
+        <div class="lm-line" id="clBoardBurst"></div>
+        <div class="lm-line" id="clBoardTilt"></div>
+        <div class="lm-line lm-verdict" id="clBoardVerdict"></div>
+        <svg id="clBoardSparkSvg" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><polyline id="clBoardSpark" fill="none" points=""/></svg>
+        <div class="lm-spark-label" id="clBoardSparkLabel"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-logbox">
+    <div class="lm-loghead" role="button" tabindex="0" aria-expanded="false" title="Show / hide lab notebook">LAB NOTEBOOK — every cycle, saved <span id="clLogCount" class="muted"></span> <span class="lm-log-arrow" aria-hidden="true">▸</span></div>
+    <div id="clLogRows" class="lm-log-body" hidden></div>
+  </div>
+  <p class="muted" style="font-size:12px;margin-bottom:0">If Clara ever finds real out-of-sample evidence, it will get wired into the forecast.</p>
+  <h3 class="wchat-title">CHAT WITH Clara</h3>
+  <div class="wchat" id="clchat">
+    <div class="wchat-head">
+      <img src="clara-headshot.webp" alt="Clara">
+      <div class="wchat-who"><b>Clara</b><span class="wchat-online"><i></i>online — ask me about the quarter-hour grid</span></div>
+    </div>
+    <div class="wchat-log" id="clChatLog" aria-live="polite"></div>
+    <div class="wchat-chips" id="clChatChips"></div>
+    <div class="wchat-input">
+      <input id="clChatText" type="text" placeholder="Ask Clara…" maxlength="300" autocomplete="off">
+      <button id="clChatSend" type="button">Send</button>
+    </div>
+    <div class="wchat-note muted">Clara answers from her public lab notes — her equations, weights, and tuning stay proprietary. 🔒</div>
+  </div>
+</section>
+
+</div>
