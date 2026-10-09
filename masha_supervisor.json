@@ -1,0 +1,111 @@
+{
+ "agent": "masha",
+ "title": "Principal Investigator, Information Flow Lab",
+ "charter_version": "1.0.1",
+ "charter": "MASHA_CHARTER.md",
+ "updated_at": "2026-10-09T06:59:39.190Z",
+ "verdict": "WITHDRAW",
+ "verdict_why": "Sustained absence of evidence: significant only 0.0% of cycles with no out-of-sample edge; noise-dominated 96.9% of the time. A refuted hypothesis is a successful experiment — I recommend weight 0 and the ledger records the refutation.",
+ "verdict_plain": "Masha's verdict: the evidence says this effect is absent or dead. She recommends removing information flow from the model entirely — a negative result, published honestly.",
+ "evidence": {
+  "n": 130,
+  "insufficient_frac": 0.03076923076923077,
+  "sig_frac": 0,
+  "noise_frac": 0.9692307692307692,
+  "noisy_sig_rate": 0,
+  "clean_sig_rate": null,
+  "mean_net": -0.007317690476190474,
+  "member_brier": 0.25,
+  "ensemble_brier": 0.25320268505211985,
+  "member_n": 156,
+  "oos_edge": false
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends infoflowWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "H1",
+   "claim": "BTC→XRP transfer entropy is persistently significant (z > 2, net > 0) in ordinary market regimes.",
+   "prediction": "sig_frac ≥ 0.60 over rolling history once n ≥ 100",
+   "test": "lab-notebook significance rate",
+   "status": "refuted",
+   "status_why": "sig_frac=0.000 over n=130",
+   "updated_at": "2026-10-09T06:59:39.190Z"
+  },
+  {
+   "id": "H2",
+   "claim": "Significant information flow translates to out-of-sample skill: the infoflow member beats the ensemble on Brier score.",
+   "prediction": "member Brier < ensemble Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "H3",
+   "claim": "Noise regimes (permutation entropy > 0.85) suppress measurable information flow.",
+   "prediction": "significance rate in noisy cycles well below the rate in clean cycles",
+   "test": "conditional significance rates from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "H4",
+   "claim": "The coupling is directional: BTC leads XRP (net flow > 0 on average).",
+   "prediction": "mean net TE > 0 over history",
+   "test": "mean net flow from lab notes",
+   "status": "refuted",
+   "status_why": "mean net=-0.0073 nats",
+   "updated_at": "2026-10-09T06:59:39.190Z"
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "physicist",
+   "assessment": "Noise-dominated regime (96.9% of cycles) — in a disordered medium no structure can propagate, so weak flow is expected, not suspicious."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "Estimator fixed and reported with every number: 3 quantile bins, 1-step histories, 50 shuffle surrogates, z > 2 bar. Change the estimator and the number changes — so the estimator is part of the result."
+  },
+  {
+   "discipline": "economist",
+   "assessment": "No persistent flow to explain — I will not invent an economic story for a statistic that is not there."
+  },
+  {
+   "discipline": "information_theorist",
+   "assessment": "Mean net flow -0.0073 nats (BTC→XRP minus XRP→BTC). By the data-processing inequality I cannot manufacture information by re-binning — only reveal or destroy it."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "sig_frac=0.0% over n=130; scoreboard still warming up (n=156/200) — a backtest is a hypothesis, never evidence."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "Sustained negative evidence — the risk-managed move is to withdraw, not to keep a dead hypothesis on life support."
+  },
+  {
+   "discipline": "computational_scientist",
+   "assessment": "Pipeline healthy: 96.9% of cycles produced honest measurements; same inputs reproduce the same outputs."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Statistical significance is not tradability — spreads, fees and latency eat edges this lab cannot see. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% significance over 130 cycles. Unknown: whether the effect survives the next regime. Confidence: moderate — evidence-backed, still falsifiable."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: WITHDRAW. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
