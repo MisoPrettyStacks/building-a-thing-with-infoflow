@@ -470,6 +470,8 @@ async function cycle() {
         boundary_bias: +(+step.boundaryBias || 0).toFixed(6),
         p_leadlag: step.pLeadlag == null ? null : +step.pLeadlag.toFixed(6),
         leadlag_bias: +(+step.leadlagBias || 0).toFixed(6),
+        p_guesses: step.pMiso == null ? null : +step.pMiso.toFixed(6),
+        guesses_bias: +(+step.misoBias || 0).toFixed(6),
         p_volatility: step.pVolatility == null ? null : +step.pVolatility.toFixed(6),
         vol_active: step.volActive ? 1 : 0,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,

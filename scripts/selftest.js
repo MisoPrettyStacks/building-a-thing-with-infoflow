@@ -511,14 +511,16 @@ import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '
 import { computeEvidence as reahEvidence, decideVerdict as reahDecide } from '../scripts/reah-supervisor.js';
 import { computeEvidence as claraEvidence, decideVerdict as claraDecide } from '../scripts/clara-supervisor.js';
 import { computeEvidence as lenaEvidence, decideVerdict as lenaDecide } from '../scripts/lena-supervisor.js';
+import { computeEvidence as misoEvidence, decideVerdict as misoDecide } from '../scripts/miso-supervisor.js';
 import { reahAnswer, reahIsIpProbe, reahRepeatRefusal } from '../lib/reahchat.js';
 import { claraAnswer, claraIsIpProbe, claraRepeatRefusal } from '../lib/clarachat.js';
 import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js';
+import { misoAnswer, misoIsIpProbe, misoRepeatRefusal } from '../lib/misochat.js';
 
 { // registry + engine + gate contracts
-  ok(AGENT_DEFS.length === 16, 'sixteen lab agents registered');
+  ok(AGENT_DEFS.length === 17, 'seventeen lab agents registered');
   const names = AGENT_DEFS.map((d) => d.name);
-  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia', 'camille', 'molly', 'reah', 'clara', 'lena']) {
+  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia', 'camille', 'molly', 'reah', 'clara', 'lena', 'miso']) {
     ok(names.includes(n), `registry includes ${n}`);
   }
   for (const def of AGENT_DEFS) {
@@ -529,7 +531,7 @@ import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js
     ok(def.supFile === `${def.name}_supervisor.json`, `${def.name}: supervisor filename`);
     ok(Number.isFinite(def.pageWindow) && def.pageWindow > 0, `${def.name}: page window`);
   }
-  ok(EXTRA_BIAS_MEMBERS.length === 13, 'thirteen bias members in the engine table');
+  ok(EXTRA_BIAS_MEMBERS.length === 14, 'fourteen bias members in the engine table');
   ok(VOL_SHRINK === 0.9, 'volatility shrink constant');
   for (const def of AGENT_DEFS) {
     ok(VERDICT_GATES[def.weightKey] === def.name, `verdict gate ${def.weightKey} -> ${def.name}`);
@@ -557,6 +559,7 @@ import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js
     reah: { fading: true, lastRetBps: -12, volRatio: 1.4 },
     clara: { boundaryRetBps: 8, burst: 1.5, persistence: 0.75, phaseMin: 0 },
     lena: { gapBps: -15, leadRetBps: 6, aligned: 100 },
+    miso: { guess: 'above', threshold: 1.40, targetT: 1890000000, pAbove: 0.62, pBelow: 0.38 },
   };
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };
   // Violet is a dampener, not a directional member: her positive verdict is 'dampening'.
@@ -594,6 +597,7 @@ import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js
     { name: 'reah', answer: reahAnswer, isProbe: reahIsIpProbe, refuse: reahRepeatRefusal },
     { name: 'clara', answer: claraAnswer, isProbe: claraIsIpProbe, refuse: claraRepeatRefusal },
     { name: 'lena', answer: lenaAnswer, isProbe: lenaIsIpProbe, refuse: lenaRepeatRefusal },
+    { name: 'miso', answer: misoAnswer, isProbe: misoIsIpProbe, refuse: misoRepeatRefusal },
   ];
   for (const c of CHATS) {
     const id = c.answer('who are you');
@@ -624,6 +628,7 @@ import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js
     { name: 'reah', evidence: reahEvidence, decide: reahDecide },
     { name: 'clara', evidence: claraEvidence, decide: claraDecide },
     { name: 'lena', evidence: lenaEvidence, decide: lenaDecide },
+    { name: 'miso', evidence: misoEvidence, decide: misoDecide },
   ];
   const strong = Array.from({ length: 120 }, () => ({ computed: { bias: 0.006, warming_up: false, degraded: false, decisive: true } }));
   // Camille counts schedule expression from note tilt, not the generic decisive flag
