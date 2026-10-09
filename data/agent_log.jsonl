@@ -193,3 +193,4 @@
 {"ts": "2026-10-09T23:04:52+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3922683333333332, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2897, 'official_rr': 1.38329}", "tag": "info"}
 {"ts": "2026-10-09T23:04:54Z", "agent": "watchdog", "decision": "proactive cf-rate.yml dispatch (run 38002581790)", "detail": "no successful run within last 12min (last success 22:44:48Z); routine proactive dispatch per user-approved fix", "tag": "info"}
 {"ts": "2026-10-09T23:25:02+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3933633333333333, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2929, 'official_rr': 1.38329}", "tag": "info"}
+{"ts": "2026-10-09T23:25:06Z", "agent": "watchdog", "decision": "proactive cf-rate dispatch (no successful cf-rate run within last 12 min; last success 23:04:40Z)", "detail": "dispatched run 38004291846", "tag": "info"}
