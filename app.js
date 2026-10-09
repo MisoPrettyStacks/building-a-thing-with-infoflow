@@ -57,7 +57,20 @@ async function loadSummary() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     summary = await r.json();
   } catch { summary = null; }
-  renderHeartbeat(); renderForecast(); renderScore(currentWin); renderAgent(); renderIntegrity(); renderInfoflow(); renderMasha(); renderWendy(); renderCalendar(); renderCamillePanel(summary); renderMollyPanel(summary); renderMacro(); renderOnchain(); schedDraw(); renderOpheliaPanel(summary); renderNiaPanel(summary); renderSashaPanel(summary); renderSagePanel(summary); renderCherryPanel(summary); renderCoraPanel(summary); renderSophiePanel(summary); renderNoraPanel(summary); renderDaisyPanel(summary); renderVioletPanel(summary); renderOpalPanel(summary);
+  // Isolate panel renderers: a fault in one lab panel must never abort the
+  // rest of the page (the 15-minute window card and the CF reference panel
+  // render after this chain and depend on boot completing).
+  for (const fn of [
+    renderHeartbeat, renderForecast, () => renderScore(currentWin), renderAgent, renderIntegrity,
+    renderInfoflow, renderMasha, renderWendy, renderCalendar, () => renderCamillePanel(summary), () => renderMollyPanel(summary),
+    renderMacro, renderOnchain, schedDraw,
+    () => renderOpheliaPanel(summary), () => renderNiaPanel(summary), () => renderSashaPanel(summary),
+    () => renderSagePanel(summary), () => renderCherryPanel(summary), () => renderCoraPanel(summary),
+    () => renderSophiePanel(summary), () => renderNoraPanel(summary), () => renderDaisyPanel(summary),
+    () => renderVioletPanel(summary), () => renderOpalPanel(summary),
+  ]) {
+    try { fn(); } catch (e) { console.error('panel render failed:', e); }
+  }
 }
 
 /* ---------------- information flow (experimental) ---------------- */
@@ -351,8 +364,7 @@ function renderWendy() {
     setT('wSnapsSub', 'balance history');
   }
   if (sb && sb.n >= 30) {
-    setT('wBrier', sb.brierOnchain.toFixed(5));
-    setT('wBrierN', 'n=' + sb.n + ' scored' + (sb.brierOnchain < sb.brierBase ? ' · beats baseline ✓' : ''));
+    if (sb.brierOnchain != null && isFinite(sb.brierOnchain)) { setT('wBrier', sb.brierOnchain.toFixed(5)); setT('wBrierN', 'n=' + sb.n + ' scored' + (sb.brierBase != null && sb.brierOnchain < sb.brierBase ? ' · beats baseline ✓' : '')); }
     if (sb.skill24h && sb.skill24h.n >= 30) {
       setT('wSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
       setT('wSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
@@ -1648,9 +1660,9 @@ function renderVioletPanel(sum) {
     setT('viDamp', armed ? 'Armed' : 'Scored only');
     setT('viDampNote', armed ? 'shrinking confidence in wild regimes' : 'scored only, not used');
   }
-  if (sb && sb.n >= 30) {
-    setT('viBrier', sb.brierMember.toFixed(5));
-    setT('viBrierN', 'n=' + sb.n + ' scored' + (sb.brierMember < sb.brierBase ? ' · beats baseline ✓' : ''));
+  if (sb && sb.n >= 30 && sb.brierVol != null && isFinite(sb.brierVol)) {
+    setT('viBrier', sb.brierVol.toFixed(5));
+    setT('viBrierN', 'n=' + sb.n + ' scored' + (sb.brierBase != null && sb.brierVol < sb.brierBase ? ' · beats baseline ✓' : ''));
   }
   // board + notebook
   const L = s && s.violet;
@@ -2769,8 +2781,8 @@ function renderCoraPanel(s) {
     setT('coWeightNote', w > 0 ? 'blended at weight ' + w.toFixed(2) : 'scored only, not used');
   }
   if (sb && sb.n >= 30) {
-    setT('coBrier', sb.brierXasset.toFixed(5));
-    setT('coBrierN', 'n=' + sb.n + ' scored' + (sb.brierXasset < sb.brierBase ? ' · beats baseline ✓' : ''));
+    setT('coBrier', sb.brierXasset != null && isFinite(sb.brierXasset) ? sb.brierXasset.toFixed(5) : '—');
+    setT('coBrierN', 'n=' + sb.n + ' scored' + (sb.brierXasset != null && sb.brierBase != null && sb.brierXasset < sb.brierBase ? ' · beats baseline ✓' : ''));
     if (sb.skill24h && sb.skill24h.n >= 30) {
       setT('coSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
       setT('coSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
@@ -3158,8 +3170,8 @@ function renderCherryPanel(summary) {
   if ($('chBrier')) {
     const sb = summary && summary.windows && summary.windows.all && summary.windows.all.corr;
     if (sb) {
-      setT('chBrier', sb.brierCorr.toFixed(5));
-      setT('chBrierN', 'n=' + sb.n + ' scored' + (sb.brierCorr < sb.brierBase ? ' · beats baseline ✓' : ''));
+      setT('chBrier', sb.brierCorr != null && isFinite(sb.brierCorr) ? sb.brierCorr.toFixed(5) : '—');
+      setT('chBrierN', 'n=' + sb.n + ' scored' + (sb.brierCorr != null && sb.brierBase != null && sb.brierCorr < sb.brierBase ? ' · beats baseline ✓' : ''));
       if (sb.skill24h && sb.skill24h.n >= 30) {
         setT('chSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
         setT('chSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
@@ -3339,8 +3351,8 @@ function renderSagePanel(summary) {
     setT('sgVerdictSub', w > 0 ? 'blended at weight ' + w.toFixed(2) : 'scored only, not used');
   }
   if (sb && sb.n >= 30) {
-    setT('sgSkill', sb.brierStable.toFixed(5));
-    setT('sgSkillSub', 'n=' + sb.n + ' scored' + (sb.brierStable < sb.brierBase ? ' · beats baseline ✓' : ''));
+    setT('sgSkill', sb.brierStable != null && isFinite(sb.brierStable) ? sb.brierStable.toFixed(5) : '—');
+    setT('sgSkillSub', 'n=' + sb.n + ' scored' + (sb.brierStable != null && sb.brierBase != null && sb.brierStable < sb.brierBase ? ' · beats baseline ✓' : ''));
   }
   // lab panel: board + notebook
   const L = summary && summary.sage;
@@ -3923,8 +3935,8 @@ function renderNiaPanel(summary) {
     } catch { /* canvas optional */ }
   }
   if (sb && sb.n >= 30) {
-    setT('niVerdict', sb.brierNews.toFixed(5));
-    setT('niVerdictSub', 'n=' + sb.n + ' scored' + (sb.brierNews < sb.brierBase ? ' · beats baseline ✓' : ''));
+    setT('niVerdict', sb.brierNews != null && isFinite(sb.brierNews) ? sb.brierNews.toFixed(5) : '—');
+    setT('niVerdictSub', 'n=' + sb.n + ' scored' + (sb.brierNews != null && sb.brierBase != null && sb.brierNews < sb.brierBase ? ' · beats baseline ✓' : ''));
     if (sb.skill24h && sb.skill24h.n >= 30) {
       setT('niSkill', (sb.skill24h.hitRate * 100).toFixed(1) + '%');
       setT('niSkillSub', 'n=' + sb.skill24h.n + ' · 24h direction');
@@ -4983,50 +4995,22 @@ function initNotebookToggles() {
 }
 
 (async function boot() {
+  // Each step is isolated so a fault in one lab panel can never stop the
+  // core forecast, 15-minute window, or CF reference-rate from rendering.
+  const step = (fn) => { try { fn(); } catch (e) { console.error('boot step failed:', e); } };
   await resolveBases();
-  initNotebookToggles();
-  initMashaAnim();
-  initWendyAnim();
-  initOpalAnim();
-  initOpheliaAnim();
-  initCamilleAnim();
-  initMollyAnim();
-  loadCandles(); connectWS();
-  await loadSummary();
-  runBacktest();
-  loadAgents4();
-  loadMashaVerdict();
-  initMashaChat();
-  loadWendyVerdict();
-  initWendyChat();
-  loadNiaVerdict();
-  initNiaChat();
-  loadSashaVerdict();
-  initSashaChat();
-  loadSageVerdict();
-  initSageChat();
-  loadCherryVerdict();
-  initCherryChat();
-  loadCoraVerdict();
-  initCoraChat();
-  loadSophieVerdict();
-  initSophieChat();
-  loadNoraVerdict();
-  initNoraChat();
-  loadDaisyVerdict();
-  initDaisyChat();
-  loadVioletVerdict();
-  initVioletChat();
-  loadOpalVerdict();
-  initOpalChat();
-  loadOpheliaVerdict();
-  initOpheliaChat();
-  loadCamilleVerdict();
-  initCamilleChat();
-  loadMollyVerdict();
-  initMollyChat();
-  loadCFRate();
-  tickCountdown();
+  step(initNotebookToggles);
+  step(initMashaAnim);
+  step(initWendyAnim);
+  step(initOpalAnim);
+  step(initOpheliaAnim);
+  step(initCamilleAnim);
+  step(initMollyAnim);
+  step(() => { loadCandles(); connectWS(); });
+  try { await loadSummary(); } catch (e) { console.error('summary load failed:', e); }
+  // Core live panels first — before any lab extras.
+  step(loadCFRate);
+  step(tickCountdown);
   setInterval(tickCountdown, 1000);
   setInterval(pollTicker, 5000);
   setInterval(loadCandles, 60000);
@@ -5035,4 +5019,21 @@ function initNotebookToggles() {
   setInterval(loadCFRate, 60000);
   setInterval(tickCFLive, 10000);
   setInterval(schedDraw, 5000);
+  step(runBacktest);
+  step(loadAgents4);
+  step(() => { loadMashaVerdict(); initMashaChat(); });
+  step(() => { loadWendyVerdict(); initWendyChat(); });
+  step(() => { loadNiaVerdict(); initNiaChat(); });
+  step(() => { loadSashaVerdict(); initSashaChat(); });
+  step(() => { loadSageVerdict(); initSageChat(); });
+  step(() => { loadCherryVerdict(); initCherryChat(); });
+  step(() => { loadCoraVerdict(); initCoraChat(); });
+  step(() => { loadSophieVerdict(); initSophieChat(); });
+  step(() => { loadNoraVerdict(); initNoraChat(); });
+  step(() => { loadDaisyVerdict(); initDaisyChat(); });
+  step(() => { loadVioletVerdict(); initVioletChat(); });
+  step(() => { loadOpalVerdict(); initOpalChat(); });
+  step(() => { loadOpheliaVerdict(); initOpheliaChat(); });
+  step(() => { loadCamilleVerdict(); initCamilleChat(); });
+  step(() => { loadMollyVerdict(); initMollyChat(); });
 })();
