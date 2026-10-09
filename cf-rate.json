@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T12:44:40.236Z",
- "live_rate": 1.3969491666666665,
+ "computed_at": "2026-10-09T13:04:52.947Z",
+ "live_rate": 1.3934908333333336,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(199)",
-  "kraken:ok(592)",
-  "bitstamp:ok(491)",
-  "gemini:ok(99)"
+  "kraken:ok(643)",
+  "bitstamp:ok(511)",
+  "gemini:ok(116)"
  ],
  "partitions": [
-  {
-   "t0": 1791546000000,
-   "t1": 1791546300000,
-   "vwm": 1.39533,
-   "trades": 424,
-   "volume_xrp": 362770.45
-  },
-  {
-   "t0": 1791546300000,
-   "t1": 1791546600000,
-   "vwm": 1.40018,
-   "trades": 500,
-   "volume_xrp": 402311.06
-  },
-  {
-   "t0": 1791546600000,
-   "t1": 1791546900000,
-   "vwm": 1.39868,
-   "trades": 450,
-   "volume_xrp": 469643.99
-  },
-  {
-   "t0": 1791546900000,
-   "t1": 1791547200000,
-   "vwm": 1.40044,
-   "trades": 254,
-   "volume_xrp": 135180.07
-  },
   {
    "t0": 1791547200000,
    "t1": 1791547500000,
@@ -101,9 +73,37 @@
    "vwm": 1.3918,
    "trades": 214,
    "volume_xrp": 191698.89
+  },
+  {
+   "t0": 1791549600000,
+   "t1": 1791549900000,
+   "vwm": 1.3881,
+   "trades": 328,
+   "volume_xrp": 177172.72
+  },
+  {
+   "t0": 1791549900000,
+   "t1": 1791550200000,
+   "vwm": 1.38857,
+   "trades": 225,
+   "volume_xrp": 169550.27
+  },
+  {
+   "t0": 1791550200000,
+   "t1": 1791550500000,
+   "vwm": 1.387,
+   "trades": 196,
+   "volume_xrp": 103573.37
+  },
+  {
+   "t0": 1791550500000,
+   "t1": 1791550800000,
+   "vwm": 1.38946,
+   "trades": 135,
+   "volume_xrp": 83206.3
   }
  ],
- "trade_count": 3500,
+ "trade_count": 2881,
  "official_rr": {
   "value": 1.40287,
   "change_pct": -1.89,
