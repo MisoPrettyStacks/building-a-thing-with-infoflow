@@ -110,4 +110,5 @@
 {"ts": "2026-10-09T09:33:54+00:00", "agent": "scorer", "decision": "ledger healthy", "detail": "summary 3m old, chain_ok=True, forecasts=253", "tag": "info"}
 {"ts": "2026-10-09T09:44:42Z", "agent": "watchdog", "decision": "proactively dispatched cf-rate.yml", "detail": "routine: no successful cf-rate run within last 12min (last success 09:30:01Z); dispatch 37913226545", "tag": "info"}
 {"ts": "2026-10-09T09:44:56+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4008308333333332, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2120, 'official_rr': 1.40287}", "tag": "info"}
+{"ts": "2026-10-09T10:04:55+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3995683333333335, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2228, 'official_rr': 1.40287}", "tag": "info"}
 {"ts": "2026-10-09T10:04:55Z", "agent": "watchdog", "decision": "proactive cf-rate.yml dispatch", "detail": "no successful run within last 12min (last success createdAt 2026-10-09T09:44:39Z); cf-rate.json computed_at 09:44:52Z", "tag": "info"}
