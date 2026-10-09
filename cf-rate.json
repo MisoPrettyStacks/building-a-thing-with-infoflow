@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T23:04:49.093Z",
- "live_rate": 1.3922683333333332,
+ "computed_at": "2026-10-09T23:24:58.481Z",
+ "live_rate": 1.3933633333333333,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(538)",
-  "bitstamp:ok(514)",
-  "gemini:ok(201)"
+  "kraken:ok(477)",
+  "bitstamp:ok(710)",
+  "gemini:ok(237)"
  ],
  "partitions": [
-  {
-   "t0": 1791583200000,
-   "t1": 1791583500000,
-   "vwm": 1.3901,
-   "trades": 335,
-   "volume_xrp": 69447.71
-  },
-  {
-   "t0": 1791583500000,
-   "t1": 1791583800000,
-   "vwm": 1.38968,
-   "trades": 299,
-   "volume_xrp": 77704.56
-  },
-  {
-   "t0": 1791583800000,
-   "t1": 1791584100000,
-   "vwm": 1.39,
-   "trades": 282,
-   "volume_xrp": 111520.13
-  },
-  {
-   "t0": 1791584100000,
-   "t1": 1791584400000,
-   "vwm": 1.39054,
-   "trades": 159,
-   "volume_xrp": 12635.24
-  },
   {
    "t0": 1791584400000,
    "t1": 1791584700000,
@@ -101,9 +73,37 @@
    "vwm": 1.39439,
    "trades": 206,
    "volume_xrp": 19561.64
+  },
+  {
+   "t0": 1791586800000,
+   "t1": 1791587100000,
+   "vwm": 1.3935,
+   "trades": 384,
+   "volume_xrp": 154940.28
+  },
+  {
+   "t0": 1791587100000,
+   "t1": 1791587400000,
+   "vwm": 1.39375,
+   "trades": 285,
+   "volume_xrp": 38378.28
+  },
+  {
+   "t0": 1791587400000,
+   "t1": 1791587700000,
+   "vwm": 1.39262,
+   "trades": 257,
+   "volume_xrp": 88832.51
+  },
+  {
+   "t0": 1791587700000,
+   "t1": 1791588000000,
+   "vwm": 1.39359,
+   "trades": 208,
+   "volume_xrp": 15929.14
   }
  ],
- "trade_count": 2897,
+ "trade_count": 2929,
  "official_rr": {
   "value": 1.38329,
   "change_pct": -1.4,
