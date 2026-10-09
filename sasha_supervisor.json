@@ -1,0 +1,102 @@
+{
+ "agent": "sasha",
+ "title": "Principal Investigator, Sentiment Lab",
+ "charter_version": "1.0.0",
+ "charter": "SASHA_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:34.590Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=83/200); decisive reads 0.0% — below the 40% bar; feed blind 72.5% of cycles — I check the instruments before trusting the readings. I keep reading the crowd and keep gathering evidence. In this lab, HOLD is the honest default — a noisy social signal stays here until the evidence genuinely moves it.",
+ "verdict_plain": "Sasha's verdict: hold and keep watching. The crowd's mood evidence so far is neither strong enough to apply nor weak enough to withdraw — and in the noisiest lab on the page, HOLD is the honest default.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.7252747252747253,
+  "warming_frac": 0,
+  "decisive_frac": 0,
+  "strong_mood_cycles": 0,
+  "member_brier": 0.2516544087077107,
+  "base_brier": 0.25150527584453003,
+  "member_n": 83,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends sentimentWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "SS1",
+   "claim": "Reddit mood swings ahead of XRP 15-min windows tilt the subsequent direction.",
+   "prediction": "decisive mood reads align with window direction more often than chance",
+   "test": "15-min directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "SS2",
+   "claim": "The sentiment member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "SS3",
+   "claim": "The mood actually expresses itself often enough to matter — not a once-a-month curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "SS4",
+   "claim": "Reddit mood is not systematically gamed: decisive reads are not just brigaded threads.",
+   "prediction": "decisive reads are not clustered in single-subreddit pile-ons",
+   "test": "per-subreddit source breakdown of decisive reads from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "behavioral_finance",
+   "assessment": "The crowd is mostly murmuring (0.0% decisive). Excitement is not information: by the time Reddit is euphoric, the move has usually already happened."
+  },
+  {
+   "discipline": "social_data_science",
+   "assessment": "Coverage: two subreddits' newest posts per cycle, word counts against a pre-registered frozen list. The list cannot read sarcasm, cannot spot a bot, cannot tell 'great example of fraud' from 'great'. I report what it measures — title mood — and nothing more."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "decisive_frac=0.0% over n=91; scoreboard still warming up (n=83/200). I am this lab's designated skeptic: one pre-registered specification, no peeking, no re-tuning. Wide error bars are sized, not hidden."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and in the noisiest lab on the page, doubt is the default position."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: Reddit blind 72.5% of cycles — a rate limit looks like a calm crowd unless you check liveness, and I check."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Social mood is the most crowded signal in crypto — everyone reads the same threads, so any edge is arbed out or was never there. The \"XRP army\" is a permanent feature of the sample, not information. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% decisive mood reads over 91 cycles. Unknown: whether any read is real mood vs brigading; whether the crowd leads or lags. Confidence: low — the honest answer in a noisy lab."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
