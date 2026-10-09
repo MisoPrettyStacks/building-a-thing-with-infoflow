@@ -165,3 +165,4 @@
 {"ts":"2026-10-09T18:25:02Z","agent":"watchdog","decision":"proactive dispatch of cf-rate.yml (run 37973100887)","detail":"no successful cf-rate run within last 12 min (last at 2026-10-09T18:05:37Z)","tag":"info"}
 {"ts": "2026-10-09T18:25:15+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3873733333333333, 'valid_partitions': 12, 'venues_used': 4, 'trades': 4096, 'official_rr': 1.38329}", "tag": "info"}
 {"ts": "2026-10-09T18:46:00+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3874825, 'valid_partitions': 12, 'venues_used': 4, 'trades': 3504, 'official_rr': 1.38329}", "tag": "info"}
+{"ts": "2026-10-09T18:46:00Z", "agent": "watchdog", "decision": "proactive dispatch cf-rate.yml", "detail": "routine; last successful cf-rate run 18:24:53Z was >12min ago (GitHub scheduler drops ~90% of scheduled runs); dispatched run 37975529626", "tag": "info"}
