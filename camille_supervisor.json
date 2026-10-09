@@ -1,0 +1,106 @@
+{
+ "agent": "camille",
+ "title": "Principal Investigator, Calendar Effect Lab",
+ "charter_version": "1.0.0",
+ "charter": "CAMILLE_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:02.761Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); tilt-window scoreboard still warming up (n=0/200); tilt active only 0.0% of cycles — below the 15% bar; a deterministic calendar that never fires is a broken instrument, and I check the instruments before trusting the readings. I keep the calendar open and keep gathering evidence.",
+ "verdict_plain": "Camille's verdict: hold and keep watching. The calendar evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0,
+  "active_frac": 0,
+  "spurious_frac": 0,
+  "mean_tilt": 0,
+  "mean_active_tilt": 0,
+  "min_tilt": 0,
+  "relock_slope": null,
+  "relock_distinct": 1,
+  "tilt_n": 0,
+  "tilt_brier_esc": null,
+  "tilt_brier_base": null,
+  "oos_edge": false,
+  "scoreboard_n": 156
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement above a published bar, positive in both halves, multiplicity-corrected significance, and a minimum gap between adoptions. WITHDRAW recommends escrowWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "C1",
+   "claim": "The 1st-7th bearish tilt points in a consistent direction: tilt is never negative and expresses only inside the window.",
+   "prediction": "mean tilt across notes is positive, min tilt is never below zero",
+   "test": "tilt distribution from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "C2",
+   "claim": "The tilted what-if series beats the issued baseline out-of-sample inside the tilt window.",
+   "prediction": "tilt-window Brier(escrow) < Brier(base) over n ≥ 200 scored forecasts",
+   "test": "live scoreboard tilt-window comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "C3",
+   "claim": "A lower re-lock ratio means more XRP stays out, so the tilt strengthens.",
+   "prediction": "notes with a lower re-lock ratio show a higher mean tilt",
+   "test": "tilt grouped by re-lock ratio from lab notes",
+   "status": "open",
+   "status_why": "awaiting re-lock variation",
+   "updated_at": null
+  },
+  {
+   "id": "C4",
+   "claim": "The tilt expresses on schedule, not spuriously: tilt > 0 only on days 1-7 of the month.",
+   "prediction": "zero tilt readings outside the window across the full history",
+   "test": "spurious-fire rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "calendar_econometrics",
+   "assessment": "The schedule is deterministic: tilt active 0.0% of cycles, mean tilt 0.000000. A calendar effect needs no estimation — the question is only whether it moves prices, and I measure that in the window where it lives, not across the whole month."
+  },
+  {
+   "discipline": "market_microstructure",
+   "assessment": "No tilt-window edge yet — the market appears to price the release. A predictable event that everyone knows about should be priced; the null hypothesis is that it is."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "active_frac=0.0% over n=91; tilt-window scoreboard still warming up (n=0/200). I test the window where the tilt is nonzero; a full-month test would dilute the comparison into meaninglessness."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Calendar instrument healthy: same timestamp reproduces the same tilt; tilt fired only on schedule (0.0% of cycles); the what-if series is scored, not blended."
+  },
+  {
+   "discipline": "behavioral_finance",
+   "assessment": "Traders watch the escrow headline — a known release concentrates attention, and attention can overshoot or shrug. I treat escrow sentiment as a competing explanation to test, never as evidence. The Brier score is the only opinion I count."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting a spurious calendar pattern corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: the release schedule (1B XRP on the 1st, re-lock days later). Unknown: whether the market still misprices it. Confidence: low — the honest answer; the calendar is certain, the effect is not."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
