@@ -352,7 +352,8 @@ async function cycle() {
       const labSignals = {};
       try {
         const xrpl = { recentTx: ocState.recentTx || [], txCount: chain.seq || 0,
-          ocSnapshots: Array.isArray(ocState.snapshots) ? ocState.snapshots.slice(-200) : [] };
+          ocSnapshots: Array.isArray(ocState.snapshots) ? ocState.snapshots.slice(-200) : [],
+          netSeries: Array.isArray(ocState.netSeries) ? ocState.netSeries.slice(-2500) : [] };
         for (const def of AGENT_DEFS) {
           try {
             labSignals[def.key] = await def.fetchSignal({ t, bars, btcBars, dir: DIR, getJson, xrpl });
