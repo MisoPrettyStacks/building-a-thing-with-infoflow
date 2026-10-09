@@ -1,0 +1,110 @@
+{
+ "agent": "wendy",
+ "title": "Principal Investigator, Whale Watch Lab",
+ "charter_version": "1.0.0",
+ "charter": "WENDY_CHARTER.md",
+ "updated_at": "2026-10-09T06:58:39.200Z",
+ "verdict": "HOLD",
+ "verdict_why": "The case is not made in either direction: history still short (91/100); scoreboard still warming up (n=156/200); decisive reads 0.0% — below the 40% bar. I keep the watch open and keep gathering evidence.",
+ "verdict_plain": "Wendy's verdict: hold and keep watching. The ledger evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 91,
+  "blind_frac": 0.03296703296703297,
+  "warming_frac": 0.967032967032967,
+  "decisive_frac": 0,
+  "whale_pulse_cycles": 0,
+  "member_brier": 0.2537223627318525,
+  "base_brier": 0.2537223627318525,
+  "member_n": 156,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends onchainWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "W1",
+   "claim": "Sustained exchange outflows (accumulation) tilt subsequent XRP moves up; inflows (distribution) tilt them down.",
+   "prediction": "decisive flow regimes align with 24h direction more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "W2",
+   "claim": "The whale-flow member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "W3",
+   "claim": "Large whale transfers (≥10M XRP) mark regime attention: pulses cluster around volatile or news-driven periods.",
+   "prediction": "whale-pulse cycles coincide with elevated realized volatility",
+   "test": "pulse timing vs volatility from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "W4",
+   "claim": "The flow regime expresses itself often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "on_chain_analyst",
+   "assessment": "The ledger is mostly quiet (0.0% decisive). I do not mistake exchange housekeeping for economic flow, and I do not narrate silence."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "Flow is defined by its window and watchlist — 24h and 7d reference points against per-cycle snapshots. Change the window and the number changes, so the window is part of the result. Flow accounting is an identity, not a model."
+  },
+  {
+   "discipline": "microstructure_economist",
+   "assessment": "No edge to explain — I will not invent a microstructure story for a statistic that is not there."
+  },
+  {
+   "discipline": "network_scientist",
+   "assessment": "Exchange wallets are hubs with unmistakable degree signatures; I separate hub-to-periphery economic movement from hub-to-hub internal plumbing. One edge is an anecdote; a pattern of edges is evidence."
+  },
+  {
+   "discipline": "statistician",
+   "assessment": "decisive_frac=0.0% over n=91; scoreboard still warming up (n=156/200). Whale events are rare — I size my claims to my sample."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Pipeline healthy: ledger reachable 96.7% of cycles; watchlist labels verified, never guessed; same ledger state reproduces the same numbers."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "A whale alert is not a trade signal — by the time a 10M XRP transfer confirms on-ledger, the market has often already priced it. The edge, if any, is in quiet accumulation, not the splash. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: 0.0% decisive reads over 91 cycles, 0 whale-pulse cycles. Unknown: whether whales change behavior once watched. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
