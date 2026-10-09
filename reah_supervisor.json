@@ -1,0 +1,104 @@
+{
+ "agent": "reah",
+ "title": "Principal Investigator, Mean Reversion Lab",
+ "charter_version": "1.0.0",
+ "charter": "REAH_CHARTER.md",
+ "updated_at": "2026-10-09T14:39:59.042Z",
+ "verdict": "HOLD",
+ "verdict_why": "Only 3 lab notes on record (need >= 50) — not enough history for any scientific verdict. I keep watching the snap-back.",
+ "verdict_plain": "Reah's verdict: hold and keep watching. The snap-back evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 3,
+  "blind_frac": 0.3333333333333333,
+  "warming_frac": 0,
+  "decisive_frac": 0.6666666666666666,
+  "fading_frac": 0.6666666666666666,
+  "aggressive_frac": 0.6666666666666666,
+  "mean_abs_move_bps": 7.209285872044577,
+  "member_brier": null,
+  "base_brier": null,
+  "member_n": 0,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends reversionWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "RH1",
+   "claim": "After an expressive 5-minute XRP move, the next move partially snaps back — fading the last bar aligns with subsequent direction more often than chance.",
+   "prediction": "decisive fading regimes align with 24h direction more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "RH2",
+   "claim": "The mean-reversion member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "RH3",
+   "claim": "The snap-back is stronger after aggressive, high-volume bars — compensated liquidity provision is the mechanism, not noise.",
+   "prediction": "decisive fades cluster after above-median-volume bars and score better there",
+   "test": "aggressive-bar rate and conditional scoring from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "RH4",
+   "claim": "The reversion read expresses itself often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "statistician",
+   "assessment": "the average absolute last-bar move in the record is 7.2 bps; I fade 66.7% of cycles. A snap-back is an estimate with error bars, not a law — most moves are noise, and the record says how often I actually speak."
+  },
+  {
+   "discipline": "quantitative_finance",
+   "assessment": "No edge to explain — and I will not pretend a quiet drift was ever a fadeable move."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "The fade is built from log returns of the most recent closed bars — change which bars count as \"recent\" and the number changes, so the window is part of the result. Error propagates: a bias built from a move and a volume read is not twice as certain as either."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: bar data blind 33.3% of cycles — a broken candle masquerades as a violent move unless you check liveness, and I check."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Short-horizon reversal is the most competed edge in crypto — everyone sees the same tape. The gross effect is documented near a basis point, under typical costs; the edge, if any, is in fading only the expressive, aggressive moves and abstaining the rest. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: fading 66.7% of cycles, decisive 66.7%, aggressive-volume share 66.7%. Unknown: whether the snap-back survives the next volatility regime. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}

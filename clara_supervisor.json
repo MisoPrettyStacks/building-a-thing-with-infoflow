@@ -1,0 +1,103 @@
+{
+ "agent": "clara",
+ "title": "Principal Investigator, Quarter-Hour Boundary Lab",
+ "charter_version": "1.0.0",
+ "charter": "CLARA_CHARTER.md",
+ "updated_at": "2026-10-09T14:40:09.044Z",
+ "verdict": "HOLD",
+ "verdict_why": "Only 3 lab notes on record (need >= 50) — not enough history for any scientific verdict. I keep watching the clock.",
+ "verdict_plain": "Clara's verdict: hold and keep watching. The boundary evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open, ticking.",
+ "evidence": {
+  "n": 3,
+  "blind_frac": 0.3333333333333333,
+  "warming_frac": 0,
+  "decisive_frac": 0.6666666666666666,
+  "mean_burst": 2.2871324668235804,
+  "mean_persistence": 0.75,
+  "member_brier": null,
+  "base_brier": null,
+  "member_n": 0,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends boundaryWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "CL1",
+   "claim": "Returns at quarter-hour boundary openings (:00/:15/:30/:45) carry predictable structure that off-grid bars do not.",
+   "prediction": "boundary-issued reads align with subsequent direction more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "CL2",
+   "claim": "The quarter-hour member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "CL3",
+   "claim": "Volume bursts at boundary bars mark periodic algorithmic flow, and bursts condition the effect: loud boundary bars predict better than quiet ones.",
+   "prediction": "average burst ratio above the off-grid norm in decisive cycles",
+   "test": "burst statistics from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "CL4",
+   "claim": "The boundary effect expresses itself often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "statistician",
+   "assessment": "boundary volume runs 2.29x the off-grid norm on average; decisive 66.7% of cycles. Periodicity is an estimate against a noisy tape, not a fact — hours of grid history are what keep it honest."
+  },
+  {
+   "discipline": "quantitative_finance",
+   "assessment": "No edge to explain — and I will not pretend a quiet boundary bar was ever a signal."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "A boundary is a definition before it is a discovery: bars opening at minute 0, 15, 30, 45 of the hour. Change the grid definition and the effect must be re-measured — phase is part of the result, and placebo phases are the control."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: bar data blind 33.3% of cycles — a feed gap at a boundary bar masquerades as a quiet grid unless you check liveness, and I check."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Everyone can see the clock — that is precisely the problem. If boundary flow were a free lunch, the crowd standing at :00/:15/:30/:45 would have eaten it. The edge, if any, is in conditioning on the burst and the agreement, not in \"the quarter-hour moved.\" That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: decisive 66.7% of cycles, mean sign persistence 75.0%. Unknown: whether the phase structure survives the next change in who trades this market and when. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}

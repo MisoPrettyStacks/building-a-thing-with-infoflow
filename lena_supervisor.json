@@ -1,0 +1,104 @@
+{
+ "agent": "lena",
+ "title": "Principal Investigator, Venue Lead-Lag Lab",
+ "charter_version": "1.0.0",
+ "charter": "LENA_CHARTER.md",
+ "updated_at": "2026-10-09T14:40:19.275Z",
+ "verdict": "HOLD",
+ "verdict_why": "Only 3 lab notes on record (need >= 50) — not enough history for any scientific verdict. I keep watching both venues.",
+ "verdict_plain": "Lena's verdict: hold and keep watching. The lead-lag evidence so far is neither strong enough to apply nor weak enough to withdraw — the watch stays open.",
+ "evidence": {
+  "n": 3,
+  "blind_frac": 1,
+  "warming_frac": 0,
+  "decisive_frac": 0,
+  "ahead_frac": 0,
+  "mean_gap_bps": null,
+  "mean_lead_ret_bps": null,
+  "member_brier": null,
+  "base_brier": null,
+  "member_n": 0,
+  "oos_edge": false,
+  "skill24h": null
+ },
+ "model_gates": "APPLY_CANDIDATE nominates only. Adoption requires the runner's champion/challenger gates: held-out Brier improvement ≥ 2e-4, positive in both halves, family-wise α=0.05 with Bonferroni correction, ≥24h between adoptions. WITHDRAW recommends leadlagWeight 0. This file never changes a weight directly.",
+ "hypotheses": [
+  {
+   "id": "LE1",
+   "claim": "Binance leads Coinbase on XRP: when Binance closes ahead and its recent drift is still in front, Coinbase moves the same way over the next bars.",
+   "prediction": "decisive lead-lag regimes align with 24h direction more often than chance",
+   "test": "24h directional skill vs 0.50 baseline",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "LE2",
+   "claim": "The venue lead-lag member beats the baseline forecast out-of-sample on Brier score.",
+   "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
+   "test": "live scoreboard comparison",
+   "status": "open",
+   "status_why": "scoreboard warming up",
+   "updated_at": null
+  },
+  {
+   "id": "LE3",
+   "claim": "The lead is structural, not folklore: Binance closes ahead of Coinbase (gap > 0) more often than behind it.",
+   "prediction": "ahead_frac > 0.50 over rolling history once n ≥ 100",
+   "test": "gap sign rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  },
+  {
+   "id": "LE4",
+   "claim": "The lead-lag read expresses itself often enough to matter — not a once-a-quarter curiosity.",
+   "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
+   "test": "decisive-read rate from lab notes",
+   "status": "open",
+   "status_why": "awaiting history",
+   "updated_at": null
+  }
+ ],
+ "literature": [],
+ "literature_new": [],
+ "literature_error": null,
+ "disciplines_applied": [
+  {
+   "discipline": "statistician",
+   "assessment": "mean venue gap n/a with Binance ahead 0.0% of cycles; mean lead return n/a. A gap is an estimate with error bars, not a fact — the aligned history is what keeps it honest."
+  },
+  {
+   "discipline": "quantitative_finance",
+   "assessment": "No edge to explain — and I will not pretend a venue flicker was ever a signal."
+  },
+  {
+   "discipline": "mathematician",
+   "assessment": "The gap is a ratio of time-aligned closes; change the alignment and the number changes, so the alignment is part of the result. Error propagates: a bias built from two venues is not twice as certain as one built from a single tape."
+  },
+  {
+   "discipline": "risk_manager",
+   "assessment": "When in doubt I vote HOLD: adopting noise corrupts every forecast it touches, and that is the costliest error I can make."
+  },
+  {
+   "discipline": "data_engineer",
+   "assessment": "Instrument flag: venue data blind 100.0% of cycles — a stale Binance candle masquerades as a gap unless you check liveness, and I check."
+  },
+  {
+   "discipline": "trader",
+   "assessment": "Leads are rented, never owned — the moment a lead-lag becomes folklore, faster money arbitrages it shut. Everyone watching the same gap watches it close; the edge, if any, is in measuring it fresh every cycle, not in believing last month's lead. That is why no APPLY verdict of mine ever skips out-of-sample proof."
+  },
+  {
+   "discipline": "intelligence_analyst",
+   "assessment": "Known: Binance ahead 0.0% of cycles, decisive 0.0%. Unknown: whether the lead survives the next volatility break, when gaps widen and venues decouple. Confidence: low — the honest answer."
+  },
+  {
+   "discipline": "research_scientist",
+   "assessment": "Hypothesis ledger updated — statuses changed only where the evidence moved them; nothing was buried and nothing was accepted without a test."
+  },
+  {
+   "discipline": "principal_investigator",
+   "assessment": "I sign this verdict: HOLD. It is defensible from the record below, and I will reverse it the moment the evidence does."
+  }
+ ]
+}
