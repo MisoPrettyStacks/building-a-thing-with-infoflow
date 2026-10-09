@@ -319,7 +319,11 @@ async function cycle() {
       continue;
     }
     const y = b.c > f.c0 ? 1 : b.c < f.c0 ? 0 : null;
-    append({ type: 'resolution', id: f.id, c1: b.c, y, r: Math.log(b.c / f.c0), filled: !!b.filled, source: 'coinbase:XRP-USD' });
+    // c5: close of the first 5-minute bar after issue — lets Opal's order-book
+    // member be scored at the 5-minute horizon too (imbalance decays fast;
+    // with 5-minute bars the honest sub-horizons are 5m and 15m, not 1m).
+    const b5 = bars.find((x) => x.t === f.t_issue) || null;
+    append({ type: 'resolution', id: f.id, c1: b.c, y, r: Math.log(b.c / f.c0), c5: b5 ? b5.c : null, filled: !!b.filled, source: 'coinbase:XRP-USD' });
     log(`resolved ${f.id}: p=${f.p} c0=${f.c0} c1=${b.c} y=${y}`);
   }
 
@@ -460,6 +464,12 @@ async function cycle() {
         news_bias: +(+step.newsBias || 0).toFixed(6),
         p_flowhealth: step.pFlowHealth == null ? null : +step.pFlowHealth.toFixed(6),
         flowhealth_bias: +(+step.flowHealthBias || 0).toFixed(6),
+        p_reversion: step.pReversion == null ? null : +step.pReversion.toFixed(6),
+        reversion_bias: +(+step.reversionBias || 0).toFixed(6),
+        p_boundary: step.pBoundary == null ? null : +step.pBoundary.toFixed(6),
+        boundary_bias: +(+step.boundaryBias || 0).toFixed(6),
+        p_leadlag: step.pLeadlag == null ? null : +step.pLeadlag.toFixed(6),
+        leadlag_bias: +(+step.leadlagBias || 0).toFixed(6),
         p_volatility: step.pVolatility == null ? null : +step.pVolatility.toFixed(6),
         vol_active: step.volActive ? 1 : 0,
         q: step.q.map((x) => +x.toFixed(7)), ladder: step.ladder.map((x) => +x.toFixed(5)), q_levels: QLEVELS, nu: step.nu, c0: step.c0,

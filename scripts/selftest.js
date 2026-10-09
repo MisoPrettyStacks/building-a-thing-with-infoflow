@@ -508,11 +508,17 @@ import { computeEvidence as niaEvidence, decideVerdict as niaDecide } from '../s
 import { computeEvidence as opheliaEvidence, decideVerdict as opheliaDecide } from '../scripts/ophelia-supervisor.js';
 import { computeEvidence as camilleEvidence, decideVerdict as camilleDecide } from '../scripts/camille-supervisor.js';
 import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '../scripts/molly-supervisor.js';
+import { computeEvidence as reahEvidence, decideVerdict as reahDecide } from '../scripts/reah-supervisor.js';
+import { computeEvidence as claraEvidence, decideVerdict as claraDecide } from '../scripts/clara-supervisor.js';
+import { computeEvidence as lenaEvidence, decideVerdict as lenaDecide } from '../scripts/lena-supervisor.js';
+import { reahAnswer, reahIsIpProbe, reahRepeatRefusal } from '../lib/reahchat.js';
+import { claraAnswer, claraIsIpProbe, claraRepeatRefusal } from '../lib/clarachat.js';
+import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from '../lib/lenachat.js';
 
 { // registry + engine + gate contracts
-  ok(AGENT_DEFS.length === 13, 'thirteen lab agents registered');
+  ok(AGENT_DEFS.length === 16, 'sixteen lab agents registered');
   const names = AGENT_DEFS.map((d) => d.name);
-  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia', 'camille', 'molly']) {
+  for (const n of ['opal', 'violet', 'daisy', 'nora', 'sophie', 'cora', 'cherry', 'sage', 'sasha', 'nia', 'ophelia', 'camille', 'molly', 'reah', 'clara', 'lena']) {
     ok(names.includes(n), `registry includes ${n}`);
   }
   for (const def of AGENT_DEFS) {
@@ -523,7 +529,7 @@ import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '
     ok(def.supFile === `${def.name}_supervisor.json`, `${def.name}: supervisor filename`);
     ok(Number.isFinite(def.pageWindow) && def.pageWindow > 0, `${def.name}: page window`);
   }
-  ok(EXTRA_BIAS_MEMBERS.length === 10, 'ten bias members in the engine table');
+  ok(EXTRA_BIAS_MEMBERS.length === 13, 'thirteen bias members in the engine table');
   ok(VOL_SHRINK === 0.9, 'volatility shrink constant');
   for (const def of AGENT_DEFS) {
     ok(VERDICT_GATES[def.weightKey] === def.name, `verdict gate ${def.weightKey} -> ${def.name}`);
@@ -548,6 +554,9 @@ import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '
     ophelia: { flowVelocity: 0.05, breadth: 0.85, totalNetFlow: -2e6, wallets: 8 },
     camille: { tilt: 0.006, daysSince: 2, relock: 0.75 },
     molly: { active: true, tier: 1, event: 'FOMC decision', minutesToEvent: -10 },
+    reah: { fading: true, lastRetBps: -12, volRatio: 1.4 },
+    clara: { boundaryRetBps: 8, burst: 1.5, persistence: 0.75, phaseMin: 0 },
+    lena: { gapBps: -15, leadRetBps: 6, aligned: 100 },
   };
   const board = { n: 250, brierMember: 0.24, brierBase: 0.25, skill24h: { n: 40, hitRate: 0.55, baseline: 0.5 } };
   // Violet is a dampener, not a directional member: her positive verdict is 'dampening'.
@@ -582,6 +591,9 @@ import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '
     { name: 'ophelia', answer: opheliaAnswer, isProbe: opheliaIsIpProbe, refuse: opheliaRepeatRefusal },
     { name: 'camille', answer: camilleAnswer, isProbe: camilleIsIpProbe, refuse: camilleRepeatRefusal },
     { name: 'molly', answer: mollyAnswer, isProbe: mollyIsIpProbe, refuse: mollyRepeatRefusal },
+    { name: 'reah', answer: reahAnswer, isProbe: reahIsIpProbe, refuse: reahRepeatRefusal },
+    { name: 'clara', answer: claraAnswer, isProbe: claraIsIpProbe, refuse: claraRepeatRefusal },
+    { name: 'lena', answer: lenaAnswer, isProbe: lenaIsIpProbe, refuse: lenaRepeatRefusal },
   ];
   for (const c of CHATS) {
     const id = c.answer('who are you');
@@ -609,6 +621,9 @@ import { computeEvidence as mollyEvidence, decideVerdict as mollyDecide } from '
     { name: 'ophelia', evidence: opheliaEvidence, decide: opheliaDecide },
     { name: 'camille', evidence: camilleEvidence, decide: camilleDecide },
     { name: 'molly', evidence: mollyEvidence, decide: mollyDecide },
+    { name: 'reah', evidence: reahEvidence, decide: reahDecide },
+    { name: 'clara', evidence: claraEvidence, decide: claraDecide },
+    { name: 'lena', evidence: lenaEvidence, decide: lenaDecide },
   ];
   const strong = Array.from({ length: 120 }, () => ({ computed: { bias: 0.006, warming_up: false, degraded: false, decisive: true } }));
   // Camille counts schedule expression from note tilt, not the generic decisive flag
