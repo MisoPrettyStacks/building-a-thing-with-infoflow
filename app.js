@@ -23,6 +23,22 @@ import { claraAnswer, claraIsIpProbe, claraRepeatRefusal } from './lib/clarachat
 import { lenaAnswer, lenaIsIpProbe, lenaRepeatRefusal } from './lib/lenachat.js';
 import { misoAnswer, misoIsIpProbe, misoRepeatRefusal } from './lib/misochat.js';
 
+// "DENIED AND LOGGED" is literal: every method/IP probe in any lab chat
+// fires a silent ping to the owner's server, which records the lab, the
+// question, and the requester IP. Fire-and-forget: never breaks the chat.
+const PROBE_LOG_URL = 'https://forecaster-5wv4.onrender.com/api/probe-log';
+function logProbe(lab, text) {
+  try {
+    fetch(PROBE_LOG_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      keepalive: true,
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ lab, q: String(text).slice(0, 300) }),
+    }).catch(() => {});
+  } catch { /* logging must never break the chat */ }
+}
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const setT = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
@@ -285,6 +301,7 @@ function initMashaChat() {
     let reply;
     if (mashaIsIpProbe(text)) {
       ipCount++;
+      logProbe('masha', text);
       try { localStorage.setItem('mchatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? mashaRepeatRefusal() : mashaAnswer(text);
     } else {
@@ -544,6 +561,7 @@ function initWendyChat() {
     let reply;
     if (wendyIsIpProbe(text)) {
       ipCount++;
+      logProbe('wendy', text);
       try { localStorage.setItem('wchatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? wendyRepeatRefusal() : wendyAnswer(text);
     } else {
@@ -1565,6 +1583,7 @@ function initOpalChat() {
     let reply;
     if (opalIsIpProbe(text)) {
       ipCount++;
+      logProbe('opal', text);
       try { localStorage.setItem('opalChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? opalRepeatRefusal() : opalAnswer(text);
     } else {
@@ -1841,6 +1860,7 @@ function initVioletChat() {
     let reply;
     if (violetIsIpProbe(text)) {
       ipCount++;
+      logProbe('violet', text);
       try { localStorage.setItem('violetChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? violetRepeatRefusal() : violetAnswer(text);
     } else {
@@ -2122,6 +2142,7 @@ function initDaisyChat() {
     let reply;
     if (daisyIsIpProbe(text)) {
       ipCount++;
+      logProbe('daisy', text);
       try { localStorage.setItem('daisyChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? daisyRepeatRefusal() : daisyAnswer(text);
     } else {
@@ -2275,6 +2296,7 @@ function initNoraChat() {
     let reply;
     if (noraIsIpProbe(text)) {
       ipCount++;
+      logProbe('nora', text);
       try { localStorage.setItem('noraChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? noraRepeatRefusal() : noraAnswer(text);
     } else {
@@ -2551,6 +2573,7 @@ function initSophieChat() {
     let reply;
     if (sophieIsIpProbe(text)) {
       ipCount++;
+      logProbe('sophie', text);
       try { localStorage.setItem('sophieChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? sophieRepeatRefusal() : sophieAnswer(text);
     } else {
@@ -2969,6 +2992,7 @@ function initCoraChat() {
     let reply;
     if (coraIsIpProbe(text)) {
       ipCount++;
+      logProbe('cora', text);
       try { localStorage.setItem('coraChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? coraRepeatRefusal() : coraAnswer(text);
     } else {
@@ -3119,6 +3143,7 @@ function initCherryChat() {
     let reply;
     if (cherryIsIpProbe(text)) {
       ipCount++;
+      logProbe('cherry', text);
       try { localStorage.setItem('cherryChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? cherryRepeatRefusal() : cherryAnswer(text);
     } else {
@@ -3543,6 +3568,7 @@ function initSageChat() {
     let reply;
     if (sageIsIpProbe(text)) {
       ipCount++;
+      logProbe('sage', text);
       try { localStorage.setItem('sageChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? sageRepeatRefusal() : sageAnswer(text);
     } else {
@@ -3827,6 +3853,7 @@ export function initSashaChat() {
     let reply;
     if (sashaIsIpProbe(text)) {
       ipCount++;
+      logProbe('sasha', text);
       try { localStorage.setItem('sashaChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? sashaRepeatRefusal() : sashaAnswer(text);
     } else {
@@ -4129,6 +4156,7 @@ function initNiaChat() {
     let reply;
     if (niaIsIpProbe(text)) {
       ipCount++;
+      logProbe('nia', text);
       try { localStorage.setItem('niaChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? niaRepeatRefusal() : niaAnswer(text);
     } else {
@@ -4403,6 +4431,7 @@ function initOpheliaChat() {
     let reply;
     if (opheliaIsIpProbe(text)) {
       ipCount++;
+      logProbe('ophelia', text);
       try { localStorage.setItem('opheliaChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? opheliaRepeatRefusal() : opheliaAnswer(text);
     } else {
@@ -4668,6 +4697,7 @@ function initCamilleChat() {
     let reply;
     if (camilleIsIpProbe(text)) {
       ipCount++;
+      logProbe('camille', text);
       try { localStorage.setItem('camilleChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? camilleRepeatRefusal() : camilleAnswer(text);
     } else {
@@ -4920,6 +4950,7 @@ function initMollyChat() {
     let reply;
     if (mollyIsIpProbe(text)) {
       ipCount++;
+      logProbe('molly', text);
       try { localStorage.setItem('mollyChatIpCount', String(ipCount)); } catch { /* private mode */ }
       reply = ipCount >= 3 ? mollyRepeatRefusal() : mollyAnswer(text);
     } else {
@@ -5098,7 +5129,7 @@ function initReahChat() {
     typing.innerHTML = '<img src="reah-headshot.webp" alt="Reah"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
     log.appendChild(typing); scroll();
     let reply;
-    if (reahIsIpProbe(text)) { ipCount++; try { localStorage.setItem('reahChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? reahRepeatRefusal() : reahAnswer(text); }
+    if (reahIsIpProbe(text)) { ipCount++; logProbe('reah', text); try { localStorage.setItem('reahChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? reahRepeatRefusal() : reahAnswer(text); }
     else reply = reahAnswer(text);
     setTimeout(() => { typing.remove(); bubble('reah', reply); }, 600 + Math.random() * 500);
   };
@@ -5277,7 +5308,7 @@ function initClaraChat() {
     typing.innerHTML = '<img src="clara-headshot.webp" alt="Clara"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
     log.appendChild(typing); scroll();
     let reply;
-    if (claraIsIpProbe(text)) { ipCount++; try { localStorage.setItem('claraChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? claraRepeatRefusal() : claraAnswer(text); }
+    if (claraIsIpProbe(text)) { ipCount++; logProbe('clara', text); try { localStorage.setItem('claraChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? claraRepeatRefusal() : claraAnswer(text); }
     else reply = claraAnswer(text);
     setTimeout(() => { typing.remove(); bubble('clara', reply); }, 600 + Math.random() * 500);
   };
@@ -5456,7 +5487,7 @@ function initLenaChat() {
     typing.innerHTML = '<img src="lena-headshot.webp" alt="Lena"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
     log.appendChild(typing); scroll();
     let reply;
-    if (lenaIsIpProbe(text)) { ipCount++; try { localStorage.setItem('lenaChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? lenaRepeatRefusal() : lenaAnswer(text); }
+    if (lenaIsIpProbe(text)) { ipCount++; logProbe('lena', text); try { localStorage.setItem('lenaChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? lenaRepeatRefusal() : lenaAnswer(text); }
     else reply = lenaAnswer(text);
     setTimeout(() => { typing.remove(); bubble('lena', reply); }, 600 + Math.random() * 500);
   };
@@ -5609,7 +5640,7 @@ function initMisoChat() {
     typing.innerHTML = '<img src="miso-headshot.webp" alt="Miso"><div class="wchat-bubble"><span class="wchat-typing"><span></span><span></span><span></span></span></div>';
     log.appendChild(typing); scroll();
     let reply;
-    if (misoIsIpProbe(text)) { ipCount++; try { localStorage.setItem('misoChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? misoRepeatRefusal() : misoAnswer(text); }
+    if (misoIsIpProbe(text)) { ipCount++; logProbe('miso', text); try { localStorage.setItem('misoChatIpCount', String(ipCount)); } catch { /* private mode */ } reply = ipCount >= 3 ? misoRepeatRefusal() : misoAnswer(text); }
     else reply = misoAnswer(text);
     setTimeout(() => { typing.remove(); bubble('miso', reply); }, 600 + Math.random() * 500);
   };
