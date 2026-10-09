@@ -44,9 +44,14 @@ jobs:
             echo "no changes to publish"
           else
             git commit -q -m "sage: supervisor cycle $(date -u +%F)"
-            git fetch -q origin data
-            git rebase -q origin/data || git rebase --abort || true
-            git push -q origin HEAD:data
+            for attempt in 1 2 3 4 5; do
+              git fetch -q origin data
+              if git rebase -q origin/data && git push -q origin HEAD:data; then
+                break
+              fi
+              git rebase --abort 2>/dev/null || true
+              sleep $((attempt * 3))
+            done
           fi
       - name: Clean up worktree
         if: always()
