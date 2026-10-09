@@ -4961,8 +4961,30 @@ function initMolly() {
   initMollyChat();
 }
 
+/* Lab notebooks: collapsed by default; header row (with arrow) toggles
+   the entry list down/up. Entries keep their own click-to-expand detail. */
+function initNotebookToggles() {
+  document.querySelectorAll('.lm-logbox').forEach((box) => {
+    const head = box.querySelector('.lm-loghead');
+    const body = box.querySelector('.lm-log-body');
+    if (!head || !body || head.dataset.toggleWired) return;
+    head.dataset.toggleWired = '1';
+    const setOpen = (open) => {
+      body.hidden = !open;
+      box.classList.toggle('open', open);
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    setOpen(false); // collapsed by default
+    head.addEventListener('click', () => setOpen(body.hidden));
+    head.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(body.hidden); }
+    });
+  });
+}
+
 (async function boot() {
   await resolveBases();
+  initNotebookToggles();
   initMashaAnim();
   initWendyAnim();
   initOpalAnim();

@@ -117,7 +117,12 @@ footer { color: var(--muted); font-size: 13px; margin-top: 30px; }
 @keyframes lmBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 /* the black notebook: deliberately distinct = experimental, not in the forecast */
 .lm-logbox { background: #0b0b0d; color: #f2f2f2; border-radius: 10px; padding: 12px 14px; margin: 0 0 10px; }
-.lm-loghead { font-size: 11px; letter-spacing: 1.5px; color: #9a9a9a; margin-bottom: 8px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.lm-loghead { font-size: 11px; letter-spacing: 1.5px; color: #9a9a9a; margin-bottom: 8px; font-family: ui-monospace, Menlo, Consolas, monospace; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
+.lm-loghead:hover { color: #c9c9c9; }
+.lm-loghead:focus-visible { outline: 2px solid #555; outline-offset: 2px; border-radius: 4px; }
+.lm-log-arrow { margin-left: auto; font-size: 12px; transition: transform .18s ease; }
+.lm-logbox.open .lm-log-arrow { transform: rotate(90deg); }
+.lm-log-body { max-height: 320px; overflow-y: auto; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.45; }
 #lmLogRows { max-height: 320px; overflow-y: auto; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.45; }
 .lm-empty { color: #9a9a9a; padding: 8px 0; }
 .lm-row { border-bottom: 1px solid #232326; }
