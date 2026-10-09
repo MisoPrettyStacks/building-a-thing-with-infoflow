@@ -52,5 +52,4 @@
 {"ts": "2026-10-08T23:45:42+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3836358333333332, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2599, 'official_rr': 1.40287}", "tag": "info"}
 {"ts": "2026-10-08T23:45:38Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml (run 37861188512)", "detail": "no successful cf-rate run within 12min (last 23:24:51Z); routine proactive dispatch, scheduler drops ~90% of scheduled runs", "tag": "info"}
 {"ts": "2026-10-09T00:05:09+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3833399999999998, 'valid_partitions': 12, 'venues_used': 4, 'trades': 3064, 'official_rr': 1.40287}", "tag": "info"}
-{"ts": "2026-10-09T00:05:16Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml (routine)", "detail": "no successful run completed within last 12 min; cf-rate.json computed_at 2026-10-08T23:45:37Z", "tag": "info"}
->>>>>>> b603d6b (watchdog log)
+{"agent":"watchdog","decision":"proactive dispatch of cf-rate.yml (routine)","detail":"no successful run completed within last 12 min; cf-rate.json computed_at 2026-10-08T23:45:37Z","tag":"info","ts":"2026-10-09T00:05:16Z"}
