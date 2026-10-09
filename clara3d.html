@@ -38,7 +38,7 @@
 </div>
 <div class="hud" id="stats"></div>
 <div class="hud" id="hint">drag to orbit · scroll to zoom</div>
-<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#clara">__NAME__'S LAB</a></div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#clara">CLARA'S LAB</a></div>
 <div id="waiting"><span class="pulse">awaiting live data…</span></div>
 
 <script type="module">
@@ -73,7 +73,7 @@ function refreshHud() {
   const cls = live.degraded ? 'warm' : b > 0.0005 ? 'up' : b < -0.0005 ? 'dn' : '';
   el.innerHTML =
     `<div><span class="k">clock phase</span> <span class="v">${live.phaseMin != null ? live.phaseMin + ' min into quarter' : '—'}</span></div>` +
-    `<div><span class="k">boundary burst</span> <span class="v">${live.burst != null ? '×' + live.burst.toFixed(2) : '—'}</span></div>` + +
+    `<div><span class="k">boundary burst</span> <span class="v">${live.burst != null ? '×' + live.burst.toFixed(2) : '—'}</span></div>` +
     `<div><span class="k">tilt</span> <span class="v ${cls}">${b >= 0 ? '+' : ''}${b.toFixed(4)}</span></div>` +
     `<div><span class="k">verdict</span> <span class="v">${live.verdict || '—'}</span></div>`;
 }

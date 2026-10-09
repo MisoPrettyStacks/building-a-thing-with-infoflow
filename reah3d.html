@@ -38,7 +38,7 @@
 </div>
 <div class="hud" id="stats"></div>
 <div class="hud" id="hint">drag to orbit · scroll to zoom</div>
-<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#reah">__NAME__'S LAB</a></div>
+<div class="hud" id="enterWrap"><a id="enterLink" href="index.html#reah">REAH'S LAB</a></div>
 <div id="waiting"><span class="pulse">awaiting live data…</span></div>
 
 <script type="module">
@@ -73,7 +73,7 @@ function refreshHud() {
   const cls = live.degraded ? 'warm' : b > 0.0005 ? 'up' : b < -0.0005 ? 'dn' : '';
   el.innerHTML =
     `<div><span class="k">last bar</span> <span class="v">${live.lastRetBps != null ? (live.lastRetBps >= 0 ? '+' : '') + live.lastRetBps.toFixed(1) + ' bps' : '—'}</span></div>` +
-    `<div><span class="k">flow intensity</span> <span class="v">${live.volRatio != null ? '×' + live.volRatio.toFixed(2) : '—'}</span></div>` + +
+    `<div><span class="k">flow intensity</span> <span class="v">${live.volRatio != null ? '×' + live.volRatio.toFixed(2) : '—'}</span></div>` +
     `<div><span class="k">tilt</span> <span class="v ${cls}">${b >= 0 ? '+' : ''}${b.toFixed(4)}</span></div>` +
     `<div><span class="k">verdict</span> <span class="v">${live.verdict || '—'}</span></div>`;
 }
