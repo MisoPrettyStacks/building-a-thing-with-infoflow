@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-09T18:05:44.307Z",
- "live_rate": 1.3856491666666664,
+ "computed_at": "2026-10-09T18:25:04.472Z",
+ "live_rate": 1.3873733333333333,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(833)",
-  "bitstamp:ok(627)",
-  "gemini:ok(190)"
+  "kraken:ok(909)",
+  "bitstamp:ok(413)",
+  "gemini:ok(254)"
  ],
  "partitions": [
-  {
-   "t0": 1791565500000,
-   "t1": 1791565800000,
-   "vwm": 1.38392,
-   "trades": 220,
-   "volume_xrp": 125328.68
-  },
-  {
-   "t0": 1791565800000,
-   "t1": 1791566100000,
-   "vwm": 1.38271,
-   "trades": 205,
-   "volume_xrp": 142615.41
-  },
-  {
-   "t0": 1791566100000,
-   "t1": 1791566400000,
-   "vwm": 1.38369,
-   "trades": 246,
-   "volume_xrp": 70504.25
-  },
-  {
-   "t0": 1791566400000,
-   "t1": 1791566700000,
-   "vwm": 1.38286,
-   "trades": 402,
-   "volume_xrp": 373827.5
-  },
   {
    "t0": 1791566700000,
    "t1": 1791567000000,
@@ -101,9 +73,37 @@
    "vwm": 1.3869,
    "trades": 287,
    "volume_xrp": 129784.95
+  },
+  {
+   "t0": 1791569100000,
+   "t1": 1791569400000,
+   "vwm": 1.38881,
+   "trades": 280,
+   "volume_xrp": 132659.97
+  },
+  {
+   "t0": 1791569400000,
+   "t1": 1791569700000,
+   "vwm": 1.38939,
+   "trades": 364,
+   "volume_xrp": 292571.12
+  },
+  {
+   "t0": 1791569700000,
+   "t1": 1791570000000,
+   "vwm": 1.38791,
+   "trades": 242,
+   "volume_xrp": 81310.07
+  },
+  {
+   "t0": 1791570000000,
+   "t1": 1791570300000,
+   "vwm": 1.38776,
+   "trades": 414,
+   "volume_xrp": 211180.92
   }
  ],
- "trade_count": 3898,
+ "trade_count": 4096,
  "official_rr": {
   "value": 1.38329,
   "change_pct": -1.4,
