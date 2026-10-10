@@ -217,3 +217,4 @@
 {"ts": "2026-10-10T02:54:57+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4064433333333335, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1993, 'official_rr': 1.38329}", "tag": "info"}
 {"ts": "2026-10-10T03:14:41Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml", "detail": "no successful run within last 12min (last success 2026-10-10T02:54:46Z); cf-rate.json computed_at 2026-10-10T02:54:54Z", "tag": "info"}
 {"ts": "2026-10-10T03:14:40+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4060191666666668, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1781, 'official_rr': 1.38329}", "tag": "info"}
+{"ts": "2026-10-10T03:34:39Z", "agent": "watchdog", "decision": "dispatched cf-rate.yml", "detail": "routine proactive dispatch: last successful run 2026-10-10T03:14:31Z (>12 min); GitHub scheduler still dropping scheduled cf-rate slots", "tag": "info"}
