@@ -3,20 +3,20 @@
  "title": "Miso — guesses, graded in public. Method unpublished.",
  "charter_version": "1.0.0",
  "charter": "MISO_CHARTER.md",
- "updated_at": "2026-10-09T16:56:16.770Z",
- "verdict": "HOLD",
- "verdict_why": "Only 2 log entries on record (need >= 50) — not enough history for any verdict. She keeps guessing.",
- "verdict_plain": "Miso's verdict: hold and keep guessing. Her record so far is neither strong enough to apply nor weak enough to withdraw — the scoreboard keeps grading.",
+ "updated_at": "2026-10-10T15:32:03.170Z",
+ "verdict": "WITHDRAW",
+ "verdict_why": "No out-of-sample edge and the guesses rarely lean (decisive only 6.0% of cycles). A record that never beats the baseline does not earn a weight — I recommend 0 and the ledger records the result.",
+ "verdict_plain": "Miso's verdict: the record says the guesses carry no usable signal. She recommends removing them from the model — a negative result, published as honestly as the guesses were.",
  "evidence": {
-  "n": 2,
-  "blind_frac": 1,
+  "n": 200,
+  "blind_frac": 0.94,
   "warming_frac": 0,
-  "decisive_frac": 0,
-  "guessed_frac": 0,
+  "decisive_frac": 0.06,
+  "guessed_frac": 0.06,
   "above_frac": 0,
-  "member_brier": null,
-  "base_brier": null,
-  "member_n": 0,
+  "member_brier": 0.2531277654759561,
+  "base_brier": 0.2524587301826613,
+  "member_n": 251,
   "oos_edge": false,
   "skill24h": null
  },
@@ -27,9 +27,9 @@
    "claim": "Miso's guesses beat the baseline forecast out-of-sample on Brier score.",
    "prediction": "member Brier < baseline Brier over n ≥ 200 scored forecasts",
    "test": "live scoreboard comparison",
-   "status": "open",
-   "status_why": "scoreboard warming up",
-   "updated_at": null
+   "status": "refuted",
+   "status_why": "member 0.25313 vs baseline 0.25246, n=251",
+   "updated_at": "2026-10-10T15:32:03.170Z"
   },
   {
    "id": "MI2",
@@ -45,9 +45,9 @@
    "claim": "She guesses often enough to matter — not a once-a-quarter curiosity.",
    "prediction": "decisive_frac ≥ 0.40 over rolling history once n ≥ 100",
    "test": "decisive-guess rate from the log",
-   "status": "open",
-   "status_why": "awaiting history",
-   "updated_at": null
+   "status": "refuted",
+   "status_why": "decisive_frac=0.060 over n=200",
+   "updated_at": "2026-10-10T15:32:03.170Z"
   }
  ],
  "literature": [],
@@ -56,7 +56,7 @@
  "disciplines_applied": [
   {
    "discipline": "statistician",
-   "assessment": "The audit reads only the record: she guessed 0.0% of cycles, decisively 0.0%, above 0.0% of her guesses. A guess is an estimate with error bars — the scoreboard, not the story, decides what it is worth."
+   "assessment": "The audit reads only the record: she guessed 6.0% of cycles, decisively 6.0%, above 0.0% of her guesses. A guess is an estimate with error bars — the scoreboard, not the story, decides what it is worth."
   },
   {
    "discipline": "quantitative_finance",
@@ -68,11 +68,11 @@
   },
   {
    "discipline": "risk_manager",
-   "assessment": "When in doubt the record votes HOLD: adopting noise corrupts every forecast it touches."
+   "assessment": "A record that rarely leans and never beats the baseline earns weight 0 — secrecy is not a shield from the scoreboard."
   },
   {
    "discipline": "data_engineer",
-   "assessment": "Availability flag: her screen was dark 100.0% of cycles — the record marks those cycles blind rather than letting silence pose as a guess."
+   "assessment": "Availability flag: her screen was dark 94.0% of cycles — the record marks those cycles blind rather than letting silence pose as a guess."
   },
   {
    "discipline": "trader",
@@ -80,7 +80,7 @@
   },
   {
    "discipline": "intelligence_analyst",
-   "assessment": "Known: guessed 0.0% of cycles, decisive 0.0%. Unknown: everything about the method — by design. Confidence in the record: low — the honest answer."
+   "assessment": "Known: guessed 6.0% of cycles, decisive 6.0%. Unknown: everything about the method — by design. Confidence in the record: moderate — evidence-backed, still falsifiable."
   },
   {
    "discipline": "research_scientist",
@@ -88,7 +88,7 @@
   },
   {
    "discipline": "principal_investigator",
-   "assessment": "I sign this verdict: HOLD. It is defensible from the public record below, and I will reverse it the moment the record does."
+   "assessment": "I sign this verdict: WITHDRAW. It is defensible from the public record below, and I will reverse it the moment the record does."
   }
  ]
 }
