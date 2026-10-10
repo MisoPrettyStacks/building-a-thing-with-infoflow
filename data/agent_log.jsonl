@@ -316,3 +316,4 @@
 {"ts": "2026-10-10T19:24:49+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4025725, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1584, 'official_rr': 1.40561}", "tag": "info"}
 {"ts": "2026-10-10T19:45:06+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4034149999999999, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1617, 'official_rr': 1.40561}", "tag": "info"}
 {"ts": "2026-10-10T19:45:09Z", "agent": "watchdog", "decision": "dispatched cf-rate.yml (routine)", "detail": "no successful cf-rate run within last 12min (last success created 19:24:39Z); GitHub scheduler dropping most scheduled runs", "tag": "info"}
+{"ts": "2026-10-10T20:05:11+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.403875, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1718, 'official_rr': 1.40561}", "tag": "info"}
