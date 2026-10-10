@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {"agent":"watchdog","decision":"proactive dispatch of cf-rate.yml (routine)","detail":"no successful run completed within last 12 min; cf-rate.json computed_at 2026-10-08T23:45:37Z","tag":"info","ts":"2026-10-09T00:05:16Z"}
 {"ts": "2026-10-07T21:55:00+00:00", "agent": "forecaster", "decision": "forecast loop armed", "detail": "forecast-runner issues a calibrated 15-minute probability every 5 minutes from closed Coinbase bars, scored in public.", "tag": "info"}
 {"ts": "2026-10-07T21:55:00+00:00", "agent": "researcher", "decision": "weekly literature scan armed", "detail": "Runs Mondays: scans arXiv q-fin and related sources for short-horizon predictability ideas; only winners survive backtesting.", "tag": "info"}
