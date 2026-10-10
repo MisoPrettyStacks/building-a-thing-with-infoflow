@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-10T17:45:07.952Z",
- "live_rate": 1.4036133333333332,
+ "computed_at": "2026-10-10T17:56:55.405Z",
+ "live_rate": 1.4033983333333335,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,25 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(199)",
-  "kraken:ok(317)",
-  "bitstamp:ok(175)",
-  "gemini:ok(250)"
+  "kraken:ok(217)",
+  "bitstamp:ok(125)",
+  "gemini:ok(154)"
  ],
  "partitions": [
-  {
-   "t0": 1791650700000,
-   "t1": 1791651000000,
-   "vwm": 1.40454,
-   "trades": 104,
-   "volume_xrp": 35034.5
-  },
-  {
-   "t0": 1791651000000,
-   "t1": 1791651300000,
-   "vwm": 1.40449,
-   "trades": 97,
-   "volume_xrp": 15205.74
-  },
   {
    "t0": 1791651300000,
    "t1": 1791651600000,
@@ -101,9 +87,23 @@
    "vwm": 1.4031,
    "trades": 205,
    "volume_xrp": 18051.4
+  },
+  {
+   "t0": 1791654300000,
+   "t1": 1791654600000,
+   "vwm": 1.40338,
+   "trades": 142,
+   "volume_xrp": 28253.08
+  },
+  {
+   "t0": 1791654600000,
+   "t1": 1791654900000,
+   "vwm": 1.40307,
+   "trades": 112,
+   "volume_xrp": 24648.76
   }
  ],
- "trade_count": 1702,
+ "trade_count": 1835,
  "official_rr": {
   "value": 1.40561,
   "change_pct": 1.61,
