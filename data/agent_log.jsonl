@@ -308,3 +308,4 @@
 {"ts":"2026-10-10T18:14:57Z","agent":"watchdog","decision":"dispatched cf-rate.yml","detail":"proactive dispatch; no successful cf-rate run in last 12 min (last success 2026-10-10T17:56:48Z)","tag":"info"}
 {"ts": "2026-10-10T18:35:13+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4030216666666666, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1756, 'official_rr': 1.40561}", "tag": "info"}
 {"ts":"2026-10-10T18:35:42Z","agent":"watchdog","decision":"proactive dispatch cf-rate.yml","detail":"last successful cf-rate run 2026-10-10T18:14:42Z, ~20min >12min; run https://github.com/MisoPrettyStacks/building-a-thing-with-infoflow/actions/runs/38076362157","tag":"info"}
+{"ts": "2026-10-10T18:45:12+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4027133333333335, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1641, 'official_rr': 1.40561}", "tag": "info"}
