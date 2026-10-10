@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-10T16:44:53.156Z",
- "live_rate": 1.4061008333333334,
+ "computed_at": "2026-10-10T17:04:46.797Z",
+ "live_rate": 1.4052958333333334,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(396)",
-  "bitstamp:ok(148)",
-  "gemini:ok(172)"
+  "kraken:ok(308)",
+  "bitstamp:ok(151)",
+  "gemini:ok(149)"
  ],
  "partitions": [
-  {
-   "t0": 1791646800000,
-   "t1": 1791647100000,
-   "vwm": 1.4066,
-   "trades": 267,
-   "volume_xrp": 55638.28
-  },
-  {
-   "t0": 1791647100000,
-   "t1": 1791647400000,
-   "vwm": 1.40711,
-   "trades": 117,
-   "volume_xrp": 57539.17
-  },
-  {
-   "t0": 1791647400000,
-   "t1": 1791647700000,
-   "vwm": 1.40684,
-   "trades": 87,
-   "volume_xrp": 9896.05
-  },
-  {
-   "t0": 1791647700000,
-   "t1": 1791648000000,
-   "vwm": 1.40636,
-   "trades": 146,
-   "volume_xrp": 69880.07
-  },
   {
    "t0": 1791648000000,
    "t1": 1791648300000,
@@ -101,9 +73,37 @@
    "vwm": 1.40495,
    "trades": 75,
    "volume_xrp": 23033.17
+  },
+  {
+   "t0": 1791650400000,
+   "t1": 1791650700000,
+   "vwm": 1.4052,
+   "trades": 198,
+   "volume_xrp": 25932.56
+  },
+  {
+   "t0": 1791650700000,
+   "t1": 1791651000000,
+   "vwm": 1.40454,
+   "trades": 104,
+   "volume_xrp": 35034.5
+  },
+  {
+   "t0": 1791651000000,
+   "t1": 1791651300000,
+   "vwm": 1.40449,
+   "trades": 97,
+   "volume_xrp": 15205.74
+  },
+  {
+   "t0": 1791651300000,
+   "t1": 1791651600000,
+   "vwm": 1.40302,
+   "trades": 131,
+   "volume_xrp": 38324.55
   }
  ],
- "trade_count": 1880,
+ "trade_count": 1923,
  "official_rr": {
   "value": 1.40561,
   "change_pct": 1.61,
