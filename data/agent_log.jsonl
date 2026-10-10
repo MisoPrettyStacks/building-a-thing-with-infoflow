@@ -212,3 +212,4 @@
 {"ts": "2026-10-10T02:14:49+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4034841666666669, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2390, 'official_rr': 1.38329}", "tag": "info"}
 {"ts":"2026-10-10T02:16:09Z","agent":"watchdog","decision":"proactively dispatched cf-rate.yml (run 38016239838)","detail":"no successful cf-rate run within last 12 min; last success 2026-10-10T01:54:55Z, feed computed_at 2026-10-10T01:55:03Z","tag":"info"}
 {"ts": "2026-10-10T02:34:41Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml", "detail": "no successful cf-rate run within last 12min; cf-rate.json computed_at 2026-10-10T02:14:46Z (~20min)", "tag": "info"}
+{"ts": "2026-10-10T02:34:54+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4053025000000001, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2350, 'official_rr': 1.38329}", "tag": "info"}
