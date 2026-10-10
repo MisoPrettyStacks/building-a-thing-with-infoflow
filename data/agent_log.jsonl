@@ -206,3 +206,4 @@
 {"ts": "2026-10-10T01:14:40Z", "agent": "watchdog", "decision": "dispatched cf-rate.yml proactively", "detail": "no successful cf-rate run within last 12 min (last success 00:54:30Z); routine cadence top-up", "tag": "info"}
 {"ts": "2026-10-10T01:14:46+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3991966666666666, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2129, 'official_rr': 1.38329}", "tag": "info"}
 {"ts": "2026-10-10T01:34:40Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml", "detail": "no successful cf-rate run within last 12 min (last success 2026-10-10T01:14:33Z, 19.9 min old); scheduler drops ~90% of slots", "tag": "info"}
+{"ts": "2026-10-10T01:34:51+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.3997091666666668, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2017, 'official_rr': 1.38329}", "tag": "info"}
