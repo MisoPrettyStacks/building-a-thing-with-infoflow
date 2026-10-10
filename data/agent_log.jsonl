@@ -295,3 +295,4 @@
 {"ts": "2026-10-10T16:25:00+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4066049999999999, 'valid_partitions': 12, 'venues_used': 4, 'trades': 2023, 'official_rr': 1.40561}", "tag": "info"}
 {"ts": "2026-10-10T16:25:03Z", "agent": "watchdog", "decision": "proactively dispatched cf-rate.yml", "detail": "no successful cf-rate run within last 12 min (last success 2026-10-10T16:05:09Z); routine per 2026-10-08 user approval", "tag": "info"}
 {"ts": "2026-10-10T16:35:16Z", "agent": "watchdog", "decision": "dispatched forecast.yml via gh workflow run (scheduler drop suspected)", "detail": "summary.json generated_at was 2026-10-10T16:00:16Z (34.5 min stale, >25 min)", "tag": "recover"}
+{"ts": "2026-10-10T16:44:44Z", "agent": "watchdog", "decision": "dispatched cf-rate.yml proactively", "detail": "last successful cf-rate run 16:24:46Z (>12min); cf-rate.json computed_at 16:24:55Z", "tag": "info"}
