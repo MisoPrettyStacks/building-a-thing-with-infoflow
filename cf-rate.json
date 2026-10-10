@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-10T14:45:30.058Z",
- "live_rate": 1.40472,
+ "computed_at": "2026-10-10T15:04:37.800Z",
+ "live_rate": 1.4056758333333332,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -12,33 +12,12 @@
  "venues_excluded": "LMAX Digital and itBit are official CF constituents with no free public market-data API; excluded (documented, not faked).",
  "venues_used": 4,
  "venue_status": [
-  "coinbase:ok(199)",
-  "kraken:ok(720)",
-  "bitstamp:ok(276)",
-  "gemini:ok(228)"
+  "coinbase:ok(299)",
+  "kraken:ok(535)",
+  "bitstamp:ok(206)",
+  "gemini:ok(244)"
  ],
  "partitions": [
-  {
-   "t0": 1791639900000,
-   "t1": 1791640200000,
-   "vwm": 1.40367,
-   "trades": 80,
-   "volume_xrp": 27201.75
-  },
-  {
-   "t0": 1791640200000,
-   "t1": 1791640500000,
-   "vwm": 1.40417,
-   "trades": 77,
-   "volume_xrp": 11537.93
-  },
-  {
-   "t0": 1791640500000,
-   "t1": 1791640800000,
-   "vwm": 1.404,
-   "trades": 80,
-   "volume_xrp": 36130.07
-  },
   {
    "t0": 1791640800000,
    "t1": 1791641100000,
@@ -101,13 +80,34 @@
    "vwm": 1.409,
    "trades": 370,
    "volume_xrp": 200995.84
+  },
+  {
+   "t0": 1791643500000,
+   "t1": 1791643800000,
+   "vwm": 1.40862,
+   "trades": 212,
+   "volume_xrp": 59034.64
+  },
+  {
+   "t0": 1791643800000,
+   "t1": 1791644100000,
+   "vwm": 1.40795,
+   "trades": 123,
+   "volume_xrp": 20272.03
+  },
+  {
+   "t0": 1791644100000,
+   "t1": 1791644400000,
+   "vwm": 1.40674,
+   "trades": 100,
+   "volume_xrp": 17572.35
   }
  ],
- "trade_count": 2368,
+ "trade_count": 2453,
  "official_rr": {
-  "value": 1.38329,
-  "change_pct": -1.4,
-  "published": "2026-10-09T15:00:00.000Z",
+  "value": 1.40561,
+  "change_pct": 1.61,
+  "published": "2026-10-10T15:00:00.000Z",
   "source": "https://www.cfbenchmarks.com/data/indices/XRPUSD_RR"
  },
  "note": "This is a live re-implementation of CF Benchmarks’ published methodology, not the official CF fixing. The official fixing publishes once daily at 16:00 London time."
