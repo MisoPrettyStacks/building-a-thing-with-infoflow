@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-10T16:24:55.658Z",
- "live_rate": 1.4066049999999999,
+ "computed_at": "2026-10-10T16:44:53.156Z",
+ "live_rate": 1.4061008333333334,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(299)",
-  "kraken:ok(549)",
-  "bitstamp:ok(236)",
-  "gemini:ok(192)"
+  "kraken:ok(396)",
+  "bitstamp:ok(148)",
+  "gemini:ok(172)"
  ],
  "partitions": [
-  {
-   "t0": 1791645600000,
-   "t1": 1791645900000,
-   "vwm": 1.40636,
-   "trades": 196,
-   "volume_xrp": 33173.27
-  },
-  {
-   "t0": 1791645900000,
-   "t1": 1791646200000,
-   "vwm": 1.40601,
-   "trades": 109,
-   "volume_xrp": 17667.76
-  },
-  {
-   "t0": 1791646200000,
-   "t1": 1791646500000,
-   "vwm": 1.40635,
-   "trades": 128,
-   "volume_xrp": 22931.39
-  },
-  {
-   "t0": 1791646500000,
-   "t1": 1791646800000,
-   "vwm": 1.40676,
-   "trades": 123,
-   "volume_xrp": 37355.65
-  },
   {
    "t0": 1791646800000,
    "t1": 1791647100000,
@@ -101,9 +73,37 @@
    "vwm": 1.4066,
    "trades": 152,
    "volume_xrp": 79922.02
+  },
+  {
+   "t0": 1791649200000,
+   "t1": 1791649500000,
+   "vwm": 1.40535,
+   "trades": 289,
+   "volume_xrp": 40916.34
+  },
+  {
+   "t0": 1791649500000,
+   "t1": 1791649800000,
+   "vwm": 1.40448,
+   "trades": 121,
+   "volume_xrp": 84614.43
+  },
+  {
+   "t0": 1791649800000,
+   "t1": 1791650100000,
+   "vwm": 1.40465,
+   "trades": 92,
+   "volume_xrp": 13779.54
+  },
+  {
+   "t0": 1791650100000,
+   "t1": 1791650400000,
+   "vwm": 1.40495,
+   "trades": 75,
+   "volume_xrp": 23033.17
   }
  ],
- "trade_count": 2023,
+ "trade_count": 1880,
  "official_rr": {
   "value": 1.40561,
   "change_pct": 1.61,
