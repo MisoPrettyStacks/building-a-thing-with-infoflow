@@ -255,3 +255,4 @@
 {"ts": "2026-10-10T09:44:33Z", "agent": "watchdog", "decision": "dispatched forecast.yml", "detail": "summary.json generated_at 2026-10-10T09:15:15Z was >25 min stale (29 min); scheduler drop", "tag": "recover"}
 {"ts": "2026-10-10T09:54:41Z", "agent": "watchdog", "decision": "dispatched cf-rate.yml (proactive)", "detail": "no successful run within last 12min (latest success 09:35:16Z); GitHub drops ~90% of scheduled runs", "tag": "info"}
 {"ts": "2026-10-10T10:15:15+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4063533333333333, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1109, 'official_rr': 1.38329}", "tag": "info"}
+{"ts":"2026-10-10T10:17:07Z","agent":"watchdog","decision":"proactive cf-rate.yml dispatch: no successful run within last 12 min","detail":"last success 09:54:36Z; gh run 38044242776 accepted","tag":"info"}
