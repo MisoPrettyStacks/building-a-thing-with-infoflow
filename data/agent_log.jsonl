@@ -265,9 +265,6 @@
 {"ts": "2026-10-10T11:25:03+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4031183333333335, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1289, 'official_rr': 1.38329}", "tag": "info"}
 {"ts": "2026-10-10T11:44:34Z", "agent": "watchdog", "decision": "proactive dispatch of cf-rate.yml", "detail": "no successful cf-rate run completed within last 12 minutes (last success completed ~2026-10-10T11:25:05Z); routine proactive dispatch per standing rule", "tag": "info"}
 {"ts": "2026-10-10T11:44:45+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4034575, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1119, 'official_rr': 1.38329}", "tag": "info"}
-<<<<<<< HEAD
 {"ts": "2026-10-10T12:04:40Z", "agent": "watchdog", "decision": "proactive cf-rate dispatch (run 38050645381)", "detail": "last successful cf-rate run 2026-10-10T11:44:30Z, >12 min before check; GitHub scheduler drops ~90% of scheduled cf-rate runs; routine proactive dispatch", "tag": "info"}
-=======
 {"ts": "2026-10-10T12:04:41+00:00", "agent": "scorer", "decision": "CF live rate refreshed", "detail": "{'live_rate': 1.4032941666666667, 'valid_partitions': 12, 'venues_used': 4, 'trades': 1196, 'official_rr': 1.38329}", "tag": "info"}
->>>>>>> 50a81ee39e96ca227b2b3499e510f4e0e5a3cd33
 {"ts": "2026-10-10T12:04:46Z", "agent": "watchdog", "decision": "proactive cf-rate dispatch (run 38050645381)", "detail": "last successful cf-rate run 2026-10-10T11:44:30Z, >12 min before check; GitHub scheduler drops ~90% of scheduled cf-rate runs; routine proactive dispatch", "tag": "info"}
