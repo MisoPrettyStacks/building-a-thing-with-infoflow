@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-10-10T15:24:51.585Z",
- "live_rate": 1.4069525,
+ "computed_at": "2026-10-10T15:44:51.863Z",
+ "live_rate": 1.4068275000000001,
  "method": "Live implementation of the CME CF Reference Rates Methodology: 12 x 5-minute partitions over the trailing 60 minutes; volume-weighted median trade price per partition pooled across venues; equally-weighted mean of the partition medians.",
  "methodology_pdf": "https://docs.cfbenchmarks.com/CME%20CF%20Reference%20Rates%20Methodology.pdf",
  "venues": [
@@ -13,39 +13,11 @@
  "venues_used": 4,
  "venue_status": [
   "coinbase:ok(199)",
-  "kraken:ok(395)",
-  "bitstamp:ok(167)",
-  "gemini:ok(188)"
+  "kraken:ok(405)",
+  "bitstamp:ok(125)",
+  "gemini:ok(194)"
  ],
  "partitions": [
-  {
-   "t0": 1791642000000,
-   "t1": 1791642300000,
-   "vwm": 1.4039,
-   "trades": 214,
-   "volume_xrp": 261773.73
-  },
-  {
-   "t0": 1791642300000,
-   "t1": 1791642600000,
-   "vwm": 1.40602,
-   "trades": 238,
-   "volume_xrp": 220667.87
-  },
-  {
-   "t0": 1791642600000,
-   "t1": 1791642900000,
-   "vwm": 1.40784,
-   "trades": 204,
-   "volume_xrp": 128937.91
-  },
-  {
-   "t0": 1791642900000,
-   "t1": 1791643200000,
-   "vwm": 1.40922,
-   "trades": 201,
-   "volume_xrp": 84978.54
-  },
   {
    "t0": 1791643200000,
    "t1": 1791643500000,
@@ -101,12 +73,40 @@
    "vwm": 1.40579,
    "trades": 101,
    "volume_xrp": 8200.35
+  },
+  {
+   "t0": 1791645600000,
+   "t1": 1791645900000,
+   "vwm": 1.40636,
+   "trades": 196,
+   "volume_xrp": 33173.27
+  },
+  {
+   "t0": 1791645900000,
+   "t1": 1791646200000,
+   "vwm": 1.40601,
+   "trades": 109,
+   "volume_xrp": 17667.76
+  },
+  {
+   "t0": 1791646200000,
+   "t1": 1791646500000,
+   "vwm": 1.40635,
+   "trades": 128,
+   "volume_xrp": 22931.39
+  },
+  {
+   "t0": 1791646500000,
+   "t1": 1791646800000,
+   "vwm": 1.40676,
+   "trades": 123,
+   "volume_xrp": 37355.65
   }
  ],
- "trade_count": 2303,
+ "trade_count": 1915,
  "official_rr": {
-  "value": 1.40561,
-  "change_pct": 1.61,
+  "value": 1.38329,
+  "change_pct": -1.4,
   "published": "2026-10-10T15:00:00.000Z",
   "source": "https://www.cfbenchmarks.com/data/indices/XRPUSD_RR"
  },
